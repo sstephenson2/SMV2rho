@@ -24,16 +24,45 @@ def rho_err(z, bulk_rho, q0, dq0, qm, dqm, hr, dhr, dvdT, ddvdT, alpha0, dalpha0
             alpha1, dalpha1, K, dK, dens_parameters, N=1000, z_slices=50, make_plots=False,
             save_plots=False, outpath="../UNCERTAINTY_PLOTS"):
     """
-    Calculate crustal density uncertainty by Monte Carlo sampling of thermal and
-    compressibility parameters.  Returns drho(z) for mean correction, and standard
-    deviation.  Note that this does not include the uncertainty associated with the 
-    velocity-pressure calibration, which should be combined separately if necessary.
-    Arguments: - z: moho depth in km
-               - bulk_rho: bulk density of crust to approximate pressure gradient
-               - q0 -- dK: thermal ad material parameters and their 
-                           uncertainties (1 sigma)
-               - dens parameters: pressure-velocity-density conversion parameters.
-               - N: number of random samples to draw from each distriibution.
+    Calculate crustal density uncertainty by Monte Carlo sampling of 
+    thermal and compressibility parameters. Returns drho(z) for mean 
+    correction, and standard deviation. Note that this does not include 
+    the uncertainty associated with the velocity-pressure calibration, 
+    which should be combined separately if necessary.
+
+    Args:
+        z (float): Moho depth in kilometers.
+        bulk_rho (float): Bulk density of the crust to approximate pressure 
+            gradient.
+        q0 (float): Thermal ad material parameters (1 sigma).
+        dq0 (float): Uncertainty in q0.
+        qm (float): Thermal material parameter (1 sigma).
+        dqm (float): Uncertainty in qm.
+        hr (float): Depth parameter (1 sigma), converted to meters.
+        dhr (float): Uncertainty in hr.
+        dvdT (float): Pressure-velocity conversion parameter (1 sigma).
+        ddvdT (float): Uncertainty in dvdT.
+        alpha0 (float): Thermal expansion parameter (1 sigma).
+        dalpha0 (float): Uncertainty in alpha0.
+        alpha1 (float): Thermal expansion parameter (1 sigma).
+        dalpha1 (float): Uncertainty in alpha1.
+        K (float): Compressibility parameter (1 sigma).
+        dK (float): Uncertainty in K.
+        dens_parameters (str): File path to the pressure-velocity-density 
+            conversion parameters.
+        N (int, optional): Number of random samples to draw from each 
+        distribution. Default is 1000.
+        z_slices (int, optional): Number of depth slices. Default is 50.
+        make_plots (bool, optional): Whether to generate and display plots. 
+            Default is False.
+        save_plots (bool, optional): Whether to save plots to specified 
+            outpath. Default is False.
+        outpath (str, optional): Path to save plots. Default is 
+            "../UNCERTAINTY_PLOTS".
+
+    Returns:
+        tuple: A tuple containing the average fractional error and 
+        average absolute error in density.
     """
     # sample normal distributions for geothermal, thermal expansion, 
     # compressibility, and velocity parameters
