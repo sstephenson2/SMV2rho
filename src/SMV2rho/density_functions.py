@@ -949,7 +949,8 @@ class MultiConversion:
 
         # loop through locations and append data to lists of vp and vs data
         for location in locations:
-            print(f"   -- assembling lists for {location.split('/')[-1]}")
+            print(f"   -- assembling lists for "
+                  f"{location.split(os.path.sep)[-1]}")
             # get all observed vs profiles
             vs_files = glob.glob(location + "/Vs/*/DATA/*")
             vs_files_all.append(vs_files)
