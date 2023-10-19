@@ -12,7 +12,7 @@ import scipy.integrate as integrate
 from scipy.interpolate import interp1d, CubicSpline
 import glob
 import os, os.path
-from temperature_dependence import *
+from SMV2rho.temperature_dependence import *
 from multiprocessing import Pool, Manager
 import pandas as pd
 import matplotlib.pyplot as plt

@@ -7,8 +7,8 @@ import numpy as np
 import sys
 import scipy.stats as stats
 import matplotlib.pyplot as plt
-from density_functions import V2rho_stephenson as V2rho
-from temperature_dependence import rho_thermal2, compressibility, cont_geotherm_heat_flux_difference
+from SMV2rho.density_functions import V2rho_stephenson as V2rho
+from SMV2rho.temperature_dependence import rho_thermal2, compressibility, cont_geotherm_heat_flux_difference
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

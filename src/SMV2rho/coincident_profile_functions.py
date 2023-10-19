@@ -6,7 +6,7 @@
 ########################################################################################
 
 import numpy as np
-from spatial_functions import *
+from SMV2rho.spatial_functions import *
 
 # locate coincident profiles
 def get_coincident_profiles(profiles1, profiles2, buff):
