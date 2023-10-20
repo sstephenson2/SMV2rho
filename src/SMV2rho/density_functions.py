@@ -171,6 +171,11 @@ class Convert:
             "Vs."
         region_name (str, optional): The geographic location of the profile, 
             e.g., "MADAGASCAR." (default is None)
+        seismic_method_name (str): The method used to acquire the vlocity 
+            profile.  e.g. "RECEIVER_FUNCTION".  If set to None, the read_data
+            metod will pick up the argument from the file string.  Note if 
+            set to None the strict file convention must be set (see README.md)
+            and tutorial_1.ipynb.
 
     Attributes:
         data (dict): A dictionary containing parsed seismic profile data.
@@ -191,18 +196,40 @@ class Convert:
     """
 
     def __init__(self, profile, profile_type = None, region_name = None,
-                 method_name = "auto"):
+                 seismic_method_name = None):
 
         # check whether the profile type has been selected
         if profile_type is None:
-            raise ValueError("Profile type has not been selected. "
+            raise NameError("Profile type has not been selected. "
                              "PLEASE SPECIFY Vp OR Vs")
 
         self.profile = profile
         self.profile_type = profile_type
         self.region_name = region_name
-        self.method_name = method_name
+        self.method = seismic_method_name
         
+        # method type from file string (e.g. refraction, reflection, RF etc.)
+        # otherwise input argument required
+        if self.method is None:
+            try:
+                self.method = self.profile.split(os.path.sep)[-3]
+            except IndexError:
+                raise NameError("Error parsing file string. "
+                                "Please use the correct file structure or "
+                                "set a seismic_method_name and/or "
+                                "region_name")
+        
+        # regional location from file string (e.g. africa, north_america, etc.)
+        # otherwise input argument required
+        if self.region_name is None:
+            try:
+                self.method = self.profile.split(os.path.sep)[-5]
+            except IndexError:
+                raise NameError("Error parsing file string. "
+                                "Please use the correct file structure or "
+                                "set a seismic_method_name and/or "
+                                "region_name")
+
     def read_data(self):
         """
         Read in data file and parse it into a data dictionary.
@@ -232,14 +259,8 @@ class Convert:
             This method assumes that `self.profile_type` has been set to 
             "Vs" or "Vp" to indicate the type of seismic profile being read.
         """
-        data = read_file(self.profile)
-        
-        # method type from file string (e.g. refraction, reflection, RF etc.)
-        if self.method_name == "auto":
-            method = self.profile.split(os.path.sep)[-3]
-        else:
-            method = self.method_name
-        
+        data = read_file(self.profile)        
+
         # record header data as variables
         station = data[0][0]
         loc = np.array([float(data[1][0]), float(data[1][1])])
@@ -295,12 +316,12 @@ class Convert:
             self.data = {"station": station, "Vs_file": self.profile, 
                          "region": self.region_name, 
                          "moho": moho, "location": loc, "av_Vs": av_V,
-                         "Vs": v_array, "type": "Vs", "method": method}
+                         "Vs": v_array, "type": "Vs", "method": self.method}
         elif self.profile_type == "Vp":
             self.data = {"station": station, "Vp_file": self.profile, 
                          "region": self.region_name, 
                          "moho": moho, "location": loc, "av_Vp": av_V,
-                         "Vp": v_array, "type": "Vp", "method": method}
+                         "Vp": v_array, "type": "Vp", "method": self.method}
     
     # convert Vs profile into Vp profile
     # using Brocher's (2005) approach
@@ -370,7 +391,7 @@ class Convert:
             try:
                 self.data["Vp_calc"]
             except KeyError:
-                print("You haven't created a Vp array yet! "
+                raise NameError("You haven't created a Vp array yet! "
                       "Convert Vs to Vp first!")
             rho = np.column_stack((self.data["Vp_calc"][:,0], 
                                    Vp2rho_brocher(self.data["Vp_calc"][:,1])))
@@ -1213,7 +1234,7 @@ def check_arguments(T_dependence, constant_depth, constant_density,
 def convert_V_profile(file, profile_type, write_data=False, 
                         path = None,
                         approach = "stephenson",
-                        location = "None",
+                        location = None,
                         parameters = None,
                         constant_depth = None,
                         constant_density = None,
