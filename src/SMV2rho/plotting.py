@@ -61,7 +61,7 @@ def plot_panels(data, plot_type='scatter', cmap='YlGnBu',
 
     # Create the figure and axes for the panels
     fig, axs = plt.subplots(1, n_panels, figsize=(8*figure_scale,
-                                                   6*figure_scale),
+                                                  6*figure_scale),
                             facecolor='w', edgecolor='k', squeeze=False)
 
     # Iterate over the panels

@@ -190,7 +190,8 @@ class Convert:
 
     """
 
-    def __init__(self, profile, profile_type = None, region_name = None):
+    def __init__(self, profile, profile_type = None, region_name = None,
+                 method_name = "auto"):
 
         # check whether the profile type has been selected
         if profile_type is None:
@@ -200,6 +201,7 @@ class Convert:
         self.profile = profile
         self.profile_type = profile_type
         self.region_name = region_name
+        self.method_name = method_name
         
     def read_data(self):
         """
@@ -233,7 +235,10 @@ class Convert:
         data = read_file(self.profile)
         
         # method type from file string (e.g. refraction, reflection, RF etc.)
-        method = self.profile.split("/")[-3]
+        if self.method_name == "auto":
+            method = self.profile.split(os.path.sep)[-3]
+        else:
+            method = self.method_name
         
         # record header data as variables
         station = data[0][0]
@@ -465,7 +470,7 @@ class Convert:
             plt.show()
 
     # write out data
-    def write_data(self, path, approach="stephenson",
+    def write_data(self, path, file_structure = None, approach="stephenson",
                    T_dependence = False):
         """
         Write seismic profile data to appropriate file locations.
@@ -478,6 +483,12 @@ class Convert:
         Args:
             path (str): The path to the directory containing all velocity data.
                 See README for directory structure details.
+            file_structure (str): If set to None (Default) then we will 
+                construct the path from the information in 
+                the metadata (i.e. following the default file structure).  
+                Otherwise a manual outpath needs to be used that leads to the
+                output location.  We will then append relevant method information
+                to the output filename to bookmark the output profiles.
             approach (str, optional): The density (and Vp-Vs if used) conversion 
                 approach, which is needed for the file path (default is 
                 "stephenson").
@@ -504,10 +515,20 @@ class Convert:
                 outlist_Vp.append([self.data["moho"]])
                 outlist_Vp.append(self.data["Vp_calc"])
                 # write output file
-                outpath = (path + self.data["region"] + 
-                              "/Vp/" + self.data["method"] + 
-                              "/CALCULATED_" + approach + "/" + 
-                              self.data["station"] + ".dat")
+                if file_structure is None:
+                    outpath = (path + self.data["region"] 
+                               + "/Vp/" + self.data["method"] 
+                               + "/CALCULATED_" + approach 
+                               + os.path.sep 
+                               + self.data["station"] 
+                               + ".dat")
+                else:
+                    outpath = (path + os.path.sep 
+                               + self.data["station"]
+                               + "_Vp_CALCULATED_"
+                               + self.data["method"] 
+                               + ".dat")
+                # check the output directory exists - make it if not
                 ensure_dir(outpath)
                 write_profile_to_file(outlist_Vp, outpath)
                 
@@ -518,10 +539,19 @@ class Convert:
                 outlist_rho.append([self.data["moho"]])
                 outlist_rho.append(self.data["rho"])
                 # write output file
-                outpath = (path + self.data["region"] + 
-                              "/vs_rho_" + approach + "/" + 
-                              self.data["method"] + 
-                              "/" + self.data["station"] + ".dat")
+                if file_structure is None:
+                    outpath = (path + self.data["region"] 
+                               + "/vs_rho_" + approach 
+                               + os.path.sep 
+                               + self.data["method"] 
+                               + os.path.sep + self.data["station"] 
+                               + ".dat")
+                else:
+                    outpath = (path + os.path.sep 
+                               + self.data["station"]
+                               + "_Vs_rho_"
+                               + approach + ".dat")
+                # check the output directory exists - make it if not
                 ensure_dir(outpath)
                 write_profile_to_file(outlist_rho, outpath)
             
@@ -532,10 +562,19 @@ class Convert:
                 outlist_rho.append([self.data["moho"]])
                 outlist_rho.append(self.data["rho"])
                 # write output file
-                outpath = (path + self.data["region"] + 
-                              "/vp_rho_" + approach + "/" + 
-                              self.data["method"] + 
-                              "/" + self.data["station"] + ".dat")
+                if file_structure is None:
+                    outpath = (path + self.data["region"] 
+                               + "/vp_rho_" + approach 
+                               + os.path.sep 
+                               + self.data["method"] 
+                               + os.path.sep + self.data["station"] 
+                               + ".dat")
+                else:
+                    outpath = (path + os.path.sep 
+                               + self.data["station"]
+                               + "_Vp_rho_"
+                               + approach + ".dat")
+                # check the output directory exists - make it if not
                 ensure_dir(outpath)
                 write_profile_to_file(outlist_rho, outpath)
 
@@ -940,7 +979,7 @@ class MultiConversion:
             # set location variable - convert to one element 
             # list if not already a list
             if type(which_location) == str:
-                locations = [path + "/" + which_location]
+                locations = [path + os.path.sep + which_location]
             else:
                 locations = which_location
 
@@ -1120,7 +1159,7 @@ class MultiConversion:
         for files in file_list:
             if len(files) > 0:
                 # extract location name from file string
-                location_name = files[0].split("/")[-5]
+                location_name = files[0].split(os.path.sep)[-5]
                 # assemble paramter list
                 for file in files:
                     params = self._assemble_params(file, profile_type,
