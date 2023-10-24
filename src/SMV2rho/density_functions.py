@@ -12,7 +12,7 @@ import scipy.integrate as integrate
 from scipy.interpolate import interp1d, CubicSpline
 import glob
 import os, os.path
-from SMV2rho.temperature_dependence import *
+import SMV2rho.temperature_dependence as td
 from multiprocessing import Pool, Manager
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -400,7 +400,7 @@ class Convert:
         # add new values to data dictionary
         self.data.update(rho = rho, av_rho = av_rho)
 
-    def V_to_density_stephenson(self, parameters, profile="Vp", 
+    def V_to_density_stephenson(self, parameters, 
                                 dz=0.1,
                                 constant_depth = None,
                                 constant_density = None,
@@ -437,10 +437,13 @@ class Convert:
             None
         """
         
+        check_arguments(T_dependence, constant_depth, constant_density,
+                            "stephenson", parameters, T_parameters)
+
         # instantiate convert profile calss
         ProfileConvert = V2RhoStephenson(self.data,
                                          parameters, 
-                                         profile,
+                                         self.profile_type,
                                          constant_depth,
                                          constant_density,
                                          T_dependence,
@@ -453,7 +456,7 @@ class Convert:
         # update class instance with new variables
         # check for T dependence so that we only append T array if it exists
         if T_dependence is True:
-            if profile == "Vp":
+            if self.profile_type == "Vp":
                 self.data.update(rho = data_converted["rho"], 
                             av_rho = data_converted["av_rho"], 
                             rho_hi_res = data_converted["rho_hi_res"],
@@ -468,7 +471,7 @@ class Convert:
                             p = data_converted["p"], 
                             T = data_converted["T"])
         else:
-            if profile == "Vp":
+            if self.profile_type == "Vp":
                 self.data.update(rho = data_converted["rho"], 
                             av_rho = data_converted["av_rho"], 
                             rho_hi_res = data_converted["rho_hi_res"],
@@ -662,9 +665,15 @@ class V2RhoStephenson:
         self.parameters = parameters
         self.profile = profile
         self.constant_depth = constant_depth
-        self. constant_density = constant_density
+        self.constant_density = constant_density
         self.T_dependence = T_dependence
         self.T_parameters = T_parameters
+
+        if self.T_dependence is True and len(T_parameters) > 4:
+                raise ValueError("You have provided too many parameters for temperature-"
+                      "dependent conversion!  \n"
+                      "You may be trying to convert a single file but you may "
+                      "have provided both Vp and Vs conversion parameters.")
 
     def calculate_density_profile(self, dz=0.1):
         """
@@ -687,7 +696,7 @@ class V2RhoStephenson:
         z_v_arr = np.array(self._set_up_arrays(dz))
         # get temperature array if needed
         if self.T_dependence is True:
-            T_arr = cont_geotherm_heat_flux_difference(z_v_arr[:,0]*1000)
+            T_arr = td.cont_geotherm_heat_flux_difference(z_v_arr[:,0]*1000)
         
         # set up P_rho array
         P_rho = np.zeros(np.shape(z_v_arr))
@@ -810,13 +819,12 @@ class V2RhoStephenson:
         Returns:
             float: density as a function of pressure and temperature.
         """
-        return (rho_0 * rho_thermal2(rho_0, T, 
+        return (rho_0 * td.rho_thermal2(rho_0, T, 
                             self.T_parameters[1], 
                             self.T_parameters[2])[1] 
-                      * compressibility(rho_0, P, 
+                      * td.compressibility(rho_0, P, 
                             self.T_parameters[-1])[1])
 
-    # calculate density as function of depth given conditions
     def _calculate_density_pressure(self, z_arr, V_arr = None, 
                                     rho_arr = None, T_arr = None,
                                     dz=0.1):
@@ -836,7 +844,7 @@ class V2RhoStephenson:
         Returns:
             numpy.ndarray: Pressure and density values.
         """
-
+                
         # if first entry return 0.1 for P and calculate surface 
         # density using V
         if len(z_arr) == 1 and self.constant_density is None:
@@ -872,10 +880,10 @@ class V2RhoStephenson:
                 # overburden density
                 P = self._pressure(
                     self._overburden_density(rho_arr, z_arr), z_arr[-1])
-
+        
             if self.T_dependence is True:
                 # correct for temperature
-                Vc = V_arr[-1] - V_T_correction(T_arr[-1], self.T_parameters[0])
+                Vc = V_arr[-1] - td.V_T_correction(T_arr[-1], self.T_parameters[0])
                 # calculate surface density of next depth given pressure
                 density_0 = V2rho_stephenson(np.array([P, Vc]), 
                                                 *self.parameters)
@@ -1218,7 +1226,7 @@ def check_arguments(T_dependence, constant_depth, constant_density,
     # check that all the necessary information has been provided
     if T_dependence is True and T_parameters is None:
         raise ValueError("T_dependence is set to True but "
-                         "T_parameters have not ben set")
+                         "T_parameters have not been set")
     if constant_depth is not None and constant_density is None:
         raise ValueError("constant_depth is set but not \
                          constant_density")
@@ -1259,8 +1267,10 @@ def convert_V_profile(file, profile_type, write_data=False,
             or "stephenson".
         location (str, optional): Regional location of the profile. Default 
             is "None".
-        parameters (str, optional): Parameter file if using the Stephenson 
-            scheme for velocity-density conversion. Default is None.
+        parameters (np.ndarray, optional): Parameter array if using the 
+            Stephenson scheme for velocity-density conversion.  A single 
+            column (1D) array.  Not Vp and Vs parameters combined.   
+            Default is None.
         constant_depth (float, optional): Depth range for constant density 
             from the surface. Default is None.
         constant_density (float, optional): Constant density value for the 
@@ -1285,10 +1295,10 @@ def convert_V_profile(file, profile_type, write_data=False,
     Example:
         >>> convert_V_profile('velocity_profile.dat', 'Vp', write_data=True,
         ...                   path='output/', approach='stephenson',
-        ...                   location='Region1', parameters='params.txt',
+        ...                   location='Region1', parameters=[p1, p2, ...],
         ...                   constant_depth=10.0, constant_density=2.7,
         ...                   T_dependence=True, 
-        ...                   T_parameters=(0.01, 1.0, 0.002))
+        ...                   T_parameters=(0.01, 1.0, 0.002, 0.00001, 90e9))
 
     """
 
@@ -1322,7 +1332,7 @@ def convert_V_profile(file, profile_type, write_data=False,
     elif approach == "stephenson":        
         # convert using Stephenson approach
         Data.V_to_density_stephenson(
-            parameters, Data.profile_type, 
+            parameters, 
             constant_depth = constant_depth,
             constant_density = constant_density,
             T_dependence = T_dependence,
