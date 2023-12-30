@@ -20,13 +20,17 @@ class VpConstants:
     Constants for compressional wave velocity (Vp).
 
     Attributes:
-    v0: float = -9.3521e-01  # Initial velocity at reference conditions
-    b: float = 1.69478e-03  # Velocity gradient as function of pressure at constant temperature
-    d0: float = 2.55911  # Velocity gradient with respect to density at standard temperature and pressure
-    dp: float = -4.76050e-04  # Pressure dependence of velocity gradient with respect to density
-    c: float = 1.674065  # Exponential drop-off magnitude
-    k: float = 1.953466e-02  # Exponential drop-off of Vp at low pressure
-    m: float = -4e-4  # Velocity gradient as function of temperature at constant pressure
+    v0: float = -9.3521e-01   # Initial velocity at reference conditions
+    b: float = 1.69478e-03    # Velocity gradient as function of pressure 
+                                at constant temperature
+    d0: float = 2.55911       # Velocity gradient with respect to density
+                                at standard temperature and pressure
+    dp: float = -4.76050e-04  # Pressure dependence of velocity 
+                                gradient with respect to density
+    c: float = 1.674065       # Exponential drop-off magnitude
+    k: float = 1.953466e-02   # Exponential drop-off of Vp at low pressure
+    m: float = -4e-4          # Velocity gradient as function of temperature 
+                                at constant pressure
     """
     v0: float = -9.3521e-01
     b: float = 1.69478e-03
@@ -43,12 +47,16 @@ class VsConstants:
 
     Attributes:
     v0: float = -6.0777e-01  # Initial velocity at reference conditions
-    b: float = 1.0345e-03  # Velocity gradient as function of pressure at constant temperature
-    d0: float = 1.4808  # Velocity gradient with respect to density at standard temperature and pressure
-    dp: float = -2.9773e-04  # Pressure dependence of velocity gradient with respect to density
-    c: float = 7.3740e-01  # Exponential drop-off magnitude
-    k: float = 2.0041e-02  # Exponential drop-off of Vs at low pressure
-    m: float = -2.3e-4  # Velocity gradient as function of temperature at constant pressure
+    b: float = 1.0345e-03    # Velocity gradient as function of pressure at 
+                               constant temperature
+    d0: float = 1.4808       # Velocity gradient with respect to density at 
+                               standard temperature and pressure
+    dp: float = -2.9773e-04  # Pressure dependence of velocity gradient with 
+                               respect to density
+    c: float = 7.3740e-01    # Exponential drop-off magnitude
+    k: float = 2.0041e-02    # Exponential drop-off of Vs at low pressure
+    m: float = -2.3e-4       # Velocity gradient as function of temperature at
+                               constant pressure
     """
     v0: float = -6.0777e-01
     b: float = 1.0345e-03
@@ -79,14 +87,22 @@ class Constants:
     ```
     """
 
-    vp_constants: VpConstants = None
-    vs_constants: VsConstants = None
-    material_constants: MaterialConstants = None
+    vp_constants: VpConstants = None  # Instance of VpConstants
+    vs_constants: VsConstants = None  # Instance of VsConstants
+    material_constants: MaterialConstants = None  # Instance of MaterialConstants
 
     def get_v_constants(self, data_type: str, **kwargs):
         """
         Get constants instance based on data_type ('Vp' or 'Vs') and 
         assign them to class attributes.
+        
+        Parameters:
+        - data_type (str): Indicates whether VpConstants or VsConstants 
+          should be instantiated.
+        - **kwargs: Variable keyword arguments representing constant values.
+
+        Raises:
+        - ValueError: If an invalid data_type is provided.
         """
         if data_type == 'Vp':
             self.vp_constants = VpConstants(**kwargs)
@@ -98,5 +114,8 @@ class Constants:
     def get_material_constants(self, **kwargs):
         """
         Get material constants instance and assign them to class attributes.
+        
+        Parameters:
+        - **kwargs: Variable keyword arguments representing constant values.
         """
         self.material_constants = MaterialConstants(**kwargs)
