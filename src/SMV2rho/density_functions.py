@@ -666,17 +666,51 @@ class V2RhoStephenson:
                 T_dependence = True):
 
         self.data = data
-        self.parameters = parameters
         self.profile = profile
         self.constant_depth = constant_depth
         self.constant_density = constant_density
         self.T_dependence = T_dependence
 
-        if self.T_dependence is True 
-            and isinstance(parameters, c.TemperatureDependentConstants) is not True:
+        # check that constants class instance matches the profile type
+        #  i.e. make sure that Vp profile is matched with Vp constants.
+        if isinstance(parameters, c.VpConstants):
+            if self.T_dependence is True:
+                raise ValueError("You selected T_dependence = True but have"
+                            " not created a material_constants instance"
+                            " of the Constants class.")
+            if self.profile != "Vp":
+                raise ValueError("incompatible constants and profile types"
+                                 " please check that profile argument and"
+                                 " constants are both Vp.")
+        
+        # check the same for VsConstants instance
+        elif isinstance(parameters, c.VsConstants):
+            if self.T_dependence is True:
+                raise ValueError("You selected T_dependence = True but have"
+                            " not created a material_constants instance"
+                            " of the Constants class.")
+            if self.profile != "Vs":
+                raise ValueError("incompatible constants and profile types"
+                                 " please check that profile argument and"
+                                 " constants are both Vs.")
+        else:
+            self.parameters = parameters
+        
+        # check that if we are using the Constants class that we select 
+        #   the correct set of constants
+        if isinstance(parameters, c.Constants):
+            if self.profile != "Vp":
+                self.parameters = parameters.vp_constants
+            elif self.profile != "Vs":
+                self.parameters = parameters.vs_constants
+
+        if (
+            self.T_dependence is True 
+            and self.parameters.material_constants is None
+            ):
             raise ValueError("You selected T_dependence = True but have"
-                            " not instantiated a TemperatureDependentConstants"
-                            " class instance.")
+                            " not created a material_constants instance"
+                            " of the Constants class.")
 
     def calculate_density_profile(self, dz=0.1):
         """
@@ -1025,26 +1059,34 @@ class MultiConversion:
             vp_files_all.append(vp_files)
             
         if approach == "stephenson":
-            # set Vp and Vs parameter files for density conversion
-            Vp_params = parameters[:,0]
-            Vs_params = parameters[:,1]
+            # set Vp and Vs parameters for density conversion
+            # using Constants class in the constants module
+            if not parameters.vp_constants:
+                raise ValueError("No vp_constants class instance.  Please"
+                                  "create a Constants class instance for Vp.")
+            if not parameters.vs_constants:
+                raise ValueError("No vs_constants class instance.  Please"
+                                  "create a Constants class instance for Vs.")
 
-            # get temperature parameters
+            # get material property parameters from Constants class instance
             if T_dependence is True:
-                Vp_T_parameters = [T_parameters[0], T_parameters[2], 
-                                T_parameters[3], T_parameters[4]]
-                Vs_T_parameters = T_parameters[1:]
-            # set T dependent parameters to None if not using T dependence
+                if not parameters.material_constants:
+                    raise ValueError("No material_constants class instance."
+                                     " Please create a Constants class"
+                                     " instance for material properties.")
+            # set material property parameters to None if not using T 
+            #    dependence
             else:
-                Vp_T_parameters = None
-                Vs_T_parameters = None
+                parameters.material_constants = None
+        
         # if not using stephenson approach then set all
-        # density-related paramerts to None
+        # density-related parameters to None.  Note these parameters
+        # are None by default, but we can override them internally here
+        # if they are set by accident since we do not require them.
         else:
-            Vp_params = None
-            Vs_params = None
-            Vp_T_parameters = None
-            Vs_T_parameters = None
+            parameters.vp_constants = None
+            parameters.vs_constants = None
+            parameters.material_constants = None
 
         # loop through Vs profiles and convert to Vp and then to density
         print(f"Reading in data and converting to density "
@@ -1057,13 +1099,15 @@ class MultiConversion:
         
         # Process Vp files
         self._process_file_list(vp_files_all, "Vp", 
-                                Vp_params, constant_depth, constant_density, 
-                                T_dependence, Vp_T_parameters)
+                                parameters, constant_depth, 
+                                constant_density, 
+                                T_dependence)
 
         # Process Vs files
         self._process_file_list(vs_files_all, "Vs", 
-                                Vs_params, constant_depth, constant_density, 
-                                T_dependence, Vs_T_parameters)
+                                parameters, constant_depth, 
+                                constant_density, 
+                                T_dependence)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1181,7 +1225,7 @@ class MultiConversion:
             None
 
     """
-        # loop through files in filelist and assemble necessary data 
+        # loop through files in file_list and assemble necessary data 
         # and metadata
         for files in file_list:
             if len(files) > 0:
@@ -1245,7 +1289,6 @@ def convert_V_profile(file, profile_type, write_data=False,
                         constant_depth = None,
                         constant_density = None,
                         T_dependence = False,
-                        T_parameters = None,
                         working_file = False):
 
     """
@@ -1302,7 +1345,7 @@ def convert_V_profile(file, profile_type, write_data=False,
 
     # check that the program will run -- are all options provided?
     check_arguments(T_dependence, constant_depth, constant_density,
-                    approach, parameters, T_parameters)
+                    approach, parameters)
 
     # keep tabs on the profile file path
     if working_file is True:
@@ -1333,8 +1376,7 @@ def convert_V_profile(file, profile_type, write_data=False,
             parameters, 
             constant_depth = constant_depth,
             constant_density = constant_density,
-            T_dependence = T_dependence,
-            T_parameters = T_parameters)
+            T_dependence = T_dependence)
     
     # write out files
     if write_data is True:
