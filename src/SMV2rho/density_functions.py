@@ -13,6 +13,7 @@ from scipy.interpolate import interp1d, CubicSpline
 import glob
 import os, os.path
 import SMV2rho.temperature_dependence as td
+import constants as c
 from multiprocessing import Pool, Manager
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -120,7 +121,7 @@ def Vp2rho_brocher(Vp):
 
 # my relationship based on mineral physics as function of 
 #   pressure and seismic velocity
-def V2rho_stephenson(data, v0, b, d0, dp, c, k):
+def V2rho_stephenson(data, parameters):
     """
     Convert seismic wave velocity (Vp or Vs) into density at standard 
     temperature and pressure (s.t.p.) given pressure. This function is 
@@ -136,13 +137,17 @@ def V2rho_stephenson(data, v0, b, d0, dp, c, k):
     Args:
         data (array-like): An array of pressure and velocity data where 
             data[0] is pressure (in GPa) and data[1] is velocity (in km/s).
-        v0 (float): Intercept velocity.
-        b (float): Velocity gradient with respect to density.
-        d0 (float): Partial derivative of velocity gradient (dvdr) with 
-            respect to pressure (dp).
-        dp (float): Velocity gradient with respect to pressure (dvdpr).
-        c (float): Amplitude of the velocity drop-off at low pressure.
-        k (float): Lengthscale of the velocity drop-off.
+        parameters (class instance): Instance of the Constants or
+            TemperatureDependentConstants class containig the parameters
+            listed below: 
+
+            - v0 (float): Intercept velocity.
+            - b (float): Velocity gradient with respect to density.
+            - d0 (float): Partial derivative of velocity gradient (dvdr) with 
+                respect to pressure (dp).
+            - dp (float): Velocity gradient with respect to pressure (dvdpr).
+            - c (float): Amplitude of the velocity drop-off at low pressure.
+            - k (float): Lengthscale of the velocity drop-off.
 
     Returns:
         float or numpy.ndarray: Density at standard temperature and pressure 
@@ -150,8 +155,9 @@ def V2rho_stephenson(data, v0, b, d0, dp, c, k):
     """
     p = data[0]
     v = data[1]
-    return ((v - v0 - (b * p) + (c * np.exp(-k * p))) / 
-               (d0 + (dp * p)))
+    return ((v - parameters.v0 - (parameters.b * p) + 
+             (parameters.c * np.exp(-parameters.k * p))) / 
+               (parameters.d0 + (parameters.dp * p)))
 
 
 ###################################################################
@@ -282,7 +288,8 @@ class Convert:
         if v_array[:,0][-1] != -moho:
             final_entry = np.array([-moho, v_array[:,1][-1]])
             np.append(v_array, final_entry)
-            v_array = np.append(v_array, final_entry).reshape(int((len(v_array)*2 + 2)/2.), 2)
+            v_array = np.append(v_array, final_entry).reshape(
+                int((len(v_array)*2 + 2)/2.), 2)
         
         # check that there is not a velocity step at the moho
         #   (i.e. we don't want mantle velocites!)
@@ -329,9 +336,9 @@ class Convert:
         """
         Convert Vs profile to Vp profile using Brocher's (2005) approach.
 
-        This method converts a seismic Vs profile to a Vp profile using Brocher's 
-        (2005) approach. It updates the `self.data` dictionary to include the 
-        `Vp_calc` profile field, average Vp, and Vp/Vs ratio.
+        This method converts a seismic Vs profile to a Vp profile using 
+        Brocher's (2005) approach. It updates the `self.data` dictionary to 
+        include the `Vp_calc` profile field, average Vp, and Vp/Vs ratio.
 
         Raises:
             Exception: If the profile type is not "Vs," indicating that you 
@@ -405,7 +412,6 @@ class Convert:
                                 constant_depth = None,
                                 constant_density = None,
                                 T_dependence = True,
-                                T_parameters = None,
                                 plot = False):
         """
         Convert seismic velocity profiles to density using the Stephenson 
@@ -419,7 +425,8 @@ class Convert:
         'self.data' dictionary.
 
         Args:
-            parameters (numpy.ndarray): Parameters for density conversion.
+            parameters (Constants or TemperatureDependentConstants class 
+                instance): Parameters for density conversion.
             profile (str, optional): The seismic profile type, "Vp" (default) 
                 or "Vs".
             dz (float, optional): Depth increment for density calculation 
@@ -428,8 +435,6 @@ class Convert:
             constant_density (float, optional): Constant density value.
             T_dependence (bool, optional): Include temperature dependence 
                 (default is True).
-            T_parameters (list, optional): Parameters for 
-                temperature-dependent density.
             plot (bool, optional): Whether to plot the density and pressure 
                 profiles (default is False).
 
@@ -438,7 +443,7 @@ class Convert:
         """
         
         check_arguments(T_dependence, constant_depth, constant_density,
-                            "stephenson", parameters, T_parameters)
+                            "stephenson", parameters)
 
         # instantiate convert profile calss
         ProfileConvert = V2RhoStephenson(self.data,
@@ -446,8 +451,7 @@ class Convert:
                                          self.profile_type,
                                          constant_depth,
                                          constant_density,
-                                         T_dependence,
-                                         T_parameters)
+                                         T_dependence)
             
         
         data_converted = ProfileConvert.calculate_density_profile(dz)
@@ -505,17 +509,18 @@ class Convert:
         settings.
 
         Args:
-            path (str): The path to the directory containing all velocity data.
-                See README for directory structure details.
+            path (str): The path to the directory containing all velocity 
+                data.  See README for directory structure details.
             file_structure (str): If set to None (Default) then we will 
                 construct the path from the information in 
                 the metadata (i.e. following the default file structure).  
                 Otherwise a manual outpath needs to be used that leads to the
-                output location.  We will then append relevant method information
-                to the output filename to bookmark the output profiles.
-            approach (str, optional): The density (and Vp-Vs if used) conversion 
-                approach, which is needed for the file path (default is 
-                "stephenson").
+                output location.  We will then append relevant method 
+                information to the output filename to bookmark the output 
+                profiles.
+            approach (str, optional): The density (and Vp-Vs if used) 
+                conversion approach, which is needed for the file path 
+                (default is "stephenson").
             T_dependence (bool, optional): Specifies whether temperature 
                 dependence is included (default is False).
 
@@ -658,8 +663,7 @@ class V2RhoStephenson:
                 profile="Vp",
                 constant_depth = None,
                 constant_density = None,
-                T_dependence = True,
-                T_parameters = None):
+                T_dependence = True):
 
         self.data = data
         self.parameters = parameters
@@ -667,13 +671,12 @@ class V2RhoStephenson:
         self.constant_depth = constant_depth
         self.constant_density = constant_density
         self.T_dependence = T_dependence
-        self.T_parameters = T_parameters
 
-        if self.T_dependence is True and len(T_parameters) > 4:
-                raise ValueError("You have provided too many parameters for temperature-"
-                      "dependent conversion!  \n"
-                      "You may be trying to convert a single file but you may "
-                      "have provided both Vp and Vs conversion parameters.")
+        if self.T_dependence is True 
+            and isinstance(parameters, c.TemperatureDependentConstants) is not True:
+            raise ValueError("You selected T_dependence = True but have"
+                            " not instantiated a TemperatureDependentConstants"
+                            " class instance.")
 
     def calculate_density_profile(self, dz=0.1):
         """
@@ -820,10 +823,10 @@ class V2RhoStephenson:
             float: density as a function of pressure and temperature.
         """
         return (rho_0 * td.rho_thermal2(rho_0, T, 
-                            self.T_parameters[1], 
-                            self.T_parameters[2])[1] 
+                            self.T_parameters.alpha0, 
+                            self.T_parameters.alpha1)[1] 
                       * td.compressibility(rho_0, P, 
-                            self.T_parameters[-1])[1])
+                            self.T_parameters.K)[1])
 
     def _calculate_density_pressure(self, z_arr, V_arr = None, 
                                     rho_arr = None, T_arr = None,
@@ -849,7 +852,7 @@ class V2RhoStephenson:
         # density using V
         if len(z_arr) == 1 and self.constant_density is None:
             density_0 = V2rho_stephenson(np.array([0.1, V_arr[0]]), 
-                                                *self.parameters)
+                                                self.parameters)
             return np.array([0.1, density_0])
         # else return pre-determined density value for upper x km
         elif len(z_arr) == 1 and self.constant_density is not None:
@@ -883,10 +886,10 @@ class V2RhoStephenson:
         
             if self.T_dependence is True:
                 # correct for temperature
-                Vc = V_arr[-1] - td.V_T_correction(T_arr[-1], self.T_parameters[0])
+                Vc = V_arr[-1] - td.V_T_correction(T_arr[-1], self.parameters.m)
                 # calculate surface density of next depth given pressure
                 density_0 = V2rho_stephenson(np.array([P, Vc]), 
-                                                *self.parameters)
+                                                self.parameters)
                 # return pressure and density at depth i
                 density_i = (self._thermal_expansion_compression(
                              density_0, T_arr[-1], P))
@@ -894,7 +897,7 @@ class V2RhoStephenson:
             else:
                 # calculate surface density uncorrected for temperature
                 density_0 = V2rho_stephenson(np.array([P, V_arr[-1]]), 
-                                                *self.parameters)
+                                                self.parameters)
                 return np.array([P, density_0])
 
 ###################################################################
@@ -917,10 +920,11 @@ class MultiConversion:
         approach (str, optional): The density conversion approach to use. 
             Options are "stephenson" or "brocher." Defaults to 
             "stephenson."
-        parameters (numpy.ndarray, optional): List of parameters for 
-            density conversion if not using the "brocher" approach. 
-            Defaults to None.  Must be provided if using approach 
-            'stephenson'.
+        parameters (class instance, optional): Class instance of the 
+            Constants or TemperatureDependentConstants class.  Must be 
+            provided if using approach 'stephenson'.  Must be an instance
+            of the TemperatureDependentConstants class if T_dependence is
+            set to True.
         constant_depth (float, optional): The depth (from the surface) 
             over which to use a constant density value (in kilometers). 
             Defaults to None.
@@ -931,9 +935,6 @@ class MultiConversion:
             temperature dependence of velocity to density conversion, 
             including thermal expansion and compressibility. Defaults 
             to False.
-        T_parameters (list, optional): Parameters needed to calculate 
-            temperature-dependent density profiles. Defaults to None.
-            Must be provided if T_dependence is set to True.
 
     Methods:
         assemble_file_lists(): Assembles file lists and necessary parameters 
@@ -951,12 +952,11 @@ class MultiConversion:
                            parameters = None,
                            constant_depth = None,
                            constant_density = None,
-                           T_dependence = False,
-                           T_parameters = None):
+                           T_dependence = False):
         """
         Initialize a MultiConversion instance with specified parameters.
         """
-
+        
         self.path = path
         self.which_location = which_location
         self.write_data = write_data
@@ -965,7 +965,6 @@ class MultiConversion:
         self.constant_depth = constant_depth
         self.constant_density = constant_density
         self.T_dependence = T_dependence
-        self.T_parameters = T_parameters
 
     def assemble_file_lists(self):
         """
@@ -991,11 +990,10 @@ class MultiConversion:
         constant_depth = self.constant_depth
         constant_density = self.constant_density
         T_dependence = self.T_dependence
-        T_parameters = self.T_parameters  
 
         # check that all the necessary information has been provided
         check_arguments(T_dependence, constant_depth, constant_density,
-                        approach, parameters, T_parameters)
+                        approach, parameters)
 
         # check you are running the right script
         if which_location == "ALL":
