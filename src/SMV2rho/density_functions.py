@@ -13,7 +13,7 @@ from scipy.interpolate import interp1d, CubicSpline
 import glob
 import os, os.path
 import SMV2rho.temperature_dependence as td
-import constants as c
+import SMV2rho.constants as c
 from multiprocessing import Pool, Manager
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -704,6 +704,8 @@ class V2RhoStephenson:
             elif self.profile != "Vs":
                 self.parameters = parameters.vs_constants
 
+        # if using the Constants class and material constants are set
+        # then set materials_constants as this class instance
         if (
             self.T_dependence is True 
             and self.parameters.material_constants is None
@@ -711,6 +713,11 @@ class V2RhoStephenson:
             raise ValueError("You selected T_dependence = True but have"
                             " not created a material_constants instance"
                             " of the Constants class.")
+        elif (
+            self.T_dependence is True 
+            and self.parameters.material_constants is not None
+            ):
+            material_constants = parameters.material_constants
 
     def calculate_density_profile(self, dz=0.1):
         """
@@ -857,10 +864,10 @@ class V2RhoStephenson:
             float: density as a function of pressure and temperature.
         """
         return (rho_0 * td.rho_thermal2(rho_0, T, 
-                            self.T_parameters.alpha0, 
-                            self.T_parameters.alpha1)[1] 
+                            self.material_parameters.alpha0, 
+                            self.material_parameters.alpha1)[1] 
                       * td.compressibility(rho_0, P, 
-                            self.T_parameters.K)[1])
+                            self.material_parameters.K)[1])
 
     def _calculate_density_pressure(self, z_arr, V_arr = None, 
                                     rho_arr = None, T_arr = None,

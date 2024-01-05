@@ -6,8 +6,10 @@ class MaterialConstants:
     Constants representing material properties for geophysical calculations.
 
     Attributes:
-    alpha0: float = 1e-5  # Thermal expansivity coefficient at reference temperature
-    alpha1: float = 2.9e-8  # Temperature derivative of thermal expansion coefficient
+    alpha0: float = 1e-5  # Thermal expansivity coefficient 
+                          # at reference temperature
+    alpha1: float = 2.9e-8  # Temperature derivative of thermal 
+                            # expansion coefficient
     K: float = 90e9  # Bulk modulus (invariant with pressure and temperature)
     """
     alpha0: float = 1e-5
@@ -86,10 +88,14 @@ class Constants:
     vs_instance = constants.vs_constants
     ```
     """
+    # Instance of VpConstants
+    vp_constants: VpConstants = None
 
-    vp_constants: VpConstants = None  # Instance of VpConstants
-    vs_constants: VsConstants = None  # Instance of VsConstants
-    material_constants: MaterialConstants = None  # Instance of MaterialConstants
+    # Instance of VsConstants
+    vs_constants: VsConstants = None
+
+    # Instance of MaterialConstants
+    material_constants: MaterialConstants = None
 
     def get_v_constants(self, data_type: str, **kwargs):
         """
