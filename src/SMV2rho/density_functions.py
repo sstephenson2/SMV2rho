@@ -674,6 +674,7 @@ class V2RhoStephenson:
         # check that constants class instance matches the profile type
         #  i.e. make sure that Vp profile is matched with Vp constants.
         if isinstance(parameters, c.VpConstants):
+            self.parameters = parameters
             if self.T_dependence is True:
                 raise ValueError("You selected T_dependence = True but have"
                             " not created a material_constants instance"
@@ -685,6 +686,7 @@ class V2RhoStephenson:
         
         # check the same for VsConstants instance
         elif isinstance(parameters, c.VsConstants):
+            self.parameters = parameters
             if self.T_dependence is True:
                 raise ValueError("You selected T_dependence = True but have"
                             " not created a material_constants instance"
@@ -693,31 +695,29 @@ class V2RhoStephenson:
                 raise ValueError("incompatible constants and profile types"
                                  " please check that profile argument and"
                                  " constants are both Vs.")
-        else:
-            self.parameters = parameters
         
         # check that if we are using the Constants class that we select 
         #   the correct set of constants
         if isinstance(parameters, c.Constants):
-            if self.profile != "Vp":
+            if self.profile == "Vp":
                 self.parameters = parameters.vp_constants
-            elif self.profile != "Vs":
+            elif self.profile == "Vs":
                 self.parameters = parameters.vs_constants
 
         # if using the Constants class and material constants are set
         # then set materials_constants as this class instance
         if (
             self.T_dependence is True 
-            and self.parameters.material_constants is None
+            and parameters.material_constants is None
             ):
             raise ValueError("You selected T_dependence = True but have"
                             " not created a material_constants instance"
                             " of the Constants class.")
         elif (
             self.T_dependence is True 
-            and self.parameters.material_constants is not None
+            and parameters.material_constants is not None
             ):
-            material_constants = parameters.material_constants
+            self.material_constants = parameters.material_constants
 
     def calculate_density_profile(self, dz=0.1):
         """
@@ -864,10 +864,10 @@ class V2RhoStephenson:
             float: density as a function of pressure and temperature.
         """
         return (rho_0 * td.rho_thermal2(rho_0, T, 
-                            self.material_parameters.alpha0, 
-                            self.material_parameters.alpha1)[1] 
+                            self.material_constants.alpha0, 
+                            self.material_constants.alpha1)[1] 
                       * td.compressibility(rho_0, P, 
-                            self.material_parameters.K)[1])
+                            self.material_constants.K)[1])
 
     def _calculate_density_pressure(self, z_arr, V_arr = None, 
                                     rho_arr = None, T_arr = None,
@@ -1248,7 +1248,7 @@ class MultiConversion:
 ###################################################################
 
 def check_arguments(T_dependence, constant_depth, constant_density,
-                    approach, parameters, T_parameters):
+                    approach, parameters):
     """
     Check if required arguments are provided and raise errors if not.
 
@@ -1264,18 +1264,25 @@ def check_arguments(T_dependence, constant_depth, constant_density,
         constant_density (float): Constant density value for the uppermost 
             x kilometers.
         approach (str): Density conversion scheme, "brocher" or "stephenson".
-        parameters (str): Parameter file if using the Stephenson scheme.
-        T_parameters (tuple): Parameters needed to correct for temperature 
-            effects (dV/dT, alpha0, alpha1).
+        parameters (str): Constants class instance if using the Stephenson 
+            scheme.
 
     Raises:
         ValueError: If required arguments are missing or incompatible with 
             the selected approach.
     """
     # check that all the necessary information has been provided
-    if T_dependence is True and T_parameters is None:
-        raise ValueError("T_dependence is set to True but "
-                         "T_parameters have not been set")
+    if T_dependence is True:
+        if isinstance(parameters, c.Constants) is not True:
+            raise ValueError("T_dependence is set to True. "
+                         "Please use the Constants class and not the "
+                         "VpConstants or VsConstants classes to store "
+                         "the constants.")
+        elif isinstance(parameters, c.Constants) is True:
+            if parameters.material_constants is None:
+                raise ValueError("T_dependence is set to True but "
+                            "material_constants instance of the Constants "
+                            "class has not been set.")
     if constant_depth is not None and constant_density is None:
         raise ValueError("constant_depth is set but not \
                          constant_density")

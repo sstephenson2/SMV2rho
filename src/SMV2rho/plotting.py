@@ -72,11 +72,11 @@ def plot_panels(data, plot_type='scatter', cmap='YlGnBu',
             # Place x-axis label at the top
             ax.xaxis.set_label_position('top') 
             ax.set_xlabel(xlabels[i], fontweight='bold', 
-                          fontsize=10, labelpad=10)
+                          fontsize=10)
         if ylabels:
             if i == 0 or i == n_panels-1:
                 ax.set_ylabel(ylabels[i], fontweight='bold', 
-                              fontsize=10, labelpad=10)
+                              fontsize=10)
 
         # Plot data on the panel
         lines = []  # To collect line objects for legend placement
@@ -115,14 +115,15 @@ def plot_panels(data, plot_type='scatter', cmap='YlGnBu',
         ax.tick_params(axis='both', which='both', direction='in', width=0.5)
         ax.yaxis.set_tick_params(pad=5)
         ax.xaxis.set_tick_params(pad=5)
+        # Adjust x-axis label position
+        ax.xaxis.set_label_coords(0.5, 1.1) 
+        # Adjust y-axis label position
+        ax.yaxis.set_label_coords(1.3, 0.5)
 
         # Adjust label positions for the right-hand panel
         if i == n_panels-1:
-            ax.yaxis.set_label_coords(1.2, 0.5)
             ax.yaxis.tick_right()
             ax.yaxis.set_label_position("right")
-            # Adjust x-axis label position
-            ax.xaxis.set_label_coords(0.5, 1.08) 
             # Place x-axis ticks at the top
             ax.xaxis.tick_top()  
         else:
