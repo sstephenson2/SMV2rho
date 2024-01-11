@@ -21,7 +21,7 @@ def abs_precision_error(x, x_mean, N):
 # crustal density uncertainty
 
 def rho_err(z, bulk_rho, v2rhoparameters, 
-            T_parameters, geotherm_parameters,
+            material_parameters, geotherm_parameters,
             parameter_uncertainties,
             N=1000, z_slices=50, 
             make_plots=False,
@@ -70,8 +70,8 @@ def rho_err(z, bulk_rho, v2rhoparameters,
     """
 
     # unpack temperatre dependence parameters
-    dvdT, alpha0, alpha1, K = (T_parameters[0], T_parameters[1],
-                               T_parameters[2], T_parameters[3])
+    dvdT, alpha0, alpha1, K = (material_parameters.m, material_parameters[1],
+                               material_parameters[2], material_parameters[3])
     # unpack geotherm parameters
     q0, qm, hr = (geotherm_parameters['q0'], geotherm_parameters['qm'],
                   geotherm_parameters['hr'])
@@ -126,11 +126,11 @@ def rho_err(z, bulk_rho, v2rhoparameters,
     rho_0_error = (V2rho([9.81 * bulk_rho * z_arr/1000, vc_err[:,1]], 
                          *v2rhoparameters)
                            - V2rho([9.81 * bulk_rho * z_arr/1000, 0], 
-                                 *v2rhoparameters))
+                                 v2rhoparameters))
     rho_0_mean = (V2rho([9.81 * bulk_rho * z_arr/1000, vc_err[:,0]], 
                         *v2rhoparameters)
                            - V2rho([9.81 * bulk_rho * z_arr/1000, 0], 
-                                 *v2rhoparameters))
+                                 v2rhoparameters))
     
     # stack together mean and errors
     rho_0_errors = np.column_stack((rho_0_mean, rho_0_error))

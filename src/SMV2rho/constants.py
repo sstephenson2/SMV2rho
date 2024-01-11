@@ -12,9 +12,15 @@ class MaterialConstants:
                             # expansion coefficient
     K: float = 90e9  # Bulk modulus (invariant with pressure and temperature)
     """
+    # parameter values
     alpha0: float = 1e-5
     alpha1: float = 2.9e-8
     K: float = 90e9
+
+    # parameter uncertainties
+    dalpha0: float = 0.5e-5
+    dalpha1: float = 0.5e-8
+    dK: float = 20e9
 
 @dataclass
 class VpConstants:
@@ -67,6 +73,7 @@ class VsConstants:
     c: float = 7.3740e-01
     k: float = 2.0041e-02
     m: float = -2.3e-4
+
 
 @dataclass
 class Constants:

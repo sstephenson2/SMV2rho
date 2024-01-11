@@ -12,13 +12,89 @@
 import numpy as np
 import sys
 import os, os.path
+from dataclasses import dataclass
+
+###################################################################
+
+@dataclass
+class GeothermConstants:
+    tc:  float = None
+    T0:  float = 10.0
+    T1:  float = 600.0
+    q0:  float = 59e-3
+    qm:  float = 30e-3
+    k:   float = 2.5
+    H0:  float = 7e-10
+    hr:  float = 10000.0
+    rho: float = 2800
+
+class Geotherm(GeothermConstants):
+    def __init__(self, geotherm_type="linear", **kwargs):
+        super().__init__(**kwargs)
+        self.geotherm_type = geotherm_type
+
+    def __call__(self, z):
+        if self.geotherm_type == "linear":
+            return self.linear(z) 
+        elif self.geotherm_type == "single_layer_internal_heat":
+            return self.single_layer_internal_heat(z)
+        elif self.geotherm_type == "single_layer_flux_difference":
+            return self.single_layer_flux_difference(z)
+        elif self.geotherm_type == "single_layer_temperature_difference":
+            return self.single_layer_temperature_difference(z)
+        else:
+            raise ValueError(f"Unknown geotherm type: {self.geotherm_type}")
+
+    def linear(self, z):
+
+        T0 = self.T0
+        T1 = self.T1
+        tc = self.tc
+
+        return T0 + ((T1 - T0)/tc) * z
+        
+
+    def single_layer_internal_heat(self, z):
+
+        T0 = self.T0
+        H0 = self.H0
+        rho = self.rho
+        qm = self.qm
+        k = self.k
+        hr = self.hr
+
+        return (T0 + (qm * z / k) + (rho * H0 * hr**2 / k) 
+                * (1 - np.exp(-z/hr)))
+
+    def single_layer_flux_difference(self, z):
+
+        T0 = self.T0
+        q0 = self.q0
+        qm = self.qm
+        k = self.k
+        hr = self.hr
+
+        return T0 + (qm * z / k) + ((q0 - qm) * hr / k) * (1 - np.exp(-z/hr))
+    
+    def single_layer_temperature_difference(self, z):
+        
+        T0 = self.T0
+        T1 = self.T1
+        tc = self.tc
+        rho = self.rho
+        H0 = self.H0
+        hr = self.hr
+        k = self.k
+
+        return (T0 + ((z/tc) * (T1-T0)) + ((rho * H0 * hr**2)/k) 
+                * (((z/tc) * (np.exp(-tc/hr) - 1)) + (1 - np.exp(-z/hr))))
 
 ###################################################################
 
 # define linear continental geotherm
 # z, hr must be in metres
-def cont_geotherm_linear(z, moho_T, tc, T0=10):
-    return T0 + ((moho_T - T0)/tc) * z/1000
+def cont_geotherm_linear(z, T1, tc, T0=10):
+    return T0 + ((T1 - T0)/tc) * z/1000
 
 # define geotherm with internal heat generation
 # (1 layer from Turcotte and Schubert)
@@ -36,7 +112,7 @@ def cont_geotherm_heat_flux_difference(z, T0=10, qm=30e-3, q0=59e-3,
     return T0 + (qm * z / k) + ((q0 - qm) * hr / k) * (1 - np.exp(-z/hr))
 
 # define geotherm with constant basal and surface temperature
-# and internal heat generation and given crustal thickness, L.
+# and internal heat generation and given crustal thickness, tc.
 # z must be in metres
 def cont_geotherm_temperature(z, T1=600, T0=10, rho=2850, 
                               H0=7e-10, k=2.5, hr=10000, tc=30000):
