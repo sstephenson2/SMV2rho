@@ -3,9 +3,8 @@
 # Functions to include temperature dependence in crustal 
 #    density calculation.
 # Simple implementation which does not require equation
-#    of state.  Just uses constant and independent thermal expansion etc.
-
-# @author: Simon Stephenson, Nov 2022
+#    of state.  Just uses constant and independent thermal expansion,
+#    compressibility etc.
 
 ###################################################################
 # import modules
@@ -18,22 +17,82 @@ from dataclasses import dataclass
 
 @dataclass
 class GeothermConstants:
-    tc:  float = None
-    T0:  float = 10.0
-    T1:  float = 600.0
-    q0:  float = 59e-3
-    qm:  float = 30e-3
-    k:   float = 2.5
-    H0:  float = 7e-10
-    hr:  float = 10000.0
-    rho: float = 2800
+    """
+    Data class to store constants related to geothermal properties.
+
+    Parameters:
+        tc (float): Crustal thickness, m
+        T0 (float): Temperature at the surface, C
+        T1 (float): Temperature at the base of the crust, C
+        q0 (float): Heat flux at the surface, W/m2
+        qm (float): Heat flux at the base, W/m2
+        k (float): Thermal conductivity, W/(m K)
+        H0 (float): Internal heat production at the surface W/(kg m3)
+        hr (float): Decay lengthscale of heat production, m
+        rho (float): Density, kg/m3
+    """
+            
+    tc:  float = None    # crustal thickness 
+    T0:  float = 10.0    # temperature at surface
+    T1:  float = 600.0   # temperature at base of crust
+    q0:  float = 59e-3   # heat flux at surface
+    qm:  float = 30e-3   # heat flux at base
+    k:   float = 2.5     # thermal conductivity
+    H0:  float = 7e-10   # internal heat production at surface
+    hr:  float = 10000.0 # decay lengthscale of heat production
+    rho: float = 2800    # density
 
 class Geotherm(GeothermConstants):
+    """
+    Class for calculating crustal temperature profile (i.e. geotherm)
+    based on different models.
+
+
+    Parameters:
+        geotherm_type (str): Type of geotherm model to use. Default is "linear".
+        **kwargs: Additional keyword arguments to override constants.
+
+    Methods:
+        __call__
+            (z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+            Evaluate the geothermal model at a given depth or depths.
+
+        linear
+            (z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+            Linear geothermal model.
+
+        single_layer_internal_heat(z: Union[float, np.ndarray]) 
+            -> Union[float, np.ndarray]:
+            Single-layer internal heat geothermal model.
+
+        single_layer_flux_difference(z: Union[float, np.ndarray]) 
+            -> Union[float, np.ndarray]:
+            Single-layer flux difference geothermal model.
+
+        single_layer_temperature_difference
+            (z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+            Single-layer temperature difference geothermal model.
+    """
+
     def __init__(self, geotherm_type="linear", **kwargs):
+        
         super().__init__(**kwargs)
         self.geotherm_type = geotherm_type
 
     def __call__(self, z):
+        """
+        Evaluate the geothermal model at a given depth or depths.
+
+        Parameters:
+            z (Union[float, np.ndarray]): Depth or depths at which to 
+            evaluate the geothermal model.  If a NumPy array is provided, 
+            the function supports broadcasting.
+
+        Returns:
+            float or np.ndarray: Result of the geothermal model at 
+            the given depth or depths.
+        """
+
         if self.geotherm_type == "linear":
             return self.linear(z) 
         elif self.geotherm_type == "single_layer_internal_heat":
@@ -46,6 +105,17 @@ class Geotherm(GeothermConstants):
             raise ValueError(f"Unknown geotherm type: {self.geotherm_type}")
 
     def linear(self, z):
+        """
+        Linear geothermal model.
+
+        Parameters:
+            z (Union[float, np.ndarray]): Depth or depths at which to 
+            evaluate the model.
+
+        Returns:
+            Union[float, np.ndarray]: Result of the linear geothermal 
+            model at the given depth or depths.
+        """
 
         T0 = self.T0
         T1 = self.T1
@@ -55,6 +125,18 @@ class Geotherm(GeothermConstants):
         
 
     def single_layer_internal_heat(self, z):
+        """
+        Single-layer model with internal heat generation and heat flux 
+        at the moho.
+
+        Parameters:
+            z (Union[float, np.ndarray]): Depth or depths at which to 
+            evaluate the model.
+
+        Returns:
+            Union[float, np.ndarray]: Result of the single-layer internal 
+            heat geothermal model at the given depth or depths.
+        """
 
         T0 = self.T0
         H0 = self.H0
@@ -67,6 +149,19 @@ class Geotherm(GeothermConstants):
                 * (1 - np.exp(-z/hr)))
 
     def single_layer_flux_difference(self, z):
+        """
+        Single-layer model with internal heat generation based on heat 
+        flux at the surface and at the moho.  Does not require internal heat
+        production or crustal thickness as arguments.
+
+        Parameters:
+            z (Union[float, np.ndarray]): Depth or depths at which to 
+            evaluate the model.
+
+        Returns:
+            Union[float, np.ndarray]: Result of the single-layer flux 
+            difference geothermal model at the given depth or depths.
+        """
 
         T0 = self.T0
         q0 = self.q0
@@ -77,6 +172,18 @@ class Geotherm(GeothermConstants):
         return T0 + (qm * z / k) + ((q0 - qm) * hr / k) * (1 - np.exp(-z/hr))
     
     def single_layer_temperature_difference(self, z):
+        """
+        Single-layer model including internal heat generation based on the 
+        temperature at the surface and at the moho.
+
+        Parameters:
+            z (Union[float, np.ndarray]): Depth or depths at which to 
+            evaluate the model.
+
+        Returns:
+            Union[float, np.ndarray]: Result of the single-layer temperature 
+            difference geothermal model at the given depth or depths.
+        """
         
         T0 = self.T0
         T1 = self.T1
@@ -192,8 +299,10 @@ def compressibility(rho_o, P, K=90e9):
                - P - pressure (in MPa)
                - K - Bulk modulus (in Pa)
     Returns:   - abs_rho - density at pressure, P
-               - frac_change - fractional change in density (i.e 1.1 = 10% velocity increase)
-               - rel_rho - relative density change (e.t. 0.1 = 10 Mg/m3 density increase)
+               - frac_change - fractional change in density 
+                    (i.e 1.1 = 10% velocity increase)
+               - rel_rho - relative density change (e.t. 0.1 = 10 Mg/m3 
+                    density increase)
     """
     frac_change = np.exp(P * 1e6 / K)
     abs_rho = rho_o * np.exp(P * 1e6 / K)
