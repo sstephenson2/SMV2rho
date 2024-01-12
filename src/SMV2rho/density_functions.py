@@ -51,12 +51,14 @@ def read_file(filename, delimiter = None):
         list: A list of lines from the file.
     """
 
-    f = open(filename)
-    lines = f.readlines()
     data = []
-    for line in lines:
-        line = line.split(delimiter)
-        data.append(line)
+
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            line = line.split(delimiter)
+            data.append(line)
+
     return data
 
 # write out stataion data

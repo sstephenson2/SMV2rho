@@ -39,7 +39,7 @@ class GeothermConstants:
     qm:  float = 30e-3   # heat flux at base
     k:   float = 2.5     # thermal conductivity
     H0:  float = 7e-10   # internal heat production at surface
-    hr:  float = 10000.0 # decay lengthscale of heat production
+    hr:  float = 10e3    # decay lengthscale of heat production
     rho: float = 2800    # density
 
 class Geotherm(GeothermConstants):
