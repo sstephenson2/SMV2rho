@@ -184,6 +184,9 @@ class Convert:
             metod will pick up the argument from the file string.  Note if 
             set to None the strict file convention must be set (see README.md)
             and tutorial_1.ipynb.
+        geotherm (class instance): instance of the Geotherm class containing
+            information about the temperature profile at the site of the
+            seismic profile.
 
     Attributes:
         data (dict): A dictionary containing parsed seismic profile data.
@@ -198,13 +201,13 @@ class Convert:
         V_to_density_stephenson: Convert Vp profile to density using the 
             Stephenson method described in the study.
         write_data: Write the converted data to appropriate file locations 
-        based on the specified conversion approach and temperature 
-        dependence settings.
+            based on the specified conversion approach and temperature 
+            dependence settings.
 
     """
 
     def __init__(self, profile, profile_type = None, region_name = None,
-                 seismic_method_name = None):
+                 seismic_method_name = None, geotherm = None):
 
         # check whether the profile type has been selected
         if profile_type is None:
@@ -215,6 +218,7 @@ class Convert:
         self.profile_type = profile_type
         self.region_name = region_name
         self.method = seismic_method_name
+        self.geotherm = geotherm
         
         # method type from file string (e.g. refraction, reflection, RF etc.)
         # otherwise input argument required
@@ -445,7 +449,7 @@ class Convert:
         """
         
         check_arguments(T_dependence, constant_depth, constant_density,
-                            "stephenson", parameters)
+                            "stephenson", parameters, self.geotherm)
 
         # instantiate convert profile calss
         ProfileConvert = V2RhoStephenson(self.data,
@@ -453,7 +457,8 @@ class Convert:
                                          self.profile_type,
                                          constant_depth,
                                          constant_density,
-                                         T_dependence)
+                                         T_dependence,
+                                         self.geotherm)
             
         
         data_converted = ProfileConvert.calculate_density_profile(dz)
@@ -665,13 +670,15 @@ class V2RhoStephenson:
                 profile="Vp",
                 constant_depth = None,
                 constant_density = None,
-                T_dependence = True):
+                T_dependence = True,
+                geotherm = None):
 
         self.data = data
         self.profile = profile
         self.constant_depth = constant_depth
         self.constant_density = constant_density
         self.T_dependence = T_dependence
+        self.geotherm = geotherm
 
         # check that constants class instance matches the profile type
         #  i.e. make sure that Vp profile is matched with Vp constants.
@@ -742,7 +749,18 @@ class V2RhoStephenson:
         z_v_arr = np.array(self._set_up_arrays(dz))
         # get temperature array if needed
         if self.T_dependence is True:
-            T_arr = td.cont_geotherm_heat_flux_difference(z_v_arr[:,0]*1000)
+            try:
+                T_arr = self.geotherm(z_v_arr[:,0]*1000)
+            except ValueError:
+                print("You have selected T_dependence = True, but you "
+                      "have not passed V2rhoStephenson an instance of the "
+                      "Geotherm class.")
+            except TypeError:
+                if self.geotherm.tc is None:
+                    print("Please set the tc attribute when creating "
+                          "the geotherm object")
+                else:
+                    print("unknown error")
         
         # set up P_rho array
         P_rho = np.zeros(np.shape(z_v_arr))
@@ -903,7 +921,10 @@ class V2RhoStephenson:
 
         # if not using T dependence then set pressure 
         # using constant density
-        if self.constant_density is not None and z_arr[-1] < self.constant_depth:
+        if (
+            self.constant_density is not None 
+            and z_arr[-1] < self.constant_depth
+        ):
             if self.T_dependence is not True:
                 P = self._pressure(self.constant_density, z_arr[-1])
                 return np.array([P, self.constant_density])
@@ -1249,8 +1270,12 @@ class MultiConversion:
 
 ###################################################################
 
-def check_arguments(T_dependence, constant_depth, constant_density,
-                    approach, parameters):
+def check_arguments(T_dependence, 
+                    constant_depth, 
+                    constant_density,
+                    approach, 
+                    parameters,
+                    geotherm = None):
     """
     Check if required arguments are provided and raise errors if not.
 
@@ -1271,7 +1296,7 @@ def check_arguments(T_dependence, constant_depth, constant_density,
 
     Raises:
         ValueError: If required arguments are missing or incompatible with 
-            the selected approach.
+            the sefcheck_argumentslected approach.
     """
     # check that all the necessary information has been provided
     if T_dependence is True:
@@ -1285,6 +1310,11 @@ def check_arguments(T_dependence, constant_depth, constant_density,
                 raise ValueError("T_dependence is set to True but "
                             "material_constants instance of the Constants "
                             "class has not been set.")
+        
+        if not geotherm:
+            raise ValueError("Please create a geotherm object using the `Geotherm` "
+                  "class")
+
     if constant_depth is not None and constant_density is None:
         raise ValueError("constant_depth is set but not \
                          constant_density")
@@ -1297,15 +1327,20 @@ def check_arguments(T_dependence, constant_depth, constant_density,
 
 ###################################################################
 
-def convert_V_profile(file, profile_type, write_data=False, 
-                        path = None,
-                        approach = "stephenson",
-                        location = None,
-                        parameters = None,
-                        constant_depth = None,
-                        constant_density = None,
-                        T_dependence = False,
-                        working_file = False):
+def convert_V_profile(
+        file, 
+        profile_type, 
+        write_data=False, 
+        path = None,
+        approach = "stephenson",
+        location = None,
+        parameters = None,
+        constant_depth = None,
+        constant_density = None,
+        T_dependence = False,
+        geotherm = None,
+        print_working_file = False
+        ):
 
     """
     Convert a single Vp or Vs velocity profile using the chosen scheme.
@@ -1336,7 +1371,7 @@ def convert_V_profile(file, profile_type, write_data=False,
             temperature and pressure. Default is False.
         T_parameters (tuple, optional): Parameters needed to correct for 
             temperature effects (dV/dT, alpha0, alpha1).  Default is None.
-        working_file (bool, optional): Print the file that is being converted.
+        print_working_file (bool, optional): Print the file that is being converted.
             Default is True.
 
     Returns:
@@ -1361,16 +1396,19 @@ def convert_V_profile(file, profile_type, write_data=False,
 
     # check that the program will run -- are all options provided?
     check_arguments(T_dependence, constant_depth, constant_density,
-                    approach, parameters)
+                    approach, parameters, geotherm)
 
     # keep tabs on the profile file path
-    if working_file is True:
+    if print_working_file is True:
         print(f"working on {file}")
     else:
         pass
 
     # initiate conversion class
-    Data = Convert(file, profile_type, region_name=location)
+    Data = Convert(file, 
+                   profile_type, 
+                   region_name=location,
+                   geotherm = geotherm)
     
     # read in data
     Data.read_data()
