@@ -8,7 +8,7 @@ import sys
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 from SMV2rho.density_functions import V2rho_stephenson as V2rho
-from SMV2rho.temperature_dependence import rho_thermal2, compressibility, cont_geotherm_heat_flux_difference
+from SMV2rho.temperature_dependence import rho_thermal2, compressibility
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -19,20 +19,27 @@ def abs_precision_error(x, x_mean, N):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # crustal density uncertainty
-
-def rho_err(z, bulk_rho, v2rhoparameters, 
-            material_parameters, geotherm_parameters,
-            parameter_uncertainties,
-            N=1000, z_slices=50, 
-            make_plots=False,
-            save_plots=False, 
-            outpath="../UNCERTAINTY_PLOTS"):
+def rho_err(
+        z, 
+        bulk_rho, 
+        constants, 
+        geotherm,
+        N=1000, 
+        z_slices=50, 
+        make_plots=False,
+        save_plots=False, 
+        outpath="../UNCERTAINTY_PLOTS"
+        ):
     """
     Calculate crustal density uncertainty by Monte Carlo sampling of 
     thermal and compressibility parameters. Returns drho(z) for mean 
     correction, and standard deviation. Note that this does not include 
     the uncertainty associated with the velocity-pressure calibration, 
     which should be combined separately if necessary.
+
+    This function can only handle a single profile at a time.  Note that
+    the Geotherm class must be initialised with the correct parameters
+    including the geotherm parameters (including tc) and uncertainties.
 
     Args:
         z (float): Moho depth in kilometers.
@@ -70,16 +77,14 @@ def rho_err(z, bulk_rho, v2rhoparameters,
     """
 
     # unpack temperatre dependence parameters
-    dvdT, alpha0, alpha1, K = (material_parameters.m, material_parameters[1],
-                               material_parameters[2], material_parameters[3])
-    # unpack geotherm parameters
-    q0, qm, hr = (geotherm_parameters['q0'], geotherm_parameters['qm'],
-                  geotherm_parameters['hr'])
+    dvdT, alpha0, alpha1, K = (
+        constants.v_constants.m, constants.material_constants.alpha0,
+        constants.material_consatnts.alpha1, constants.material_consatnts.K
+        )
     
     # unpack error parameters
-    dq0, dqm, dhr, ddvdT, dalpha0, dalpha1, dK = (
-        parameter_uncertainties['dq0'], parameter_uncertainties['dqm'],
-        parameter_uncertainties['dhr'], parameter_uncertainties['ddvdT'],
+    ddvdT, dalpha0, dalpha1, dK = (
+        parameter_uncertainties['ddvdT'],
         parameter_uncertainties['dalpha0'], parameter_uncertainties['dalpha1'],
         parameter_uncertainties['dK'])
 
@@ -87,9 +92,6 @@ def rho_err(z, bulk_rho, v2rhoparameters,
     # compressibility, and velocity parameters
     # take absolute value to avoid negative drawn (not ideal  
     # but doesn't matter too much)
-    q0_gauss = np.abs(np.random.normal(q0, dq0, N))
-    qm_gauss = np.abs(np.random.normal(qm, dqm, N))
-    hr_gauss = np.abs(np.random.normal(hr, dhr, N))*1000  # convert to metres
     dvdT_gauss = np.abs(np.random.normal(abs(dvdT), ddvdT, N))
     alpha0_gauss = np.abs(np.random.normal(alpha0, dalpha0, N))
     alpha1_gauss = np.abs(np.random.normal(alpha1, dalpha1, N))
@@ -101,13 +103,14 @@ def rho_err(z, bulk_rho, v2rhoparameters,
     z_arr = np.linspace(0, z*1000, z_slices)
 
     # generate family of geotherms by sampling distributions
-    Tz_all = np.array([cont_geotherm_heat_flux_difference(
-        z_arr, T0=10, 
-        qm=j, q0=i, k=2.5, 
-        hr=k) 
-        for i, j, k in zip(q0_gauss, qm_gauss, hr_gauss)])
-    T_errors = np.column_stack((np.mean(Tz_all, axis=0), 
-                                np.std(Tz_all, axis=0)))
+    Tz_all = geotherm.generate_geotherm_distribution(
+        n_geotherms = N, 
+        z_slices = z_slices
+        )
+    z_arr, T_errors = np.column_stack(
+        (np.mean(Tz_all, axis=0), 
+        np.std(Tz_all, axis=0))
+        )
 
     # calculate v correction error using random family of 
     # geotherms and dvdT estimates
@@ -332,3 +335,15 @@ def rho_err(z, bulk_rho, v2rhoparameters,
                                   / (len(error_total_frac)-1)))
     
     return error_average_frac, error_average_add
+
+
+
+
+
+def sample_geotherm_parameters(geotherm):
+    """
+    Calculate family of geotherms by monte carlo sampling of geothermal 
+    parameters.  Uses methods and constants stored in the Gotherm class.
+    Geotherm parameters and uncertainties are stored in the geotherm
+    """
+

@@ -42,42 +42,115 @@ class GeothermConstants:
     hr:  float = 10e3    # decay lengthscale of heat production
     rho: float = 2800    # density
 
+@dataclass
+class GeothermConstantUncertainties:
+    """
+    Data class to store uncertainties related to geothermal properties.
+    """
+
+    tc_unc:  float = 3.0     # crustal thickness 
+    T0_unc:  float = 0.0     # temperature at surface
+    T1_unc:  float = 200.0   # temperature at base of crust
+    q0_unc:  float = 14e-3   # heat flux at surface
+    qm_unc:  float = 10e-3   # heat flux at base
+    k_unc:   float = 0       # thermal conductivity
+    H0_unc:  float = 0.0     # internal heat production at surface
+    hr_unc:  float = 5000    # decay lengthscale of heat production
+    rho_unc: float = 0.0     # density
+
 class Geotherm(GeothermConstants):
     """
-    Class for calculating crustal temperature profile (i.e. geotherm)
-    based on different models.
+    A class used to represent a Geotherm.
 
+    A Geotherm is a model for calculating the temperature profile in the
+    Earth's crust. This class provides several different geotherm models,
+    which can be selected using the `geotherm_type` parameter.
 
-    Parameters:
-        geotherm_type (str): Type of geotherm model to use. Default is "linear".
-        **kwargs: Additional keyword arguments to override constants.
+    The class inherits from GeothermConstants, which provides default values
+    for various geothermal properties. These defaults can be overridden by
+    providing keyword arguments when creating a Geotherm instance.
 
-    Methods:
-        __call__
-            (z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-            Evaluate the geothermal model at a given depth or depths.
+    Parameters
+    ----------
+    geotherm_type : str, optional
+        The type of geotherm model to use. Default is "linear".
+    uncertainty_constants : GeothermConstantUncertainties, optional
+        An instance of GeothermConstantUncertainties that stores the
+        uncertainties related to each geothermal property. Default is an
+        instance of GeothermConstantUncertainties with default values.
+    **kwargs
+        Additional keyword arguments to override constants.
 
-        linear
-            (z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-            Linear geothermal model.
+    Attributes
+    ----------
+    geotherm_type : str
+        The type of geotherm model to use.
+    uncertainties : GeothermConstantUncertainties
+        An instance of GeothermConstantUncertainties that stores the
+        uncertainties related to each geothermal property.
 
-        single_layer_internal_heat(z: Union[float, np.ndarray]) 
-            -> Union[float, np.ndarray]:
-            Single-layer internal heat geothermal model.
+    Methods
+    -------
+    __call__(z)
+        Evaluate the geothermal model at a given depth or depths.
+    linear(z)
+        Calculate the temperature at a given depth or depths using a linear
+        geothermal model.
+    single_layer_internal_heat(z)
+        Calculate the temperature at a given depth or depths using a
+        single-layer internal heat geothermal model.
+    single_layer_flux_difference(z)
+        Calculate the temperature at a given depth or depths using a
+        single-layer flux difference geothermal model.
+    single_layer_temperature_difference(z)
+        Calculate the temperature at a given depth or depths using a
+        single-layer temperature difference geothermal model.
+    generate_geotherm(z_slices)
+        Generate the geotherm for the current set of parameters.
+    generate_geotherm_distribution(n_geotherms, z_slices)
+        Generate a family of geothermal models based on the mean and 
+        uncertainty values of the constants using Monte Carlo sampling
+        of parameter uncertainties.  uncertainty_constants must not be set to
+        None when calling this method.
+    
+    Examples
+    --------
+    # Example 1: Using a linear geothermal model to evaluate temperature at 
+    #   10 km depth.
+    >>> geotherm = Geotherm(geotherm_type="linear")
+    >>> temperature = geotherm(10000)
+    >>> print(temperature)
 
-        single_layer_flux_difference(z: Union[float, np.ndarray]) 
-            -> Union[float, np.ndarray]:
-            Single-layer flux difference geothermal model.
+    # Example 2: Using a single-layer internal heat geotherm model to generate
+    #   a geotherm with 150 depth slices.
+    >>> geotherm = Geotherm(geotherm_type="single_layer_internal_heat")
+    >>> temperatures = geotherm.generate_geotherm(z_slices = 150)
+    >>> print(temperatures)
 
-        single_layer_temperature_difference
-            (z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-            Single-layer temperature difference geothermal model.
+    # Example 3: Using a single-layer temperature difference geotherm model to
+    #   generate a family of geotherms with 200 depth slices each.
+    >>> geotherm = Geotherm(
+    ...     geotherm_type="single_layer_temperature_difference",
+    ...     uncertainty_constants=GeothermConstantUncertainties(),
+    ...     tc=30000)
+    >>> geotherm.generate_geotherm_distribution(n_geotherms=100, z_slices=200)
+    >>> print(geotherm.T_family)
     """
 
-    def __init__(self, geotherm_type="linear", **kwargs):
+    def __init__(self, 
+                geotherm_type = "linear", 
+                uncertainty_constants = None, 
+                **kwargs
+                ):
         
         super().__init__(**kwargs)
         self.geotherm_type = geotherm_type
+
+        # get the uncertainties object avoiding mutable default arguments
+        if uncertainty_constants is None:
+            self.uncertainties = GeothermConstantUncertainties()
+        else:
+            self.uncertainties = uncertainty_constants
 
     def __call__(self, z):
         """
@@ -195,6 +268,74 @@ class Geotherm(GeothermConstants):
 
         return (T0 + ((z/tc) * (T1-T0)) + ((rho * H0 * hr**2)/k) 
                 * (((z/tc) * (np.exp(-tc/hr) - 1)) + (1 - np.exp(-z/hr))))
+    
+    def generate_geotherm(self, z_slices=100):
+        """
+        Generate a geothermal model based on the constants provided.
+
+        Returns:
+            np.ndarray: Array of depths at which to evaluate the model.
+            np.ndarray: Array of temperatures at the given depths.
+        """
+
+        self.z = np.linspace(0, self.tc, z_slices)
+        self.T = self(self.z)
+
+        return self.z, self.T
+    
+    def generate_geotherm_distribution(self, n_geotherms=100, z_slices=100):
+        """
+        Generate a family of geothermal models based on the mean and 
+        uncertainty values of the constants.
+
+        Parameters:
+            n_geotherms (int): Number of geotherms to generate.
+            z_slices (int): Number of slices to divide the depth into.
+
+        Returns:
+            np.ndarray: Array of depths at which to evaluate the models.
+            np.ndarray: Array of temperatures at the given depths for each 
+            model.
+        """
+
+        z = np.linspace(0, self.tc, z_slices)
+        T_family = np.empty((n_geotherms, z_slices))
+
+        for i in range(n_geotherms):
+            # Initialize a dictionary to store the parameters
+            params = {}
+
+            # Iterate over the names of the parameters
+            for name in self.__annotations__.keys():
+                # Get the mean and standard deviation for the current 
+                # parameter
+                mean = getattr(self, name)
+                std_dev = getattr(self.uncertainties, f"{name}_unc")
+
+                # Generate a random number from a normal distribution with the
+                # mean and standard deviation
+                random_normal = np.random.normal(mean, std_dev)
+
+                # Take the absolute value of the random number
+                param = np.abs(random_normal)
+
+                # Store the generated parameter in the dictionary
+                params[name] = param
+
+            # Create a new Geotherm instance with the random parameters
+            geotherm = Geotherm(**params)
+
+            # Generate the geotherm and store it in the array
+            _, T_family[i] = geotherm.generate_geotherm(z_slices)
+
+        # Assign the results to the instance variables
+        self.z = z
+        self.T_family = T_family
+
+        return self.z, self.T_family
+
+
+
 
 ###################################################################
 
