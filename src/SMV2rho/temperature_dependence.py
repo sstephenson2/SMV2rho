@@ -21,15 +21,16 @@ class GeothermConstants:
     Data class to store constants related to geothermal properties.
 
     Parameters:
-        tc (float): Crustal thickness, m
+    ----------
+        tc (float): Crustal thickness, km
         T0 (float): Temperature at the surface, C
         T1 (float): Temperature at the base of the crust, C
         q0 (float): Heat flux at the surface, W/m2
         qm (float): Heat flux at the base, W/m2
         k (float): Thermal conductivity, W/(m K)
         H0 (float): Internal heat production at the surface W/(kg m3)
-        hr (float): Decay lengthscale of heat production, m
-        rho (float): Density, kg/m3
+        hr (float): Decay lengthscale of heat production, km
+        rho (float): Density, g/mc3
     """
             
     tc:  float = None    # crustal thickness 
@@ -39,23 +40,36 @@ class GeothermConstants:
     qm:  float = 30e-3   # heat flux at base
     k:   float = 2.5     # thermal conductivity
     H0:  float = 7e-10   # internal heat production at surface
-    hr:  float = 10e3    # decay lengthscale of heat production
-    rho: float = 2800    # density
+    hr:  float = 10.0    # decay lengthscale of heat production
+    rho: float = 2.9     # density
 
 @dataclass
 class GeothermConstantUncertainties:
     """
-    Data class to store uncertainties related to geothermal properties.
+    This data class stores uncertainties related to geothermal properties.
+    Each property is represented as a float value.
+
+    Parameters:
+    ----------
+        tc_unc (float): Crustal thickness, km
+        T0_unc (float): Temperature at the surface, C
+        T1_unc (float): Temperature at the base of the crust, C
+        q0_unc (float): Heat flux at the surface, W/m2
+        qm_unc (float): Heat flux at the base, W/m2
+        k_unc (float): Thermal conductivity, W/(m K)
+        H0_unc (float): Internal heat production at the surface W/(kg m3)
+        hr_unc (float): Decay lengthscale of heat production, km
+        rho_unc (float): Density, g/cm3
     """
 
-    tc_unc:  float = 3.0     # crustal thickness 
+    tc_unc:  float = 0.0     # crustal thickness 
     T0_unc:  float = 0.0     # temperature at surface
     T1_unc:  float = 200.0   # temperature at base of crust
     q0_unc:  float = 14e-3   # heat flux at surface
     qm_unc:  float = 10e-3   # heat flux at base
     k_unc:   float = 0       # thermal conductivity
-    H0_unc:  float = 0.0     # internal heat production at surface
-    hr_unc:  float = 5000    # decay lengthscale of heat production
+    H0_unc:  float = 2e-10   # internal heat production at surface
+    hr_unc:  float = 5.0     # decay lengthscale of heat production
     rho_unc: float = 0.0     # density
 
 class Geotherm(GeothermConstants):
@@ -192,7 +206,9 @@ class Geotherm(GeothermConstants):
 
         T0 = self.T0
         T1 = self.T1
-        tc = self.tc
+        tc = self.tc * 1000
+
+        z = z*1000
 
         return T0 + ((T1 - T0)/tc) * z
         
@@ -213,10 +229,12 @@ class Geotherm(GeothermConstants):
 
         T0 = self.T0
         H0 = self.H0
-        rho = self.rho
+        rho = self.rho * 1000
         qm = self.qm
         k = self.k
-        hr = self.hr
+        hr = self.hr * 1000
+
+        z = z*1000
 
         return (T0 + (qm * z / k) + (rho * H0 * hr**2 / k) 
                 * (1 - np.exp(-z/hr)))
@@ -240,7 +258,9 @@ class Geotherm(GeothermConstants):
         q0 = self.q0
         qm = self.qm
         k = self.k
-        hr = self.hr
+        hr = self.hr * 1000
+
+        z = z * 1000
 
         return T0 + (qm * z / k) + ((q0 - qm) * hr / k) * (1 - np.exp(-z/hr))
     
@@ -260,11 +280,13 @@ class Geotherm(GeothermConstants):
         
         T0 = self.T0
         T1 = self.T1
-        tc = self.tc
-        rho = self.rho
+        tc = self.tc * 1000
+        rho = self.rho * 1000
         H0 = self.H0
-        hr = self.hr
+        hr = self.hr * 1000
         k = self.k
+
+        z = z * 1000
 
         return (T0 + ((z/tc) * (T1-T0)) + ((rho * H0 * hr**2)/k) 
                 * (((z/tc) * (np.exp(-tc/hr) - 1)) + (1 - np.exp(-z/hr))))

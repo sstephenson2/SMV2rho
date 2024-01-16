@@ -750,7 +750,7 @@ class V2RhoStephenson:
         # get temperature array if needed
         if self.T_dependence is True:
             try:
-                T_arr = self.geotherm(z_v_arr[:,0]*1000)
+                T_arr = self.geotherm(z_v_arr[:,0])
             except ValueError:
                 print("You have selected T_dependence = True, but you "
                       "have not passed V2rhoStephenson an instance of the "

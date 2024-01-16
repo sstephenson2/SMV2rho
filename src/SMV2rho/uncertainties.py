@@ -20,10 +20,9 @@ def abs_precision_error(x, x_mean, N):
 
 # crustal density uncertainty
 def rho_err(
-        z, 
-        bulk_rho, 
         constants, 
         geotherm,
+        profile_type='Vp',
         N=1000, 
         z_slices=50, 
         make_plots=False,
@@ -76,38 +75,45 @@ def rho_err(
         average absolute error in density.
     """
 
-    # unpack temperatre dependence parameters
-    dvdT, alpha0, alpha1, K = (
-        constants.v_constants.m, constants.material_constants.alpha0,
-        constants.material_consatnts.alpha1, constants.material_consatnts.K
-        )
-    
     # unpack error parameters
-    ddvdT, dalpha0, dalpha1, dK = (
-        parameter_uncertainties['ddvdT'],
-        parameter_uncertainties['dalpha0'], parameter_uncertainties['dalpha1'],
-        parameter_uncertainties['dK'])
+    if profile_type == 'Vp':
+        v_constants = constants.vp_constants
+    elif profile_type == 'Vs':
+        v_constants = constants.vs_constants
+    
 
-    # sample normal distributions for geothermal, thermal expansion, 
+    # set variable names locally
+    m = abs(v_constants.m)
+    m_unc = v_constants.m_unc
+    alpha0 = constants.material_constants.alpha0
+    alpha0_unc = constants.material_constants.alpha0_unc
+    alpha1 = constants.material_constants.alpha1
+    alpha1_unc = constants.material_constants.alpha1_unc
+    K = constants.material_constants.K
+    K_unc = constants.material_constants.K_unc
+    bulk_rho = geotherm.rho
+
+    # sample normal distributions for thermal expansion, 
     # compressibility, and velocity parameters
-    # take absolute value to avoid negative drawn (not ideal  
-    # but doesn't matter too much)
-    dvdT_gauss = np.abs(np.random.normal(abs(dvdT), ddvdT, N))
-    alpha0_gauss = np.abs(np.random.normal(alpha0, dalpha0, N))
-    alpha1_gauss = np.abs(np.random.normal(alpha1, dalpha1, N))
+    # take absolute value to avoid negative draws.  Note that
+    # this adjustments means that the parameter distribution 
+    # is not perfectly normal, but it is close enough for our purposes. 
+    dvdT_gauss = generate_gauss(m, m_unc, N)
+    alpha0_gauss = generate_gauss(alpha0, alpha0_unc, N)
+    alpha1_gauss = generate_gauss(alpha1, alpha1_unc, N)
+
     # stop bulk modulus approaching zero to avoid crazy uncertainties
     # avoids dividing P by a very small (or negative) number
-    K_gauss = np.abs(np.random.normal(K, dK, N) - (K/3)) + (K/3)
-
-    # discretise z (convert to metres)
-    z_arr = np.linspace(0, z*1000, z_slices)
+    K_gauss = generate_gauss(K - (K/3), K_unc, N) + (K/3)
 
     # generate family of geotherms by sampling distributions
-    Tz_all = geotherm.generate_geotherm_distribution(
+    z_arr, Tz_all = geotherm.generate_geotherm_distribution(
         n_geotherms = N, 
         z_slices = z_slices
         )
-    z_arr, T_errors = np.column_stack(
+    
+    # calculate average error in temperature
+    T_errors = np.column_stack(
         (np.mean(Tz_all, axis=0), 
         np.std(Tz_all, axis=0))
         )
@@ -126,19 +132,23 @@ def rho_err(
     # note that absolute value of v doesn't matter 
     # since at given P relationship is linear.
     # approximate pressure using bulk density and depth
-    rho_0_error = (V2rho([9.81 * bulk_rho * z_arr/1000, vc_err[:,1]], 
-                         *v2rhoparameters)
-                           - V2rho([9.81 * bulk_rho * z_arr/1000, 0], 
-                                 v2rhoparameters))
-    rho_0_mean = (V2rho([9.81 * bulk_rho * z_arr/1000, vc_err[:,0]], 
-                        *v2rhoparameters)
-                           - V2rho([9.81 * bulk_rho * z_arr/1000, 0], 
-                                 v2rhoparameters))
+
+    overburden = 9.81 * bulk_rho * z_arr
+
+    rho_0_error = (
+        V2rho([overburden, vc_err[:, 1]], v_constants) 
+        - V2rho([overburden, 0], v_constants)
+    )
+
+    rho_0_mean = (
+        V2rho([overburden, vc_err[:, 0]], v_constants) 
+        - V2rho([overburden, 0], v_constants)
+    )
     
     # stack together mean and errors
     rho_0_errors = np.column_stack((rho_0_mean, rho_0_error))
     
-    # calculate erros due to thermal expansion
+    # calculate errors due to thermal expansion
     thermal_expans_profiles = rho_thermal2(
         bulk_rho, np.transpose(Tz_all),
         alpha0=np.repeat([alpha0_gauss], 
@@ -160,7 +170,7 @@ def rho_err(
         np.std(thermal_expans_profiles_frac , axis=1)))                                      
     
     # calculate errors due to compressibility
-    Pz = np.transpose(np.repeat([z_arr], N, axis=0))/1e3 * 9.81 * bulk_rho
+    Pz = np.transpose(np.repeat([z_arr], N, axis=0)) * 9.81 * bulk_rho
     compress_profiles = compressibility(
         bulk_rho, Pz, K=np.repeat([K_gauss], 
                                    z_slices, axis=0))[2]
@@ -208,29 +218,29 @@ def rho_err(
                                    * compress_therm_frac)**2)
     
     # Tz array formatted for saving
-    Tz_out = np.array([np.column_stack((z_arr/1000, i)) for i in Tz_all])
+    Tz_out = np.array([np.column_stack((z_arr, i)) for i in Tz_all])
 
     if save_plots is True:
         
         np.savetxt(outpath + f"/Tz_all_{z}_{bulk_rho}.dat", 
                     np.concatenate(Tz_out))
         np.savetxt(outpath + f"/T_errors_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, T_errors)))
+                    np.column_stack((z_arr, T_errors)))
         np.savetxt(outpath + f"/rho_o_error_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, rho_0_errors)))
+                    np.column_stack((z_arr, rho_0_errors)))
         np.savetxt(outpath + f"/thermal_expans_error_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, thermal_expans_abs_err)))
+                    np.column_stack((z_arr, thermal_expans_abs_err)))
         np.savetxt(outpath + f"/compress_error_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, compress_abs_err)))
+                    np.column_stack((z_arr, compress_abs_err)))
         np.savetxt(outpath + f"/total_error_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, error_total_add)))
+                    np.column_stack((z_arr, error_total_add)))
         np.savetxt(outpath + f"/total_error_frac_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, error_total_frac)))
+                    np.column_stack((z_arr, error_total_frac)))
 
         np.savetxt(outpath + f"/total_correction_add_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, total_correction_add)))
+                    np.column_stack((z_arr, total_correction_add)))
         np.savetxt(outpath + f"/total_correction_frac_{z}_{bulk_rho}.dat", 
-                    np.column_stack((z_arr/1000, total_correction_frac)))
+                    np.column_stack((z_arr, total_correction_frac)))
         
 
     if make_plots is True:    
@@ -245,77 +255,77 @@ def rho_err(
         # Plotting
 
         # Panel 1
-        axs[0, 0].plot(total_correction_add, -z_arr/1000, label='Average')
+        axs[0, 0].plot(total_correction_add, -z_arr, label='Average')
         axs[0, 0].plot(total_correction_add + error_total_add, 
-                       -z_arr/1000, label=r'Total Corr $+ 1\sigma$')
+                       -z_arr, label=r'Total Corr $+ 1\sigma$')
         axs[0, 0].plot(total_correction_add - error_total_add, 
-                       -z_arr/1000, label=r'Total Corr $- 1\sigma$')
+                       -z_arr, label=r'Total Corr $- 1\sigma$')
         axs[0, 0].set_title('Total correction \nby addition')
 
         # Panel 2
-        axs[0, 1].plot(total_correction_frac, -z_arr/1000, label='Average')
+        axs[0, 1].plot(total_correction_frac, -z_arr, label='Average')
         axs[0, 1].plot(total_correction_frac + error_total_frac, 
-                       -z_arr/1000, label=r'$+ 1\sigma$')
+                       -z_arr, label=r'$+ 1\sigma$')
         axs[0, 1].plot(total_correction_frac - error_total_frac, 
-                       -z_arr/1000, label=r'$- 1\sigma$')
+                       -z_arr, label=r'$- 1\sigma$')
         axs[0, 1].set_title('Total correction and \nfractional error')
 
         # Panel 3
         axs[0, 2].hist2d(np.concatenate(Tz_out)[:,1], 
                          -np.concatenate(Tz_out)[:,0], bins=25)
-        axs[0, 2].plot(T_errors[:,0], -z_arr/1000, label='Average')
+        axs[0, 2].plot(T_errors[:,0], -z_arr, label='Average')
         axs[0, 2].plot(T_errors[:,0] 
-                       + T_errors[:,1], -z_arr/1000, label=r'$+ 1\sigma$')
+                       + T_errors[:,1], -z_arr, label=r'$+ 1\sigma$')
         axs[0, 2].plot(T_errors[:,0] 
-                       - T_errors[:,1], -z_arr/1000, label=r'$- 1\sigma$')
+                       - T_errors[:,1], -z_arr, label=r'$- 1\sigma$')
         axs[0, 2].set_title('T error')
 
         # Panel 4
-        axs[0, 3].plot(compress_abs_err[:,0], -z_arr/1000, label='Average')
+        axs[0, 3].plot(compress_abs_err[:,0], -z_arr, label='Average')
         axs[0, 3].plot(compress_abs_err[:,0] + compress_abs_err[:,1], 
-                       -z_arr/1000, label=r'$+ 1\sigma$')
+                       -z_arr, label=r'$+ 1\sigma$')
         axs[0, 3].plot(compress_abs_err[:,0] - compress_abs_err[:,1], 
-                       -z_arr/1000, label=r'$- 1\sigma$')
+                       -z_arr, label=r'$- 1\sigma$')
         axs[0, 3].set_title('Compression \nabsolute error')
 
         # Panel 5
         axs[1, 0].plot(thermal_expans_abs_err[:,0], 
-                       -z_arr/1000, label='Average')
+                       -z_arr, label='Average')
         axs[1, 0].plot(thermal_expans_abs_err[:,0] 
                        + thermal_expans_abs_err[:,1], 
-                       -z_arr/1000, label=r'$+ 1\sigma$')
+                       -z_arr, label=r'$+ 1\sigma$')
         axs[1, 0].plot(thermal_expans_abs_err[:,0] 
                        - thermal_expans_abs_err[:,1], 
-                       -z_arr/1000, label=r'$- 1\sigma$')
+                       -z_arr, label=r'$- 1\sigma$')
         axs[1, 0].set_title('Thermal expansion \nabsolute error')
 
         # Panel 6
-        axs[1, 1].plot(compress_frac_err[:,0], -z_arr/1000, label='Average')
+        axs[1, 1].plot(compress_frac_err[:,0], -z_arr, label='Average')
         axs[1, 1].plot(compress_frac_err[:,0] 
                        + compress_frac_err[:,1], 
-                       -z_arr/1000, label=r'$+ 1\sigma$')
+                       -z_arr, label=r'$+ 1\sigma$')
         axs[1, 1].plot(compress_frac_err[:,0] 
                        - compress_frac_err[:,1], 
-                       -z_arr/1000, label=r'$- 1\sigma$')
+                       -z_arr, label=r'$- 1\sigma$')
         axs[1, 1].set_title('Compression \nfractional error')
 
         # Panel 7
         axs[1, 2].plot(thermal_expans_frac_err[:,0], 
-                       -z_arr/1000, label='Average')
+                       -z_arr, label='Average')
         axs[1, 2].plot(thermal_expans_frac_err[:,0] 
                        + thermal_expans_frac_err[:,1], 
-                       -z_arr/1000, label=r'$+ 1\sigma$')
+                       -z_arr, label=r'$+ 1\sigma$')
         axs[1, 2].plot(thermal_expans_frac_err[:,0] 
                        - thermal_expans_frac_err[:,1], 
-                       -z_arr/1000, label=r'$- 1\sigma$')
+                       -z_arr, label=r'$- 1\sigma$')
         axs[1, 2].set_title('Thermal expansion \nfractional error')
 
         # Panel 8
-        axs[1, 3].plot(rho_0_errors[:,0], -z_arr/1000, label='Average')
+        axs[1, 3].plot(rho_0_errors[:,0], -z_arr, label='Average')
         axs[1, 3].plot(rho_0_errors[:,0] - rho_0_errors[:,1], 
-                       -z_arr/1000, label=r'$+ 1\sigma$')
+                       -z_arr, label=r'$+ 1\sigma$')
         axs[1, 3].plot(rho_0_errors[:,0] + rho_0_errors[:,1], 
-                       -z_arr/1000, label=r'$- 1\sigma$')
+                       -z_arr, label=r'$- 1\sigma$')
         axs[1, 3].set_title(r"$\rho_\circ(z)$ error")
 
         # Adjust spacing between subplots
@@ -340,10 +350,5 @@ def rho_err(
 
 
 
-def sample_geotherm_parameters(geotherm):
-    """
-    Calculate family of geotherms by monte carlo sampling of geothermal 
-    parameters.  Uses methods and constants stored in the Gotherm class.
-    Geotherm parameters and uncertainties are stored in the geotherm
-    """
-
+def generate_gauss(abs_mean, mean_unc, N):
+    return np.abs(np.random.normal(abs_mean, mean_unc, N))
