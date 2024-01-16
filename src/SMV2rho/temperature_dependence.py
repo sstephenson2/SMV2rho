@@ -345,7 +345,7 @@ class Geotherm(GeothermConstants):
                 params[name] = param
 
             # Create a new Geotherm instance with the random parameters
-            geotherm = Geotherm(**params)
+            geotherm = Geotherm(self.geotherm_type, **params)
 
             # Generate the geotherm and store it in the array
             _, T_family[i] = geotherm.generate_geotherm(z_slices)

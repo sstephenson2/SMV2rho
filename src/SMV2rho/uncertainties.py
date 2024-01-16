@@ -24,7 +24,7 @@ def rho_err(
         geotherm,
         profile_type='Vp',
         N=1000, 
-        z_slices=50, 
+        z_slices=100, 
         make_plots=False,
         save_plots=False, 
         outpath="../UNCERTAINTY_PLOTS"
@@ -98,7 +98,7 @@ def rho_err(
     # take absolute value to avoid negative draws.  Note that
     # this adjustments means that the parameter distribution 
     # is not perfectly normal, but it is close enough for our purposes. 
-    dvdT_gauss = generate_gauss(m, m_unc, N)
+    dvdT_gauss = generate_gauss(abs(m), m_unc, N)
     alpha0_gauss = generate_gauss(alpha0, alpha0_unc, N)
     alpha1_gauss = generate_gauss(alpha1, alpha1_unc, N)
 
@@ -270,9 +270,13 @@ def rho_err(
                        -z_arr, label=r'$- 1\sigma$')
         axs[0, 1].set_title('Total correction and \nfractional error')
 
+
+        geotherm.generate_geotherm()
+
         # Panel 3
         axs[0, 2].hist2d(np.concatenate(Tz_out)[:,1], 
                          -np.concatenate(Tz_out)[:,0], bins=25)
+        axs[0, 2].plot(geotherm.T, -geotherm.z)
         axs[0, 2].plot(T_errors[:,0], -z_arr, label='Average')
         axs[0, 2].plot(T_errors[:,0] 
                        + T_errors[:,1], -z_arr, label=r'$+ 1\sigma$')
@@ -351,4 +355,21 @@ def rho_err(
 
 
 def generate_gauss(abs_mean, mean_unc, N):
+    """
+    Generate an array of absolute Gaussian random numbers.
+
+    Parameters:
+    abs_mean (float): The absolute mean of the Gaussian distribution.
+    mean_unc (float): The standard deviation (uncertainty) of the 
+                      Gaussian distribution.
+    N (int): The number of random numbers to generate.
+
+    Returns:
+    numpy.ndarray: An array of absolute Gaussian random numbers.
+    """
+    # Generate N random numbers from a Gaussian distribution with mean 
+    # abs_mean and standard deviation mean_unc
+    # The np.random.normal function generates these random numbers
+    # The np.abs function takes the absolute value of these numbers, so 
+    # the result is an array of absolute Gaussian random numbers
     return np.abs(np.random.normal(abs_mean, mean_unc, N))
