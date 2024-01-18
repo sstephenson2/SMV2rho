@@ -8,6 +8,7 @@
 # import modules
 import numpy as np
 import sys
+import copy
 import scipy.integrate as integrate
 from scipy.interpolate import interp1d, CubicSpline
 import glob
@@ -279,7 +280,19 @@ class Convert:
         moho = float(data[2][0])
         # return moho as self variable - useful later on...
         self.moho = moho
-        
+
+        # ensure tc in the geotherm class matches moho value
+        if self.geotherm is not None:
+            if (hasattr(self.geotherm, 'master') 
+            and self.geotherm.master is True
+            ):
+                # deepcopy in order to make sure the geotherm.tc values do not
+                # end up referencing each other for all profiles converted in
+                # the same batch.  Only a problem if using the 
+                # MultiConversion class.
+                self.geotherm = copy.deepcopy(self.geotherm)
+                self.geotherm.tc = copy.deepcopy(self.moho)
+
         # make z, v(z) array up to moho depth
         # convert to array and switch columns
         v_array = np.array(data[3:]).astype(float)[:,[1, 0]]
@@ -329,12 +342,14 @@ class Convert:
             self.data = {"station": station, "Vs_file": self.profile, 
                          "region": self.region_name, 
                          "moho": moho, "location": loc, "av_Vs": av_V,
-                         "Vs": v_array, "type": "Vs", "method": self.method}
+                         "Vs": v_array, "type": "Vs", "method": self.method,
+                         "geotherm": self.geotherm}
         elif self.profile_type == "Vp":
             self.data = {"station": station, "Vp_file": self.profile, 
                          "region": self.region_name, 
                          "moho": moho, "location": loc, "av_Vp": av_V,
-                         "Vp": v_array, "type": "Vp", "method": self.method}
+                         "Vp": v_array, "type": "Vp", "method": self.method,
+                         "geotherm": self.geotherm}
     
     # convert Vs profile into Vp profile
     # using Brocher's (2005) approach
@@ -1010,13 +1025,19 @@ class MultiConversion:
             currently has limitations due to pickling issues.
     """
 
-    def __init__(self, path, which_location="ALL", 
-                           write_data = False, 
-                           approach = "stephenson",
-                           parameters = None,
-                           constant_depth = None,
-                           constant_density = None,
-                           T_dependence = False):
+    def __init__(
+        self, 
+        path, 
+        which_location = "ALL", 
+        write_data = False, 
+        approach = "stephenson",
+        parameters = None,
+        master_geotherm = None,
+        constant_depth = None,
+        constant_density = None,
+        T_dependence = False
+        ):
+
         """
         Initialize a MultiConversion instance with specified parameters.
         """
@@ -1026,6 +1047,7 @@ class MultiConversion:
         self.write_data = write_data
         self.approach = approach
         self.parameters = parameters
+        self.master_geotherm = master_geotherm
         self.constant_depth = constant_depth
         self.constant_density = constant_density
         self.T_dependence = T_dependence
@@ -1051,13 +1073,20 @@ class MultiConversion:
         which_location = self.which_location
         approach = self.approach
         parameters = self.parameters
+        master_geotherm = self.master_geotherm
         constant_depth = self.constant_depth
         constant_density = self.constant_density
         T_dependence = self.T_dependence
 
+        # flag geotherm class instance as a master geotherm so
+        #    that we make deep copies and update parameters for all 
+        #    individual profiles.  Note this will update the geotherm_master
+        #    attribute outide of the class instance.
+        master_geotherm.master = True
+
         # check that all the necessary information has been provided
         check_arguments(T_dependence, constant_depth, constant_density,
-                        approach, parameters)
+                        approach, parameters, master_geotherm)
 
         # check you are running the right script
         if which_location == "ALL":
@@ -1128,16 +1157,22 @@ class MultiConversion:
         self.convert_metadata = []
         
         # Process Vp files
-        self._process_file_list(vp_files_all, "Vp", 
-                                parameters, constant_depth, 
+        self._process_file_list(vp_files_all, 
+                                "Vp", 
+                                parameters, 
+                                constant_depth, 
                                 constant_density, 
-                                T_dependence)
+                                T_dependence,
+                                master_geotherm)
 
         # Process Vs files
-        self._process_file_list(vs_files_all, "Vs", 
-                                parameters, constant_depth, 
+        self._process_file_list(vs_files_all, 
+                                "Vs", 
+                                parameters, 
+                                constant_depth, 
                                 constant_density, 
-                                T_dependence)
+                                T_dependence,
+                                master_geotherm)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1263,9 +1298,11 @@ class MultiConversion:
                 location_name = files[0].split(os.path.sep)[-5]
                 # assemble paramter list
                 for file in files:
-                    params = self._assemble_params(file, profile_type,
-                                            location_name,
-                                            *extra_params)
+                    params = self._assemble_params(
+                        file, profile_type,
+                        location_name,
+                        *extra_params
+                    )
                     self.convert_metadata.append(params)
 
 ###################################################################
@@ -1330,7 +1367,7 @@ def check_arguments(T_dependence,
 def convert_V_profile(
         file, 
         profile_type, 
-        write_data=False, 
+        write_data = False, 
         path = None,
         approach = "stephenson",
         location = None,
@@ -1405,10 +1442,11 @@ def convert_V_profile(
         pass
 
     # initiate conversion class
-    Data = Convert(file, 
-                   profile_type, 
-                   region_name=location,
-                   geotherm = geotherm)
+    Data = Convert(
+        file, 
+        profile_type, 
+        region_name=location,
+        geotherm = geotherm)
     
     # read in data
     Data.read_data()
