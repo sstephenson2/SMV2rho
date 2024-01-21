@@ -3,10 +3,12 @@ README.md
 pyproject.toml
 src/SMV2rho/__init.__.py
 src/SMV2rho/coincident_profile_functions.py
+src/SMV2rho/constants.py
 src/SMV2rho/density_functions.py
 src/SMV2rho/plotting.py
 src/SMV2rho/spatial_functions.py
 src/SMV2rho/temperature_dependence.py
+src/SMV2rho/test_constants.py
 src/SMV2rho/uncertainties.py
 src/SMV2rho.egg-info/PKG-INFO
 src/SMV2rho.egg-info/SOURCES.txt
