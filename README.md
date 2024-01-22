@@ -12,9 +12,9 @@
 
 ## Installation
 
-### Unix
+### Using conda
 
-##### Using conda
+#### Unix
 
 To create a new environment named "density" for running SMV2rho, follow these steps in your terminal:
 
@@ -28,9 +28,9 @@ After creating the environment, activate it with
 
 ```conda activate density```
 
-### Unix or Windows
+### Using pip
 
-##### Using pip
+#### Unix or Windows
 
 If you're using pip, you can use `virtualenv` to create a new environment.  First install `virtualenv` if you haven't already:
 
@@ -50,3 +50,12 @@ To activate the environment, use:
 
 ```source density/bin/activate```
 
+### Installing SMV2rho
+
+Once the "density" environment is activated, you can install SMV2rho. If you have a local copy of the SMV2rho repository, navigate to the root directory of the repository, where the `setup.py` file is located. Then run the following command:
+
+```
+pip install -e .
+```
+
+This command installs the package in editable mode, which means you can modify the source code and see the effects without having to reinstall the package.
