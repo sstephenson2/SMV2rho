@@ -5,7 +5,6 @@
 from distutils.config import DEFAULT_PYPIRC
 import numpy as np
 import sys
-import scipy.stats as stats
 import matplotlib.pyplot as plt
 from SMV2rho.density_functions import V2rho_stephenson as V2rho
 from SMV2rho.temperature_dependence import rho_thermal2, compressibility
@@ -32,47 +31,39 @@ def rho_err(
     """
     Calculate crustal density uncertainty by Monte Carlo sampling of 
     thermal and compressibility parameters. Returns drho(z) for mean 
-    correction, and standard deviation. Note that this does not include 
-    the uncertainty associated with the velocity-pressure calibration, 
-    which should be combined separately if necessary.
+    correction, and standard deviation. 
 
-    This function can only handle a single profile at a time.  Note that
-    the Geotherm class must be initialised with the correct parameters
-    including the geotherm parameters (including tc) and uncertainties.
+    Note that this does not include the uncertainty associated with the 
+    velocity-pressure calibration, which should be combined separately if 
+    necessary. This function can only handle a single profile at a time.  
+    Note that the Geotherm class must be initialised with the correct 
+    parameters including the geotherm parameters (including tc) and 
+    uncertainties.
 
     Args:
-        z (float): Moho depth in kilometers.
-        bulk_rho (float): Bulk density of the crust to approximate pressure 
-            gradient.
-        q0 (float): Thermal ad material parameters (1 sigma).
-        dq0 (float): Uncertainty in q0.
-        qm (float): Thermal material parameter (1 sigma).
-        dqm (float): Uncertainty in qm.
-        hr (float): Depth parameter (1 sigma), converted to meters.
-        dhr (float): Uncertainty in hr.
-        dvdT (float): Pressure-velocity conversion parameter (1 sigma).
-        ddvdT (float): Uncertainty in dvdT.
-        alpha0 (float): Thermal expansion parameter (1 sigma).
-        dalpha0 (float): Uncertainty in alpha0.
-        alpha1 (float): Thermal expansion parameter (1 sigma).
-        dalpha1 (float): Uncertainty in alpha1.
-        K (float): Compressibility parameter (1 sigma).
-        dK (float): Uncertainty in K.
-        dens_parameters (str): File path to the pressure-velocity-density 
-            conversion parameters.
-        N (int, optional): Number of random samples to draw from each 
-        distribution. Default is 1000.
-        z_slices (int, optional): Number of depth slices. Default is 50.
-        make_plots (bool, optional): Whether to generate and display plots. 
+        constants (object): Instance of the Constants class containing the 
+            constants for the calculation.
+        geotherm (object): Geotherm object for temperature dependence.  The
+            rho attribute of the geotherm object will be used to set the bulk
+            density for the density error propagation.
+        profile_type (str, optional): Type of velocity profile, 'Vp' or 'Vs'. 
+            Default is 'Vp'.
+        N (int, optional): Number of samples for the Monte Carlo simulation. 
+            Default is 1000.
+        z_slices (int, optional): Number of depth slices for the calculation. 
+            Default is 100.
+        make_plots (bool, optional): If True, generates plots of the results. 
             Default is False.
-        save_plots (bool, optional): Whether to save plots to specified 
-            outpath. Default is False.
-        outpath (str, optional): Path to save plots. Default is 
+        save_plots (bool, optional): If True, saves the generated plots. 
+            Default is False.
+        outpath (str, optional): Path to save the plots. Default is 
             "../UNCERTAINTY_PLOTS".
 
     Returns:
-        tuple: A tuple containing the average fractional error and 
-        average absolute error in density.
+        error_average_frac (float): The average fractional error calculated 
+            from the Monte Carlo simulation.
+        error_average_add (float): The average additive error calculated 
+            from the Monte Carlo simulation.
     """
 
     # unpack error parameters

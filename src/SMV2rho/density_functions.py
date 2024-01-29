@@ -1360,10 +1360,12 @@ def check_arguments(T_dependence,
         approach (str): Density conversion scheme, "brocher" or "stephenson".
         parameters (str): Constants class instance if using the Stephenson 
             scheme.
+        geotherm (Geotherm, optional): Geotherm class instance object for 
+            temperature dependence. Defaults to None.
 
     Raises:
         ValueError: If required arguments are missing or incompatible with 
-            the sefcheck_argumentslected approach.
+            the selected approach.
     """
     # check that all the necessary information has been provided
     if T_dependence is True:
@@ -1410,55 +1412,45 @@ def convert_V_profile(
         ):
 
     """
-    Convert a single Vp or Vs velocity profile using the chosen scheme.
-
-    This function takes a velocity profile file and converts it to density values
-    using the specified approach, which can be "brocher" or "stephenson".
+    Convert a single Vp or Vs velocity profile to a density profile.
 
     Args:
         file (str): Path to the input velocity profile file.
         profile_type (str): Type of velocity profile, 'Vp' or 'Vs'.
-        write_data (bool, optional): Write out the converted data to files. 
-            Default is False.
-        path (str, optional): Location to write out the results. Default 
-            is None.
+        write_data (bool, optional): If True, writes the converted data to 
+            files. Default is False.
+        path (str, optional): Path to write the results. Default is None.
         approach (str, optional): Density conversion scheme to use, "brocher" 
-            or "stephenson".
-        location (str, optional): Regional location of the profile. Default 
-            is "None".
-        parameters (np.ndarray, optional): Parameter array if using the 
-            Stephenson scheme for velocity-density conversion.  A single 
-            column (1D) array.  Not Vp and Vs parameters combined.   
+            or "stephenson". Default is "stephenson".
+        location (str, optional): Regional location of the profile. 
             Default is None.
+        parameters (np.ndarray, optional): Instance of the Constants, 
+            VpConstants or VsConstants classes.  Must be instance
+            of the Constants class with a material_constants object if 
+            T_dependence is set to True.
         constant_depth (float, optional): Depth range for constant density 
             from the surface. Default is None.
         constant_density (float, optional): Constant density value for the 
             uppermost x kilometers. Default is None.
-        T_dependence (bool, optional): Correct velocity and density for 
-            temperature and pressure. Default is False.
-        T_parameters (tuple, optional): Parameters needed to correct for 
-            temperature effects (dV/dT, alpha0, alpha1).  Default is None.
-        print_working_file (bool, optional): Print the file that is being converted.
-            Default is True.
+        T_dependence (bool, optional): If True, corrects velocity and density 
+            for temperature and pressure. Default is False.
+        geotherm (object, optional): Instance of the Geotherm class for 
+            temperature dependence.  Must be provided if T_dependence is set 
+            to True.  Default is None.
+        print_working_file (bool, optional): If True, prints the file that is 
+            being converted. Default is False.
 
     Returns:
-        pd.DataFrame: Pandas DataFrame containing the converted velocity and 
+        pd.DataFrame: DataFrame containing the converted velocity and 
             density data.
-
-    Notes:
-        - The function converts velocity profiles to density profiles using 
-            the specified approach.
-        - It can write out the converted data to files if 'write_data' is 
-            set to True.
 
     Example:
         >>> convert_V_profile('velocity_profile.dat', 'Vp', write_data=True,
         ...                   path='output/', approach='stephenson',
-        ...                   location='Region1', parameters=[p1, p2, ...],
+        ...                   location='Region1', parameters=constants_object,
         ...                   constant_depth=10.0, constant_density=2.7,
-        ...                   T_dependence=True, 
-        ...                   T_parameters=(0.01, 1.0, 0.002, 0.00001, 90e9))
-
+        ...                   T_dependence=True, geotherm=geotherm_object,
+        ...                   print_working_file=True)
     """
 
     # check that the program will run -- are all options provided?
@@ -1613,16 +1605,16 @@ def save_bulk_profiles(outpath, filename, data_function, start, stop, step):
     Save bulk profiles data to a file.
 
     Args:
-    outpath (str): The output directory where the data file will be saved.
-    filename (str): The name of the output data file.
-    data_function (function): A function that computes the data values 
-        based on x-values.
-    start (float): The start value for the x-values.
-    stop (float): The stop value for the x-values.
-    step (float): The step size for generating x-values.
+        outpath (str): The output directory where the data file will be saved.
+        filename (str): The name of the output data file.
+        data_function (function): A function that computes the data values 
+            based on x-values.
+        start (float): The start value for the x-values.
+        stop (float): The stop value for the x-values.
+        step (float): The step size for generating x-values.
 
     Returns:
-    None
+        None
 
     This function generates x-values using numpy.arange() based on the 
     specified start, stop, and step values.
@@ -1772,9 +1764,9 @@ def p(rho, h, g=9.81):
     overburden and thickness of the overburden.
 
     Parameters:
-        - rho (float): Average density of the overburden in Mg/m³.
-        - h (float): Thickness of the overburden in kilometers.
-        - g (float, optional): Acceleration due to gravity in m/s². 
+        rho (float): Average density of the overburden in Mg/m³.
+        h (float): Thickness of the overburden in kilometers.
+        g (float, optional): Acceleration due to gravity in m/s². 
             Default is 9.81 m/s².
 
     Returns:
