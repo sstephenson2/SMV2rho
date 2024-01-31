@@ -1337,7 +1337,7 @@ class MultiConversion:
     
     def profiles_to_dataframe(self):
         """
-        Convert station profiles to a pandas DataFrame.
+        Convert station profiles to a pandas DataFrame fo bulk information.
 
         This method iterates over the station profiles stored in the 
         `station_profiles` attribute of the class instance. For each profile, 
@@ -1387,7 +1387,8 @@ class MultiConversion:
         for profile in self.station_profiles:
             stations.append(profile['station'])
             lon_lats.append(profile['location'])
-            av_rhos.append(profile['av_rho'])
+            av_rhos.append(profile['av_rho'] 
+                         if 'av_rho' in profile else np.nan)
             mohos.append(profile['moho'])
             regions.append(profile['region'])
             av_vp.append(profile['av_Vp'] 
