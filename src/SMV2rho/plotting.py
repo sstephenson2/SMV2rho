@@ -17,8 +17,11 @@ def plot_panels(data, plot_type='scatter', cmap='YlGnBu',
     different colors and a legend.
 
     Parameters:
-        data (list): List of datasets to plot, where each dataset is a list 
-            of dictionaries with 'x', 'y', and 'label' values.
+        data (list of lists): A list where each element represents a separate 
+            plot. Each element is a list of dictionaries, where each 
+            dictionary represents a data series and contains 'x', 'y', and 
+            'label' values. Multiple data series for a plot should be passed 
+            as separate dictionaries within the nested list.
         plot_type (str): Type of plot to create ('scatter' or 'line'). Default
             is 'scatter'.
         cmap (str): Color map for scatter plot. Default is 'YlGnBu'.

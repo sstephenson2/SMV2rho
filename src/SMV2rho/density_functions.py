@@ -1042,7 +1042,7 @@ class MultiConversion:
             conversion process for each profile and assembles a list of data 
             dictionaries containing velocity, Moho, density information, etc. 
             The method provides an option for parallel processing but 
-            currently has limitations due to pickling issues.
+            currently is not functional due to pickling issues.
         _assemble_params: Assemble parameters for density conversion. This method 
             assembles a list of parameters required for density conversion, 
             including file information, profile type, write data option, path, 
@@ -1334,6 +1334,110 @@ class MultiConversion:
                         *extra_params
                     )
                     self.convert_metadata.append(params)
+    
+    def profiles_to_dataframe(self):
+        """
+        Convert station profiles to a pandas DataFrame.
+
+        This method iterates over the station profiles stored in the 
+        `station_profiles` attribute of the class instance. For each profile, 
+        it extracts the 'station', 'location', 'av_rho', 'moho', 'region', 
+        'av_Vp', 'av_Vs', and 'av_Vp_calc' attributes (if they exist), and 
+        stores them in separate lists. These lists are then converted to 
+        numpy arrays.
+
+        The method then creates a pandas DataFrame from these arrays, with 
+        each array forming a column in the DataFrame. The DataFrame is stored 
+        in the `station_profiles_df` attribute of the class instance, and is 
+        also returned by the method.
+
+        Parameters:
+            None
+
+        Returns:
+            pd.DataFrame: A pandas DataFrame where each row represents a 
+            station profile, and the columns represent the 'station', 'lon', 
+            'lat', 'moho', 'av_vp', 'av_vs', 'av_rho', and 'region' attributes
+            of the profile. 'lon' and 'lat' are derived from the 'location' 
+            attribute of the profile, which is assumed to be a two-element 
+            array or list. If 'av_Vp', 'av_Vs', or 'av_Vp_calc' do not exist 
+            in a profile, their values in the DataFrame are set to NaN.
+
+        """
+
+        try:
+            # Attempt to use self.station_profiles
+            self.station_profiles
+        except AttributeError:
+            print("The station_profiles attribute does not exist. Please "
+                  "first run the send_to_conversion_function method.")
+            return
+
+        # Initialize lists to hold data
+        stations = []
+        lon_lats = []
+        av_rhos = []
+        mohos = []
+        regions = []
+        av_vp = []
+        av_vs = []
+        av_vp_calc = []
+
+        # Iterate once over filtered_station_profiles
+        for profile in self.station_profiles:
+            stations.append(profile['station'])
+            lon_lats.append(profile['location'])
+            av_rhos.append(profile['av_rho'])
+            mohos.append(profile['moho'])
+            regions.append(profile['region'])
+            av_vp.append(profile['av_Vp'] 
+                         if 'av_Vp' in profile else np.nan)
+            av_vs.append(profile['av_Vs'] 
+                         if 'av_Vs' in profile else np.nan)
+            av_vp_calc.append(profile['av_Vp_calc'] 
+                         if 'av_Vp_calc' in profile else np.nan)
+
+        # Convert lists to numpy arrays
+        station_array = np.array(stations)
+        lon_lat_array = np.array(lon_lats)
+        av_rho_array = np.array(av_rhos)
+        moho_array = np.array(mohos)
+        region_array = np.array(regions)
+        av_vp_array = np.array(av_vp)
+        av_vs_array = np.array(av_vs)
+        av_vp_calc_array = np.array(av_vp_calc)
+
+        # Create output dataframe of bulk information.
+        # include average vp calculated if using brocher approach
+        if self.approach == 'brocher':
+            # Create output dataframe of bulk information.
+            self.station_profiles_df = pd.DataFrame({
+                'station': station_array,
+                'lon': lon_lat_array[:, 0], 
+                'lat': lon_lat_array[:, 1],
+                'moho': moho_array, 
+                'av_vp': av_vp_array,
+                'av_vs': av_vs_array, 
+                'av_rho': av_rho_array,
+                'region': region_array,
+                'av_vp_calc': av_vp_calc_array
+            })
+
+        else:
+            # Create output dataframe of bulk information.
+            self.station_profiles_df = pd.DataFrame({
+                'station': station_array,
+                'lon': lon_lat_array[:, 0], 
+                'lat': lon_lat_array[:, 1],
+                'moho': moho_array, 
+                'av_vp': av_vp_array,
+                'av_vs': av_vs_array, 
+                'av_rho': av_rho_array,
+                'region': region_array
+            })
+
+        return self.station_profiles_df
+
 
 ###################################################################
 
