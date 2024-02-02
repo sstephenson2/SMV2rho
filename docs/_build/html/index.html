@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Welcome to SMV2rho’s documentation! &#8212; SMV2rho v1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=cb25574f" />
+    <script src="_static/documentation_options.js?v=76e2d817"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SMV2rho: Tutorial 1" href="TUTORIALS/tutorial_1.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="welcome-to-smv2rho-s-documentation">
+<h1>Welcome to SMV2rho’s documentation!<a class="headerlink" href="#welcome-to-smv2rho-s-documentation" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-SMV2rho.density_functions"></span><dl class="py class">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Convert">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">Convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seismic_method_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geotherm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Convert seismic velocity profiles to various parameters.</p>
+<p>This class provides methods to read seismic velocity profiles, convert 
+them to other parameters using different approaches, and write the 
+converted data to output files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>profile</strong><span class="classifier">str</span></dt><dd><p>File path to the seismic profile data.</p>
+</dd>
+<dt><strong>profile_type</strong><span class="classifier">str</span></dt><dd><p>Type of the seismic profile, “Vp” or “Vs.”</p>
+</dd>
+<dt><strong>region_name</strong><span class="classifier">str, optional</span></dt><dd><p>Geographic location of the profile. Default is None.</p>
+</dd>
+<dt><strong>seismic_method_name</strong><span class="classifier">str</span></dt><dd><p>Method used to acquire the velocity profile. If set to None, the 
+read_data method will pick up the argument from the file string. 
+Note if set to None the strict file convention must be set 
+(see README.md) and tutorial_1.ipynb.</p>
+</dd>
+<dt><strong>geotherm</strong><span class="classifier">class instance</span></dt><dd><p>Instance of the Geotherm class containing information about the 
+temperature profile at the site of the seismic profile.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">dict</span></dt><dd><p>Dictionary containing parsed seismic profile data.</p>
+</dd>
+<dt><strong>profile_type</strong><span class="classifier">str</span></dt><dd><p>Type of profile.  “Vp” or “Vs”.</p>
+</dd>
+<dt><strong>moho</strong><span class="classifier">float</span></dt><dd><p>Moho depth parsed from the profile data.</p>
+</dd>
+<dt><strong>geotherm</strong><span class="classifier">class instance</span></dt><dd><p>Instance of the Geotherm class (if using temperature-dependent 
+conversion. Default None)</p>
+</dd>
+<dt><strong>region_name</strong><span class="classifier">str</span></dt><dd><p>Geographic location of the file (parsed from file string or given 
+as argument)</p>
+</dd>
+<dt><strong>method</strong><span class="classifier">str</span></dt><dd><p>Method used to collect the velocity profile.  Parsed from file 
+string or given as argument (e.g. ‘REFRACTION’).</p>
+</dd>
+<dt><strong>rho, av_rho, rho_hi_res</strong><span class="classifier">various types</span></dt><dd><p>Attributes generated by the Vs_to_Vp_brocher, Vp_to_density_brocher, 
+and V_to_density_stephenson methods.</p>
+</dd>
+<dt><strong>vp_calc</strong><span class="classifier">np.ndarray</span></dt><dd><p>Calculated vp profile generated by Vs_to_Vp_brocher method.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SMV2rho.density_functions.Convert.V_to_density_stephenson" title="SMV2rho.density_functions.Convert.V_to_density_stephenson"><code class="xref py py-obj docutils literal notranslate"><span class="pre">V_to_density_stephenson</span></code></a>(parameters[, dz, ...])</p></td>
+<td><p>Convert seismic velocity profiles to density using the Stephenson  method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#SMV2rho.density_functions.Convert.Vp_to_density_brocher" title="SMV2rho.density_functions.Convert.Vp_to_density_brocher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Vp_to_density_brocher</span></code></a>()</p></td>
+<td><p>Convert Vp profile to density using Brocher (2005) method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SMV2rho.density_functions.Convert.Vs_to_Vp_brocher" title="SMV2rho.density_functions.Convert.Vs_to_Vp_brocher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Vs_to_Vp_brocher</span></code></a>()</p></td>
+<td><p>Convert Vs profile to Vp profile using Brocher's (2005) approach.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#SMV2rho.density_functions.Convert.read_data" title="SMV2rho.density_functions.Convert.read_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_data</span></code></a>()</p></td>
+<td><p>Read in data file and parse it into a data dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SMV2rho.density_functions.Convert.write_data" title="SMV2rho.density_functions.Convert.write_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_data</span></code></a>(path[, file_structure, approach, ...])</p></td>
+<td><p>Write seismic profile data to appropriate file locations.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Convert.V_to_density_stephenson">
+<span class="sig-name descname"><span class="pre">V_to_density_stephenson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert.V_to_density_stephenson" title="Link to this definition">¶</a></dt>
+<dd><p>Convert seismic velocity profiles to density using the Stephenson 
+method.</p>
+<p>This method takes seismic velocity profiles and converts them to 
+density profiles using the Stephenson density conversion approach. It 
+provides options for specifying conversion parameters, depth 
+increment, constant density values, temperature dependence, and 
+plotting. The resulting density fields are added to the ‘self.data’ 
+dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parameters</strong><span class="classifier">Constants or TemperatureDependentConstants class instance</span></dt><dd><p>Parameters for density conversion.</p>
+</dd>
+<dt><strong>dz</strong><span class="classifier">float, optional</span></dt><dd><p>Depth increment for density calculation (default is 0.1 km).</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float, optional</span></dt><dd><p>Depth for constant density (km).</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float, optional</span></dt><dd><p>Constant density value.</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool, optional</span></dt><dd><p>Include temperature dependence (default is True).</p>
+</dd>
+<dt><strong>plot</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the density and pressure profiles (default is 
+False).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Convert.Vp_to_density_brocher">
+<span class="sig-name descname"><span class="pre">Vp_to_density_brocher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert.Vp_to_density_brocher" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Vp profile to density using Brocher (2005) method.</p>
+<p>This method converts a seismic Vp profile to density using the 
+Brocher (2005) method. It checks whether a Vp or calculated Vp 
+profile exists and performs the conversion accordingly. The resulting 
+density fields are added to the <cite>self.data</cite> dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>KeyError</dt><dd><p>If no Vp or calculated Vp profile is found when converting a Vs 
+profile. In such cases, it reminds the user to convert Vs to Vp 
+first.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Convert.Vs_to_Vp_brocher">
+<span class="sig-name descname"><span class="pre">Vs_to_Vp_brocher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert.Vs_to_Vp_brocher" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Vs profile to Vp profile using Brocher’s (2005) approach.</p>
+<p>This method converts a seismic Vs profile to a Vp profile using 
+Brocher’s (2005) approach. It updates the <cite>self.data</cite> dictionary to 
+include the <cite>Vp_calc</cite> profile field, average Vp, and Vp/Vs ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Exception</dt><dd><p>If the profile type is not “Vs,” indicating that you must be using 
+a Vs profile for conversion. In such cases, it advises the user to 
+re-initiate the class.</p>
+</dd>
+<dt>NameError</dt><dd><p>If the <cite>data</cite> dictionary has not been created yet, it reminds the 
+user to run <cite>read_data</cite> first to create the data dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Convert.read_data">
+<span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert.read_data" title="Link to this definition">¶</a></dt>
+<dd><p>Read in data file and parse it into a data dictionary.</p>
+<p>Reads the seismic profile data file specified by <cite>self.profile</cite>, 
+extracts relevant information, and organizes it into a dictionary 
+stored in <cite>self.data</cite>. This method handles the following tasks:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Extracts method type from the file path (e.g., refraction, </dt><dd><p>reflection, RF).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Parses the record header data, including station name, location </dt><dd><p>coordinates, and Moho depth.</p>
+</dd>
+</dl>
+</li>
+<li><p>Converts depth-velocity data into a 2D array and reorders columns.</p></li>
+<li><p>Ensures the velocity profile extends to the Moho depth.</p></li>
+<li><dl class="simple">
+<dt>Checks for any velocity step at the Moho depth and removes it </dt><dd><p>so that we do not sample mantle velocities.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Corrects for potential data capture errors by ensuring depth is </dt><dd><p>monotonically increasing.</p>
+</dd>
+</dl>
+</li>
+<li><p>Calculates the average velocity for the profile.</p></li>
+<li><dl class="simple">
+<dt>Constructs a data dictionary based on the profile type (Vs or Vp) </dt><dd><p>and stores it in <cite>self.data</cite>.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd><p>The parsed data is stored in <cite>self.data</cite> for further use.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Convert.write_data">
+<span class="sig-name descname"><span class="pre">write_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stephenson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert.write_data" title="Link to this definition">¶</a></dt>
+<dd><p>Write seismic profile data to appropriate file locations.</p>
+<p>This method takes the seismic profile data stored in the class 
+instance and writes it to the correct file locations based on the 
+specified density conversion approach and temperature dependence 
+settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>The path to the directory containing all velocity data. See README 
+for directory structure details.</p>
+</dd>
+<dt><strong>file_structure</strong><span class="classifier">str, optional</span></dt><dd><p>If set to None (Default) then we will construct the path from the 
+information in the metadata (i.e. following the default file 
+structure). Otherwise a manual outpath needs to be used that leads 
+to the output location. We will then append relevant method 
+information to the output filename to bookmark the output 
+profiles.</p>
+</dd>
+<dt><strong>approach</strong><span class="classifier">str, optional</span></dt><dd><p>The density (and Vp-Vs if used) conversion approach, which is 
+needed for the file path (default is “stephenson”).</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies whether temperature dependence is included (default is 
+False).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.MultiConversion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">MultiConversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stephenson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_geotherm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.MultiConversion" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wrapper class to extract multiple files from path to send to 
+Convert class using specified density conversion approach.
+Check that all required arguments have been provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>The master directory where all data are stored in 
+directories named after their location.</p>
+</dd>
+<dt><strong>which_location</strong><span class="classifier">str or list, optional</span></dt><dd><p>Determines which locations the user wants to convert. 
+Defaults to “ALL,” indicating that all locations will be 
+converted. If specific locations are desired, provide a 
+list of location names.</p>
+</dd>
+<dt><strong>write_data</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies whether to write the converted data to files. 
+Defaults to False.</p>
+</dd>
+<dt><strong>approach</strong><span class="classifier">str, optional</span></dt><dd><p>The density conversion approach to use. Options are 
+“stephenson” or “brocher.” Defaults to “stephenson.”</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">class instance, optional</span></dt><dd><p>Class instance of the Constants class. Must be provided 
+if using approach ‘stephenson’. Must contain a 
+material_constants attribute if T_dependence is True.</p>
+</dd>
+<dt><strong>master_geotherm</strong><span class="classifier">instance of Geotherm class, optional</span></dt><dd><p>Used as a reference or template for other operations. 
+When the <cite>master</cite> attribute of <cite>master_geotherm</cite> is True, 
+deep copies are made and parameters are updated for all 
+individual profiles.</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float, optional</span></dt><dd><p>The depth (from the surface) over which to use a constant 
+density value (in kilometers). Defaults to None.</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float, optional</span></dt><dd><p>The value of the constant density to use for the uppermost 
+few kilometers (in Mg/m3), if <cite>constant_depth</cite> is set.  
+Defaults to None.</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool, optional</span></dt><dd><p>Determines whether to include temperature dependence of 
+velocity to density conversion, including thermal 
+expansion and compressibility. Defaults to False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>The master directory where all data are stored.</p>
+</dd>
+<dt><strong>which_location</strong><span class="classifier">str or list</span></dt><dd><p>The locations to convert.</p>
+</dd>
+<dt><strong>write_data</strong><span class="classifier">bool</span></dt><dd><p>Whether to write the converted data to files.</p>
+</dd>
+<dt><strong>approach</strong><span class="classifier">str</span></dt><dd><p>The density conversion approach to use.</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">class instance</span></dt><dd><p>Instance of the Constants class.</p>
+</dd>
+<dt><strong>master_geotherm</strong><span class="classifier">instance of Geotherm class</span></dt><dd><p>Used as a reference or template for other operations.</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float</span></dt><dd><p>The depth over which to use a constant density value.</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float</span></dt><dd><p>The value of the constant density to use for the uppermost 
+few kilometers.</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool</span></dt><dd><p>Whether to include temperature dependence of velocity to 
+density conversion.</p>
+</dd>
+<dt><strong>convert_metadata</strong><span class="classifier">list</span></dt><dd><p>Metadata for the conversion process.  This is a list of
+dictionaries that is appended to in the process_file_list
+method.  It is used to store information about the conversion
+process for each profile.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SMV2rho.density_functions.MultiConversion.assemble_file_lists" title="SMV2rho.density_functions.MultiConversion.assemble_file_lists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assemble_file_lists</span></code></a>()</p></td>
+<td><p>Assemble file lists and necessary parameters for density conversion.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#SMV2rho.density_functions.MultiConversion.profiles_to_dataframe" title="SMV2rho.density_functions.MultiConversion.profiles_to_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">profiles_to_dataframe</span></code></a>()</p></td>
+<td><p>Convert station profiles to a pandas DataFrame for bulk information.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SMV2rho.density_functions.MultiConversion.send_to_conversion_function" title="SMV2rho.density_functions.MultiConversion.send_to_conversion_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">send_to_conversion_function</span></code></a>([parallel])</p></td>
+<td><p>Send data to the velocity conversion function and obtain station  profiles.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.MultiConversion.assemble_file_lists">
+<span class="sig-name descname"><span class="pre">assemble_file_lists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.MultiConversion.assemble_file_lists" title="Link to this definition">¶</a></dt>
+<dd><p>Assemble file lists and necessary parameters for density conversion.</p>
+<p>This method prepares the necessary data and parameters for density 
+conversion by assembling file lists, checking provided arguments, and 
+setting up parameters based on the chosen conversion approach. It 
+also initializes the <cite>convert_metadata</cite> attribute for storing 
+conversion metadata.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>None</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.MultiConversion.profiles_to_dataframe">
+<span class="sig-name descname"><span class="pre">profiles_to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.MultiConversion.profiles_to_dataframe" title="Link to this definition">¶</a></dt>
+<dd><p>Convert station profiles to a pandas DataFrame for bulk information.</p>
+<p>This method iterates over the station profiles stored in the 
+<cite>station_profiles</cite> attribute of the class instance. For each profile, 
+it extracts the ‘station’, ‘location’, ‘av_rho’, ‘moho’, ‘region’, 
+‘av_Vp’, ‘av_Vs’, and ‘av_Vp_calc’ attributes (if they exist), and 
+stores them in separate lists. These lists are then converted to 
+numpy arrays.</p>
+<p>The method then creates a pandas DataFrame from these arrays, with 
+each array forming a column in the DataFrame. The DataFrame is stored 
+in the <cite>station_profiles_df</cite> attribute of the class instance, and is 
+also returned by the method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>A pandas DataFrame where each row represents a station profile, 
+and the columns represent the ‘station’, ‘lon’, ‘lat’, ‘moho’, 
+‘av_vp’, ‘av_vs’, ‘av_rho’, and ‘region’ attributes of the profile. 
+‘lon’ and ‘lat’ are derived from the ‘location’ attribute of the 
+profile, which is assumed to be a two-element array or list. If 
+‘av_Vp’, ‘av_Vs’, or ‘av_Vp_calc’ do not exist in a profile, their 
+values in the DataFrame are set to NaN.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.MultiConversion.send_to_conversion_function">
+<span class="sig-name descname"><span class="pre">send_to_conversion_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.MultiConversion.send_to_conversion_function" title="Link to this definition">¶</a></dt>
+<dd><p>Send data to the velocity conversion function and obtain station 
+profiles.</p>
+<p>This method initiates the velocity conversion process for each 
+profile and assembles a list of data dictionaries containing velocity,
+Moho, density information, etc. The method provides an option for 
+parallel processing but currently has limitations due
+to pickling issues. It works with both parallel and 
+single-processor modes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parallel</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to use parallel processing (default is False). Note that 
+this functionality is not currently available owing to issues with 
+the class-based architecture for handling constants and some
+non-pickleable objects. This bug will be fixed in a later 
+release. 
+Setting parallel=True will trigger an exception.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>An array containing station profiles for further use.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.V2RhoStephenson">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">V2RhoStephenson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Vp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geotherm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.V2RhoStephenson" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for density conversion of a given seismic profile using the 
+Stephenson method. Only handles single profiles.</p>
+<p>If you are converting a single profile, it is easiest to use the 
+functionality in this class through the convert_V_profile function.
+If you are converting multiple profiles, then it is easiest to access
+the functionality in this class through the MultiConversion class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">dict</span></dt><dd><p>Seismic profile data containing depth, velocity, and density. This 
+is the output from the read_data method of the Convert class.</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Instance of the Constants, VpConstants or VsConstants class. If 
+T_dependence is True, then this must be an instance of Constants 
+class and must contain material_constants attribute.</p>
+</dd>
+<dt><strong>profile</strong><span class="classifier">str</span></dt><dd><p>Profile type, “Vp” or “Vs.”</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float</span></dt><dd><p>Depth for constant density for uppermost x km.</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float</span></dt><dd><p>Constant density value for uppermost x km.</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool</span></dt><dd><p>True for temperature dependence inclusion (default True).</p>
+</dd>
+<dt><strong>geotherm</strong><span class="classifier">list</span></dt><dd><p>Instance of the Geotherm class, must be set if T_dependence is True 
+(default None).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">dict</span></dt><dd><p>Seismic profile data containing depth, velocity, and density. This 
+is the output from the read_data method of the Convert class.</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Instance of the Constants, VpConstants or VsConstants class. If 
+T_dependence is True, then this must be an instance of Constants 
+class and must contain material_constants attribute.</p>
+</dd>
+<dt><strong>profile</strong><span class="classifier">str</span></dt><dd><p>Profile type, “Vp” or “Vs.”</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float</span></dt><dd><p>Depth for constant density for uppermost x km.</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float</span></dt><dd><p>Constant density value for uppermost x km.</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool</span></dt><dd><p>True for temperature dependence inclusion (default True).</p>
+</dd>
+<dt><strong>geotherm</strong><span class="classifier">list</span></dt><dd><p>Instance of the Geotherm class, must be set if T_dependence is True 
+(default None).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#SMV2rho.density_functions.V2RhoStephenson.calculate_density_profile" title="SMV2rho.density_functions.V2RhoStephenson.calculate_density_profile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_density_profile</span></code></a>([dz])</p></td>
+<td><p>Calculate the density profile.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.V2RhoStephenson.calculate_density_profile">
+<span class="sig-name descname"><span class="pre">calculate_density_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.V2RhoStephenson.calculate_density_profile" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the density profile.</p>
+<p>This method calculates the density profile based on the provided 
+seismic data and parameters, taking into account temperature 
+dependence if specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dz</strong><span class="classifier">float, optional</span></dt><dd><p>Depth interval for calculations (default is 0.1 km).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">dict</span></dt><dd><p>Seismic profile data including density. Also returns as an 
+attribute of the class.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.V2rho_stephenson">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">V2rho_stephenson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.V2rho_stephenson" title="Link to this definition">¶</a></dt>
+<dd><p>Convert seismic wave velocity (Vp or Vs) into density at standard 
+temperature and pressure (s.t.p.) given pressure. This function is 
+based on mineral physics and accounts for pressure effects on velocity 
+and density.  WARNING: this function returns density at standard 
+temperature and pressure.  Please correct for thermal expansion and 
+compression by lithostatic pressure to obtain rho(z).</p>
+<p>NB. This function can be used for both Vp and Vs conversions, but the 
+parameter values will differ. Ensure you use the correct parameters for 
+the velocity type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">array-like</span></dt><dd><p>An array of pressure and velocity data where data[0] is pressure 
+(in GPa) and data[1] is velocity (in km/s).</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">class instance</span></dt><dd><p>Instance of the VpConstants or VsConstants classes containing the 
+attributes listed below:</p>
+<ul class="simple">
+<li><p>v0 (float): Intercept velocity.</p></li>
+<li><p>b (float): Velocity gradient with respect to density.</p></li>
+<li><dl class="simple">
+<dt>d0 (float): Partial derivative of velocity gradient (dvdr) with </dt><dd><p>respect to pressure (dp).</p>
+</dd>
+</dl>
+</li>
+<li><p>dp (float): Velocity gradient with respect to pressure (dvdpr).</p></li>
+<li><p>c (float): Amplitude of the velocity drop-off at low pressure.</p></li>
+<li><p>k (float): Lengthscale of the velocity drop-off.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float or numpy.ndarray</dt><dd><p>Density at standard temperature and pressure (s.t.p.) in g/cm³.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Vp2rho_brocher">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">Vp2rho_brocher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Vp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Vp2rho_brocher" title="Link to this definition">¶</a></dt>
+<dd><p>Convert compressional wave velocity (Vp) to density (g/cm³) using the 
+Nafe-Drake relationship.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Vp</strong><span class="classifier">float or numpy.ndarray</span></dt><dd><p>Compressional wave velocity in km/s.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float or numpy.ndarray</dt><dd><p>Density in g/cm³.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.Vs2Vp_brocher">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">Vs2Vp_brocher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Vs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Vs2Vp_brocher" title="Link to this definition">¶</a></dt>
+<dd><p>Convert shear wave velocity (Vs) to compressional wave velocity (Vp) 
+using Brocher’s (2005) regression fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Vs</strong><span class="classifier">float or numpy.ndarray</span></dt><dd><p>Shear wave velocity in km/s.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float or numpy.ndarray</dt><dd><p>Compressional wave velocity (Vp) in km/s.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.av_profile">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">av_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'median'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.av_profile" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the average profile and bulk property profile given a family 
+of profiles.</p>
+<p>This function takes a list of profiles, where each profile is represented 
+as a NumPy array with columns [depth, property]. It calculates the 
+average profile and the bulk property profile as a function of depth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>profiles</strong><span class="classifier">list of np.ndarray</span></dt><dd><p>List of profiles (e.g., Vp, Vs, P, T, rho, etc.). Each profile must 
+contain at least two columns: depth and property.</p>
+</dd>
+<dt><strong>base_depth</strong><span class="classifier">float</span></dt><dd><p>Depth to which the bulk property should be averaged.</p>
+</dd>
+<dt><strong>average_type</strong><span class="classifier">str, optional</span></dt><dd><p>Method of averaging (‘median’ or ‘mean’). Default is ‘median’.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>av_z_f</strong><span class="classifier">scipy.interpolate.CubicSpline</span></dt><dd><p>Average profile as a function of depth.</p>
+</dd>
+<dt><strong>bulk_base_depth_f</strong><span class="classifier">scipy.interpolate.CubicSpline</span></dt><dd><p>Bulk property profile as a function of base depth.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>This function interpolates the input profiles and calculates the </dt><dd><p>average profile at each depth.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>It also computes the bulk property profile as a function of base </dt><dd><p>depth.  (e.g. bulk crustal velocity as a function of crustal 
+thickness)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.check_arguments">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">check_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_dependence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geotherm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.check_arguments" title="Link to this definition">¶</a></dt>
+<dd><p>Check if required arguments are provided and raise errors if not.</p>
+<p>This function checks the provided arguments for the conversion process 
+and raises errors if any required information is missing based on the 
+selected conversion approach.  Prevents conflicting options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>T_dependence</strong><span class="classifier">bool</span></dt><dd><p>Flag indicating whether to correct for temperature and pressure.</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float</span></dt><dd><p>Depth range for constant density from the surface.</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float</span></dt><dd><p>Constant density value for the uppermost x kilometers.</p>
+</dd>
+<dt><strong>approach</strong><span class="classifier">str</span></dt><dd><p>Density conversion scheme, “brocher” or “stephenson”.</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">str</span></dt><dd><p>Constants class instance if using the Stephenson scheme.</p>
+</dd>
+<dt><strong>geotherm</strong><span class="classifier">Geotherm, optional</span></dt><dd><p>Geotherm class instance object for temperature dependence. 
+Defaults to None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>If required arguments are missing or incompatible with the selected 
+approach.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.convert_V_profile">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">convert_V_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stephenson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constant_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geotherm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_working_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.convert_V_profile" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a single Vp or Vs velocity profile to a density profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>file</strong><span class="classifier">str</span></dt><dd><p>Path to the input velocity profile file.</p>
+</dd>
+<dt><strong>profile_type</strong><span class="classifier">str</span></dt><dd><p>Type of velocity profile, ‘Vp’ or ‘Vs’.</p>
+</dd>
+<dt><strong>write_data</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, writes the converted data to files. Default is False.</p>
+</dd>
+<dt><strong>path</strong><span class="classifier">str, optional</span></dt><dd><p>Path to write the results. Default is None.</p>
+</dd>
+<dt><strong>approach</strong><span class="classifier">str, optional</span></dt><dd><p>Density conversion scheme to use, “brocher” or “stephenson”. 
+Default is “stephenson”.</p>
+</dd>
+<dt><strong>location</strong><span class="classifier">str, optional</span></dt><dd><p>Regional location of the profile. Default is None.</p>
+</dd>
+<dt><strong>parameters</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Instance of the Constants, VpConstants or VsConstants classes.  
+Must be instance of the Constants class with a material_constants 
+object if T_dependence is set to True.</p>
+</dd>
+<dt><strong>constant_depth</strong><span class="classifier">float, optional</span></dt><dd><p>Depth range for constant density from the surface. Default is None.</p>
+</dd>
+<dt><strong>constant_density</strong><span class="classifier">float, optional</span></dt><dd><p>Constant density value for the uppermost x kilometers. Default is None.</p>
+</dd>
+<dt><strong>T_dependence</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, corrects velocity and density for temperature and pressure. 
+Default is False.</p>
+</dd>
+<dt><strong>geotherm</strong><span class="classifier">object, optional</span></dt><dd><p>Instance of the Geotherm class for temperature dependence.  
+Must be provided if T_dependence is set to True.  Default is None.</p>
+</dd>
+<dt><strong>print_working_file</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, prints the file that is being converted. Default is False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>DataFrame containing the converted velocity and density data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.convert_to_same_depth_intervals">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">convert_to_same_depth_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.convert_to_same_depth_intervals" title="Link to this definition">¶</a></dt>
+<dd><p>Convert profiles to have the same depth intervals.  Takes depth
+as first column and any arbitrary y value as second.  profiles 1 and 2
+need not have the same y field.</p>
+<p>This function bins velocity profiles so that they have the same depth 
+ranges. It is suitable for profiles with distinct layers rather than 
+those with gradients, although it is designed to produce a reasonable
+solution in both cases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>profile1</strong><span class="classifier">np.ndarray</span></dt><dd><p>The first profile as a NumPy array with columns [depth, velocity].</p>
+</dd>
+<dt><strong>profile2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The second profile as a NumPy array with columns [depth, velocity].</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>A binned velocity profile aligned with the depth intervals of the 
+lowest-resolution profile.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>This function finds the lowest-resolution profile and interpolates the </dt><dd><p>other profile accordingly.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>It returns a binned profile with the same depth intervals as the </dt><dd><p>lowest-resolution profile.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>It works best when lowest-resolution profile has discrete layers </dt><dd><p>rather than gradients, although it will return reasonable values
+in both cases.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.ensure_dir">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">ensure_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.ensure_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Ensure that the directory for the given filename exists. If the directory 
+does not exist, it will be created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The path to the file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.p">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">p</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9.81</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.p" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate lithostatic pressure given average density of
+overburden and thickness of the overburden.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>rho</strong><span class="classifier">float</span></dt><dd><p>Average density of the overburden in Mg/m³.</p>
+</dd>
+<dt><strong>h</strong><span class="classifier">float</span></dt><dd><p>Thickness of the overburden in kilometers.</p>
+</dd>
+<dt><strong>g</strong><span class="classifier">float, optional</span></dt><dd><p>Acceleration due to gravity in m/s². Default is 9.81 m/s².</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>Lithostatic pressure in Pascals (Pa).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The lithostatic pressure (P) is calculated using the formula:
+P = rho * g * h * 1e6</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.progress_bar">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">progress_bar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.progress_bar" title="Link to this definition">¶</a></dt>
+<dd><p>Create a text-based progress bar to track the progress of an iterable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier">iterable</span></dt><dd><p>The iterable object (e.g., list, range) to iterate through.</p>
+</dd>
+<dt><strong>length</strong><span class="classifier">int, optional</span></dt><dd><p>The length of the progress bar. Defaults to 50.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>item</dt><dd><p>The current item from the iterable.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.read_file">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.read_file" title="Link to this definition">¶</a></dt>
+<dd><p>Read the contents of a file and return them as a list of lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The path to the file.</p>
+</dd>
+<dt><strong>delimiter</strong><span class="classifier">str, optional</span></dt><dd><p>The delimiter used to split lines into elements (default is None, 
+which means lines are not split).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>list</dt><dd><p>A list of lines from the file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.read_no_profile_data">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">read_no_profile_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.read_no_profile_data" title="Link to this definition">¶</a></dt>
+<dd><p>Read crustal data from a database of crustal thickness estimates and 
+vp/vs ratios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data_file</strong><span class="classifier">str</span></dt><dd><p>Path to the data file to be read.</p>
+</dd>
+<dt><strong>region_name</strong><span class="classifier">str, optional</span></dt><dd><p>Optional regional location of the profile.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>A Pandas DataFrame containing the following columns:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>‘region’ (str): Regional location of the profile (if provided, </dt><dd><p>otherwise None).</p>
+</dd>
+</dl>
+</li>
+<li><p>‘lon’ (float): Longitude of the station.</p></li>
+<li><p>‘lat’ (float): Latitude of the station.</p></li>
+<li><p>‘moho’ (float): Crustal thickness estimate.</p></li>
+<li><p>‘vp_vs’ (float): Ratio of seismic velocities (vp/vs).</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.save_bulk_profiles">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">save_bulk_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.save_bulk_profiles" title="Link to this definition">¶</a></dt>
+<dd><p>Save bulk profiles data to a file.</p>
+<p>This function generates x-values using numpy.arange() based on the 
+specified start, stop, and step values.
+It computes the data values using the provided data_function and saves 
+the data to a file in the specified outpath.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>outpath</strong><span class="classifier">str</span></dt><dd><p>The output directory where the data file will be saved.</p>
+</dd>
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the output data file.</p>
+</dd>
+<dt><strong>data_function</strong><span class="classifier">function</span></dt><dd><p>A function that computes the data values based on x-values.</p>
+</dd>
+<dt><strong>start</strong><span class="classifier">float</span></dt><dd><p>The start value for the x-values.</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">float</span></dt><dd><p>The stop value for the x-values.</p>
+</dd>
+<dt><strong>step</strong><span class="classifier">float</span></dt><dd><p>The step size for generating x-values.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.density_functions.write_profile_to_file">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.density_functions.</span></span><span class="sig-name descname"><span class="pre">write_profile_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.write_profile_to_file" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">list</span></dt><dd><p>A list of data to be written to the file.</p>
+</dd>
+<dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The path to the output file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-SMV2rho.temperature_dependence"></span><dl class="py class">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">Geotherm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geotherm_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty_constants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SMV2rho.temperature_dependence.GeothermConstants" title="SMV2rho.temperature_dependence.GeothermConstants"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeothermConstants</span></code></a></p>
+<p>A class used to represent a Geotherm.</p>
+<p>A Geotherm is a model for calculating the temperature profile in the
+Earth’s crust. This class provides several different geotherm models,
+which can be selected using the <cite>geotherm_type</cite> parameter.</p>
+<p>The class inherits from GeothermConstants, which provides default values
+for various geothermal properties. These defaults can be overridden by
+providing keyword arguments when creating a Geotherm instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>geotherm_type</strong><span class="classifier">str, optional</span></dt><dd><p>The type of geotherm model to use. Default is “linear”.</p>
+</dd>
+<dt><strong>uncertainty_constants</strong><span class="classifier">GeothermConstantUncertainties, optional</span></dt><dd><p>An instance of GeothermConstantUncertainties that stores the
+uncertainties related to each geothermal property. Default is an
+instance of GeothermConstantUncertainties with default values.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Additional keyword arguments to override constants.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p># Example 1: Using a linear geothermal model to evaluate temperature at 
+#   10 km depth.
+&gt;&gt;&gt; geotherm = Geotherm(geotherm_type=”linear”)
+&gt;&gt;&gt; temperature = geotherm(10000)
+&gt;&gt;&gt; print(temperature)</p>
+<p># Example 2: Using a single-layer internal heat geotherm model to generate
+#   a geotherm with 150 depth slices.
+&gt;&gt;&gt; geotherm = Geotherm(geotherm_type=”single_layer_internal_heat”)
+&gt;&gt;&gt; temperatures = geotherm.generate_geotherm(z_slices = 150)
+&gt;&gt;&gt; print(temperatures)</p>
+<p># Example 3: Using a single-layer temperature difference geotherm model to
+#   generate a family of geotherms with 200 depth slices each.
+&gt;&gt;&gt; geotherm = Geotherm(
+…     geotherm_type=”single_layer_temperature_difference”,
+…     uncertainty_constants=GeothermConstantUncertainties(),
+…     tc=30000)
+&gt;&gt;&gt; geotherm.generate_geotherm_distribution(n_geotherms=100, z_slices=200)
+&gt;&gt;&gt; print(geotherm.T_family)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>geotherm_type</strong><span class="classifier">str</span></dt><dd><p>The type of geotherm model to use.</p>
+</dd>
+<dt><strong>uncertainties</strong><span class="classifier">GeothermConstantUncertainties</span></dt><dd><p>An instance of GeothermConstantUncertainties that stores the
+uncertainties related to each geothermal property.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__(z)</strong></p></td>
+<td><p>Evaluate the geothermal model at a given depth or depths.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>linear(z)</strong></p></td>
+<td><p>Calculate the temperature at a given depth or depths using a linear geothermal model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>single_layer_internal_heat(z)</strong></p></td>
+<td><p>Calculate the temperature at a given depth or depths using a single-layer internal heat geothermal model.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>single_layer_flux_difference(z)</strong></p></td>
+<td><p>Calculate the temperature at a given depth or depths using a single-layer flux difference geothermal model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>single_layer_temperature_difference(z)</strong></p></td>
+<td><p>Calculate the temperature at a given depth or depths using a single-layer temperature difference geothermal model.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>generate_geotherm(z_slices)</strong></p></td>
+<td><p>Generate the geotherm for the current set of parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>generate_geotherm_distribution(n_geotherms, z_slices)</strong></p></td>
+<td><p>Generate a family of geothermal models based on the mean and uncertainty values of the constants using Monte Carlo sampling of parameter uncertainties.  uncertainty_constants must not be set to None when calling this method.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.generate_geotherm">
+<span class="sig-name descname"><span class="pre">generate_geotherm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.generate_geotherm" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a geothermal model based on the constants provided.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>np.ndarray: Array of depths at which to evaluate the model.
+np.ndarray: Array of temperatures at the given depths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.generate_geotherm_distribution">
+<span class="sig-name descname"><span class="pre">generate_geotherm_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_geotherms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.generate_geotherm_distribution" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a family of geothermal models based on the mean and 
+uncertainty values of the constants.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>n_geotherms (int): Number of geotherms to generate.
+z_slices (int): Number of slices to divide the depth into.</p>
+</dd>
+<dt>Returns:</dt><dd><p>np.ndarray: Array of depths at which to evaluate the models.
+np.ndarray: Array of temperatures at the given depths for each 
+model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.linear">
+<span class="sig-name descname"><span class="pre">linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.linear" title="Link to this definition">¶</a></dt>
+<dd><p>Linear geothermal model.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
+evaluate the model.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the linear geothermal 
+model at the given depth or depths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.single_layer_flux_difference">
+<span class="sig-name descname"><span class="pre">single_layer_flux_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.single_layer_flux_difference" title="Link to this definition">¶</a></dt>
+<dd><p>Single-layer model with internal heat generation based on heat 
+flux at the surface and at the moho.  Does not require internal heat
+production or crustal thickness as arguments.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
+evaluate the model.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the single-layer flux 
+difference geothermal model at the given depth or depths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.single_layer_internal_heat">
+<span class="sig-name descname"><span class="pre">single_layer_internal_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.single_layer_internal_heat" title="Link to this definition">¶</a></dt>
+<dd><p>Single-layer model with internal heat generation and heat flux 
+at the moho.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
+evaluate the model.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the single-layer internal 
+heat geothermal model at the given depth or depths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.single_layer_temperature_difference">
+<span class="sig-name descname"><span class="pre">single_layer_temperature_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.single_layer_temperature_difference" title="Link to this definition">¶</a></dt>
+<dd><p>Single-layer model including internal heat generation based on the 
+temperature at the surface and at the moho.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
+evaluate the model.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the single-layer temperature 
+difference geothermal model at the given depth or depths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">GeothermConstantUncertainties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tc_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.014</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H0_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2e-10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hr_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_unc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This data class stores uncertainties related to geothermal properties.
+Each property is represented as a float value.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>tc_unc (float): Crustal thickness, km
+T0_unc (float): Temperature at the surface, C
+T1_unc (float): Temperature at the base of the crust, C
+q0_unc (float): Heat flux at the surface, W/m2
+qm_unc (float): Heat flux at the base, W/m2
+k_unc (float): Thermal conductivity, W/(m K)
+H0_unc (float): Internal heat production at the surface W/(kg m3)
+hr_unc (float): Decay lengthscale of heat production, km
+rho_unc (float): Density, g/cm3</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.H0_unc">
+<span class="sig-name descname"><span class="pre">H0_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2e-10</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.H0_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.T0_unc">
+<span class="sig-name descname"><span class="pre">T0_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.T0_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.T1_unc">
+<span class="sig-name descname"><span class="pre">T1_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.T1_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.hr_unc">
+<span class="sig-name descname"><span class="pre">hr_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.hr_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.k_unc">
+<span class="sig-name descname"><span class="pre">k_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.k_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.q0_unc">
+<span class="sig-name descname"><span class="pre">q0_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.014</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.q0_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.qm_unc">
+<span class="sig-name descname"><span class="pre">qm_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.qm_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.rho_unc">
+<span class="sig-name descname"><span class="pre">rho_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.rho_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.tc_unc">
+<span class="sig-name descname"><span class="pre">tc_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.tc_unc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">GeothermConstants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">600.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.059</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7e-10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Data class to store constants related to geothermal properties.</p>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>tc (float): Crustal thickness, km
+T0 (float): Temperature at the surface, C
+T1 (float): Temperature at the base of the crust, C
+q0 (float): Heat flux at the surface, W/m2
+qm (float): Heat flux at the base, W/m2
+k (float): Thermal conductivity, W/(m K)
+H0 (float): Internal heat production at the surface W/(kg m3)
+hr (float): Decay lengthscale of heat production, km
+rho (float): Density, g/mc3</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tc</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.H0">
+<span class="sig-name descname"><span class="pre">H0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7e-10</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.H0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.T0">
+<span class="sig-name descname"><span class="pre">T0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.T0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.T1">
+<span class="sig-name descname"><span class="pre">T1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">600.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.T1" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.hr">
+<span class="sig-name descname"><span class="pre">hr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.hr" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.k">
+<span class="sig-name descname"><span class="pre">k</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.5</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.k" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.q0">
+<span class="sig-name descname"><span class="pre">q0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.059</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.q0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.qm">
+<span class="sig-name descname"><span class="pre">qm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.03</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.qm" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.rho">
+<span class="sig-name descname"><span class="pre">rho</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.9</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.rho" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstants.tc">
+<span class="sig-name descname"><span class="pre">tc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.tc" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.V_T_correction">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">V_T_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dvdT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.0004</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.V_T_correction" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.compressibility">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">compressibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho_o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.compressibility" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate effect of confining pressure on density
+Arguments: - rho_o - surface (reference) density</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>P - pressure (in MPa)</p></li>
+<li><p>K - Bulk modulus (in Pa)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:   - abs_rho - density at pressure, P</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>frac_change - fractional change in density </dt><dd><p>(i.e 1.1 = 10% velocity increase)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>rel_rho - relative density change (e.t. 0.1 = 10 Mg/m3 </dt><dd><p>density increase)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.rho_thermal">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">rho_thermal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho_o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.rho_thermal" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate simple thermal expansion
+Arguments: - rho_o - surface (reference) density</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>T - temperature (in deg C)</p></li>
+<li><p>T0 - surface temperature (in same units as T)</p></li>
+<li><p>alpha0 - thermal expansion coefficient</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:   - abs_rho - density at temperature, T</dt><dd><ul class="simple">
+<li><p>frac_change - fractional change in density (i.e 1.1 = 10% velocity increase)</p></li>
+<li><p>rel_rho - relative density change (e.g. 0.1 = 10 kg/m3 density increase)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.temperature_dependence.rho_thermal2">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">rho_thermal2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho_o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.9e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.rho_thermal2" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate effect of temperature on density
+Arguments: - rho_o - surface (reference) density</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>T - temperature (in deg C)</p></li>
+<li><p>alpha0 - thermal expansion at 0K (K^{-1})</p></li>
+<li><p>alpha1 - thermal expansion temperature derivative (K^{-2})</p></li>
+<li><p>T0 - surface temperature (in same units as T)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:   - abs_rho - density at temperature, T</dt><dd><ul class="simple">
+<li><p>frac_change - fractional change in density (i.e 1.1 = 10% velocity increase)</p></li>
+<li><p>rel_rho - relative density change (e.g. 0.1 = 10 kg/m3 density increase)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-SMV2rho.uncertainties"></span><dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.uncertainties.abs_precision_error">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.uncertainties.</span></span><span class="sig-name descname"><span class="pre">abs_precision_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.uncertainties.abs_precision_error" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.uncertainties.generate_gauss">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.uncertainties.</span></span><span class="sig-name descname"><span class="pre">generate_gauss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abs_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_unc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.uncertainties.generate_gauss" title="Link to this definition">¶</a></dt>
+<dd><p>Generate an array of absolute Gaussian random numbers.</p>
+<p>Parameters:
+abs_mean (float): The absolute mean of the Gaussian distribution.
+mean_unc (float): The standard deviation (uncertainty) of the</p>
+<blockquote>
+<div><p>Gaussian distribution.</p>
+</div></blockquote>
+<p>N (int): The number of random numbers to generate.</p>
+<p>Returns:
+numpy.ndarray: An array of absolute Gaussian random numbers.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.uncertainties.rho_err">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.uncertainties.</span></span><span class="sig-name descname"><span class="pre">rho_err</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geotherm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Vp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../UNCERTAINTY_PLOTS'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.uncertainties.rho_err" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate crustal density uncertainty by Monte Carlo sampling of 
+thermal and compressibility parameters. Returns drho(z) for mean 
+correction, and standard deviation.</p>
+<p>Note that this does not include the uncertainty associated with the 
+velocity-pressure calibration, which should be combined separately if 
+necessary. This function can only handle a single profile at a time.  
+Note that the Geotherm class must be initialised with the correct 
+parameters including the geotherm parameters (including tc) and 
+uncertainties.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>constants (object): Instance of the Constants class containing the </dt><dd><p>constants for the calculation.</p>
+</dd>
+<dt>geotherm (object): Geotherm object for temperature dependence.  The</dt><dd><p>rho attribute of the geotherm object will be used to set the bulk
+density for the density error propagation.</p>
+</dd>
+<dt>profile_type (str, optional): Type of velocity profile, ‘Vp’ or ‘Vs’. </dt><dd><p>Default is ‘Vp’.</p>
+</dd>
+<dt>N (int, optional): Number of samples for the Monte Carlo simulation. </dt><dd><p>Default is 1000.</p>
+</dd>
+<dt>z_slices (int, optional): Number of depth slices for the calculation. </dt><dd><p>Default is 100.</p>
+</dd>
+<dt>make_plots (bool, optional): If True, generates plots of the results. </dt><dd><p>Default is False.</p>
+</dd>
+<dt>save_plots (bool, optional): If True, saves the generated plots. </dt><dd><p>Default is False.</p>
+</dd>
+<dt>outpath (str, optional): Path to save the plots. Default is </dt><dd><p>“../UNCERTAINTY_PLOTS”.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>error_average_frac (float): The average fractional error calculated </dt><dd><p>from the Monte Carlo simulation.</p>
+</dd>
+<dt>error_average_add (float): The average additive error calculated </dt><dd><p>from the Monte Carlo simulation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-SMV2rho.spatial_functions"></span><dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.spatial_functions.haversine">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.spatial_functions.</span></span><span class="sig-name descname"><span class="pre">haversine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6371</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.spatial_functions.haversine" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the great circle distance between two points 
+on the earth (specified in decimal degrees)
+arguments:</p>
+<blockquote>
+<div><p>loc1 (float): array of coordinates of first point
+loc2 (float): array of coordinates of second point
+r (float, optional): Radius of earth in kilometers.</p>
+</div></blockquote>
+</dd></dl>
+
+<span class="target" id="module-SMV2rho.coincident_profile_functions"></span><dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.coincident_profile_functions.compare_adjacent_profiles">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.coincident_profile_functions.</span></span><span class="sig-name descname"><span class="pre">compare_adjacent_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coincident_profiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.coincident_profile_functions.compare_adjacent_profiles" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate and compare bulk properties of overlapping/coincident velocity profiles.</p>
+<p>This function takes velocity profiles and coincident profiles, and calculates and compares
+various properties between them.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><dl class="simple">
+<dt>profiles (list of dictionaries): </dt><dd><p>Velocity profiles containing location, velocity, density, etc.
+Output from run_convert_velocities.</p>
+</dd>
+<dt>coincident_profiles (list of lists): </dt><dd><p>Output from get_coincident_profiles. It’s a list in the same
+format as v_profiles with empty entries where no coincident
+profile exists and an entry where there is a profile that
+coincides with a v_profile with a corresponding index.</p>
+</dd>
+<dt>approach (str): </dt><dd><p>Method used to calculate velocities. Required since there 
+may not be a calculated vp profile. It can be ‘brocher’ or 
+‘stephenson’.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>vp_vs_vpcalc (numpy.ndarray): </dt><dd><p>Comparison between vp, vs, and calculated vp. If calculated 
+vp is not available, it writes np.nan.</p>
+</dd>
+<dt>rho_rho (numpy.ndarray): </dt><dd><p>Comparison of density estimates between vp and vs profiles.</p>
+</dd>
+<dt>moho_moho (numpy.ndarray): </dt><dd><p>Comparison of moho depth estimates between vp and vs profiles.</p>
+</dd>
+<dt>lon_lat (numpy.ndarray): </dt><dd><p>Locations of coincident profiles.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.coincident_profile_functions.get_coincident_profiles">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.coincident_profile_functions.</span></span><span class="sig-name descname"><span class="pre">get_coincident_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profiles1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profiles2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.coincident_profile_functions.get_coincident_profiles" title="Link to this definition">¶</a></dt>
+<dd><p>Find all surveys that are in the same place
+Arguments: – vp_profiles: list of vp profiles</p>
+<blockquote>
+<div><p>– vs profiles: list of vs profiles
+– buff: buffer distance in km (i.e. search distance between</p>
+<blockquote>
+<div><p>different profiles to look for coincident profiles).</p>
+</div></blockquote>
+</div></blockquote>
+<dl>
+<dt>Returns:   – coincident_profiles_all: list of profiles where Vp and</dt><dd><blockquote>
+<div><p>Vs are coincident.  If no coincident profiles are
+available then None is written as the list entry.</p>
+</div></blockquote>
+<p>– vp_profiles: list of vp profiles
+– vs profiles: list of vs profiles</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-SMV2rho.plotting"></span><dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.plotting.calculate_odr_line_equation2">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">calculate_odr_line_equation2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.calculate_odr_line_equation2" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the ODR (Orthogonal Distance Regression) line equation 
+and plot it.</p>
+<p>This function performs an ODR regression on the given data and plots the
+resulting regression line on the specified axis. It also writes the 
+equation of the regression line in the top left corner of the plot.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>x (numpy.ndarray): Array of x-values.
+y (numpy.ndarray): Array of y-values.
+ax (matplotlib.axes.Axes): The axis on which to plot the</p>
+<blockquote>
+<div><p>regression line.</p>
+</div></blockquote>
+</dd>
+<dt>Example:</dt><dd><p>x = np.random.rand(20)
+y = 2 * x + np.random.rand(20)
+fig, ax = plt.subplots()
+ax.scatter(x, y, label=’Data’)
+calculate_odr_line_equation2(x, y, ax)
+ax.legend()
+plt.show()</p>
+</dd>
+<dt>Note:</dt><dd><p>This function filters out data points where x &lt; 1.5 before performing
+the ODR regression.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.plotting.draw_file_tree">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_file_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_pycache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.draw_file_tree" title="Link to this definition">¶</a></dt>
+<dd><p>Draw a file tree diagram for the specified master directory.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>master_path (str): The path to the master directory.</dt><dd><p>include_files (bool, optional): Include files in the 
+file tree if True,
+otherwise only include directories. Defaults to False.</p>
+</dd>
+<dt>suppress_pycache (bool, optional): </dt><dd><p>Suppress the ‘__pycache__’ directory if True. Defaults to False.</p>
+</dd>
+<dt>suppress_hidden (bool, optional): </dt><dd><p>Suppress hidden files and directories if True. Defaults to False.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.plotting.plot_geographic_locations">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_geographic_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Mollweide'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Geographic</span> <span class="pre">Locations'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">third_field_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Third</span> <span class="pre">Field'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorbar_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.plot_geographic_locations" title="Link to this definition">¶</a></dt>
+<dd><p>Plot geographic locations on a map with color-coded points.</p>
+<p>This function generates a map projection specified by ‘projection’ 
+(default is Mollweide) and plots geographic locations defined by 
+longitude (‘lon’) and latitude (‘lat’). The color of the points is 
+determined by the ‘color’ parameter, and an optional third field
+can be labeled on the colorbar. You can customize the color range 
+using ‘colorbar_range’.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>lon (array-like): Array of longitudes for the locations.
+lat (array-like): Array of latitudes for the locations.
+color (array-like): Array of values determining the color of each</p>
+<blockquote>
+<div><p>point.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>projection (str, optional): Map projection type. Default is </dt><dd><p>‘Mollweide’.</p>
+</dd>
+<dt>title (str, optional): Title for the plot. Default is </dt><dd><p>‘Geographic Locations’.</p>
+</dd>
+<dt>third_field_label (str, optional): Label for the third field </dt><dd><p>on the colorbar.</p>
+</dd>
+<dt>colorbar_range (list, optional): Custom color range for the colorbar. </dt><dd><p>Default is determined by the data.</p>
+</dd>
+</dl>
+<p><a href="#id2"><span class="problematic" id="id3">**</span></a>kwargs: Additional keyword arguments to pass to the scatter plot.</p>
+</dd>
+<dt>Example:</dt><dd><p>lon = [0, 90, 180, -90]
+lat = [0, 30, 60, -30]
+color = [10, 20, 30, 40]
+plot_geographic_locations(lon, lat, color,</p>
+<blockquote>
+<div><p>projection=’PlateCarree’,
+title=’Sample Locations’, 
+third_field_label=’Value’,
+colorbar_range=[0, 50], s=100, 
+cmap=’coolwarm’)</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.plotting.plot_panels">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_panels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'YlGnBu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.plot_panels" title="Link to this definition">¶</a></dt>
+<dd><p>Plot multiple panels with customizable settings, each with data series in
+different colors and a legend.</p>
+<dl>
+<dt>Parameters:</dt><dd><dl class="simple">
+<dt>data (list of lists): A list where each element represents a separate </dt><dd><p>plot. Each element is a list of dictionaries, where each 
+dictionary represents a data series and contains ‘x’, ‘y’, and 
+‘label’ values. Multiple data series for a plot should be passed 
+as separate dictionaries within the nested list.</p>
+</dd>
+<dt>plot_type (str): Type of plot to create (‘scatter’ or ‘line’). Default</dt><dd><p>is ‘scatter’.</p>
+</dd>
+</dl>
+<p>cmap (str): Color map for scatter plot. Default is ‘YlGnBu’.
+titles (list or None): Titles for each panel. Can be a list of strings</p>
+<blockquote>
+<div><p>or None to omit titles.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>xlabels (list or None): X-axis labels for each panel. Can be a list of</dt><dd><p>strings or None to omit x-axis labels.</p>
+</dd>
+<dt>ylabels (list or None): Y-axis labels for each panel. Can be a list of</dt><dd><p>strings or None to omit y-axis labels.</p>
+</dd>
+<dt>z_values (None or list): Z-values for color mapping in scatter plot.</dt><dd><p>Can be None or a list of values.</p>
+</dd>
+<dt>figure_scale (float): Scale factor for the figure size. Default </dt><dd><p>is 1.0.</p>
+</dd>
+<dt>save_path (str or None): File path to save the plot as an image. </dt><dd><p>None to display the plot without saving.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+<dt>Example:</dt><dd><dl>
+<dt>data = [</dt><dd><dl class="simple">
+<dt>[</dt><dd><p>{‘x’: [1, 2, 3], ‘y’: [2, 3, 1], ‘label’: ‘Dataset 1’},
+{‘x’: [1, 2, 3], ‘y’: [1, 1, 2], ‘label’: ‘Dataset 2’}</p>
+</dd>
+</dl>
+<p>],
+[</p>
+<blockquote>
+<div><p>{‘x’: [4, 5, 6], ‘y’: [3, 4, 4], ‘label’: ‘Dataset 3’}</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>]
+titles = [‘Panel 1’, ‘Panel 2’]
+xlabels = [‘X Label 1’, ‘X Label 2’]
+ylabels = [‘Y Label 1’, ‘Y Label 2’]
+z_values = [1, 2]  # For color mapping in scatter plot
+plot_panels(data, plot_type=’scatter’, cmap=’viridis’, titles=titles,</p>
+<blockquote>
+<div><p>xlabels=xlabels, ylabels=ylabels, z_values=z_values,
+figure_scale=1.2, save_path=’plot.png’)</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.plotting.plot_three_scatter">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_three_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.plot_three_scatter" title="Link to this definition">¶</a></dt>
+<dd><p>Plot three scatter plots with regression lines and custom labels.</p>
+<dl>
+<dt>Parameters:</dt><dd><dl class="simple">
+<dt>data1 (numpy.ndarray): Data for the first scatter plot as a </dt><dd><p>2D array (x, y).</p>
+</dd>
+<dt>data2 (numpy.ndarray): Data for the second scatter plot as a </dt><dd><p>2D array (x, y).</p>
+</dd>
+<dt>data3 (numpy.ndarray): Data for the third scatter plot as a </dt><dd><p>2D array (x, y).</p>
+</dd>
+<dt>labels (list, optional): List of labels for each plot. </dt><dd><p>Default is [None, None, None].</p>
+</dd>
+<dt>x_labels (list, optional): List of x-axis labels for each plot. </dt><dd><p>Default is [None, None, None].</p>
+</dd>
+<dt>y_labels (list, optional): List of y-axis labels for each plot. </dt><dd><p>Default is [None, None, None].</p>
+</dd>
+</dl>
+</dd>
+<dt>Example:</dt><dd><p>x1 = np.random.rand(20)
+y1 = 2 * x1 + np.random.rand(20)
+data1 = np.column_stack((x1, y1))</p>
+<p>x2 = np.random.rand(20)
+y2 = 3 * x2 + np.random.rand(20)
+data2 = np.column_stack((x2, y2))</p>
+<p>x3 = np.random.rand(20)
+y3 = 4 * x3 + np.random.rand(20)
+data3 = np.column_stack((x3, y3))</p>
+<p>labels = [‘Plot 1’, ‘Plot 2’, ‘Plot 3’]
+x_labels = [‘X Label 1’, ‘X Label 2’, ‘X Label 3’]
+y_labels = [‘Y Label 1’, ‘Y Label 2’, ‘Y Label 3’]</p>
+<p>plot_three_scatter(data1, data2, data3, labels, x_labels, y_labels)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SMV2rho.plotting.print_text_file">
+<span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">print_text_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.print_text_file" title="Link to this definition">¶</a></dt>
+<dd><p>Print the contents of a text file exactly as it is saved.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path (str): The path to the text file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_1.html">SMV2rho: Tutorial 1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_1.html#Importing-the-relevant-modules">Importing the relevant modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_1.html#File-layout">File layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_1.html#Data-Structure">Data Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_1.html#Loading-files">Loading files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_1.html#Reading-the-file">Reading the file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_1.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_2.html">SMV2rho: Tutorial 2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_2.html#Class-approach">Class approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_2.html#Function-approach">Function approach</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_3.html">SMV2rho: Tutorial 3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_3.html#Class-approach">Class approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_3.html#Function-Approach">Function Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_3.html#Plotting">Plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_4.html">SMV2rho: Tutorial 4</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_4.html#Class-approach">Class approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_4.html#Function-approach">Function approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_4.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_5.html">SMV2rho: Tutorial 5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_5.html#Class-approach">Class approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_5.html#Creating-the-geotherm-object">Creating the <code class="docutils literal notranslate"><span class="pre">geotherm</span></code> object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_5.html#Convert-Profile">Convert Profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_5.html#Outputs-and-plotting">Outputs and plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_5.html#Excluding-the-uppermost-x-km">Excluding the uppermost <span class="math notranslate nohighlight">\(x\)</span> km</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_5.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_6.html">SMV2rho: Tutorial 6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_6.html#Outputs-and-plotting">Outputs and plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_6.html#Bulk-crustal-uncertainty">Bulk crustal uncertainty</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_7.html">SMV2rho: Tutorial 7</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Reading-files">Reading files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Creating-the-master-Geotherm-object">Creating the master Geotherm object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Assemble-file-lists">Assemble file lists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Convert-profiles">Convert profiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Locating-coincident-profiles">Locating coincident profiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Output-and-plotting">Output and plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Clean-up-some-obvious-outliers">Clean up some obvious outliers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Relationship-between-crustal-thickness-and-bulk-density">Relationship between crustal thickness and bulk density</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TUTORIALS/tutorial_7.html#Write-final-data-tables">Write final data tables</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">SMV2rho</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_1.html">SMV2rho: Tutorial 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_2.html">SMV2rho: Tutorial 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_3.html">SMV2rho: Tutorial 3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_4.html">SMV2rho: Tutorial 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_5.html">SMV2rho: Tutorial 5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_6.html">SMV2rho: Tutorial 6</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TUTORIALS/tutorial_7.html">SMV2rho: Tutorial 7</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="TUTORIALS/tutorial_1.html" title="next chapter">SMV2rho: Tutorial 1</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Simon Stephenson, Mark Hoggard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

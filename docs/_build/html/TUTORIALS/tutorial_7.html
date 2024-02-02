@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SMV2rho: Tutorial 7 &#8212; SMV2rho v1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=76e2d817"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="SMV2rho: Tutorial 6" href="tutorial_6.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="SMV2rho:-Tutorial-7">
+<h1>SMV2rho: Tutorial 7<a class="headerlink" href="#SMV2rho:-Tutorial-7" title="Link to this heading">¶</a></h1>
+<p>In this tutorial we will see how we can convert multiple velocioty profiles simultaneously.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import modules</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">plotting</span> <span class="k">as</span> <span class="n">smplt</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">density_functions</span> <span class="k">as</span> <span class="n">smd</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">coincident_profile_functions</span> <span class="k">as</span> <span class="n">cnc</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">c</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">temperature_dependence</span> <span class="k">as</span> <span class="n">td</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+</pre></div></div>
+</div>
+<section id="Reading-files">
+<h2>Reading files<a class="headerlink" href="#Reading-files" title="Link to this heading">¶</a></h2>
+<p>First we need to provide a path to the master directory with all velocity profiles. Note that at this point, the file structure becomes very important.</p>
+<p>Here, we will import the <code class="docutils literal notranslate"><span class="pre">SeisCruST</span></code> database, which can be accessed here… <a class="reference external" href="https://doi.org/10.5281/zenodo.10017429">https://doi.org/10.5281/zenodo.10017429</a></p>
+<p>Let’s first remind ourselves of the required file structure. First replace the <code class="docutils literal notranslate"><span class="pre">path</span></code> variable in the following code block with the path to the <code class="docutils literal notranslate"><span class="pre">CRUSTAL_STRUCTURE</span></code> subdirectory within the <code class="docutils literal notranslate"><span class="pre">SeisCruST</span></code> database master directory (or the path to the velocity profiles that you wish to convert into density). We will then draw a file tree for the database.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;../../SEISCRUST_WORKING/CRUSTAL_STRUCTURE/&quot;</span> <span class="c1"># path to the full velocity profile directory</span>
+
+<span class="c1"># draw a file tree</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">draw_file_tree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">include_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">suppress_pycache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">suppress_hidden</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+|-
+|  |- ARABIA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- CARIBBEAN
+|  |  |- Vp
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vp_rho_stephenson_T_DEPENDENT
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- EUROPE
+|  |  |- Vp
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vp_rho_stephenson_T_DEPENDENT
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- E_AFRICA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- HUDSON_BAY
+|  |  |- Vp
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vs_rho_brocher
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- INDIA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vs_rho
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |- vs_rho_brocher
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- IRAN
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- MADAGASCAR
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vs_rho_brocher
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- N_AFRICA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- N_ATLANTIC
+|  |  `- N_ATLANTIC
+|  |     |- Vs
+|  |     |  `- RECEIVER_FUNCTION
+|  |     |     `- DATA
+|  |     `- vs_rho_stephenson_T_DEPENDENT
+|  |        `- RECEIVER_FUNCTION
+|  |- SE_ASIA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- S_AFRICA
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vs_rho_brocher
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- S_AMERICA
+|  |  |- Vp
+|  |  |  |- RECEIVER_FUNCTION
+|  |  |  |  `- DATA
+|  |  |  `- REVERSED_REFRACTION
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- vp_rho_brocher
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |- vp_rho_stephenson_T_DEPENDENT
+|  |  |  `- RECEIVER_FUNCTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- TIEN_SHAN
+|  |  |- Vs
+|  |  |  `- RECEIVER_FUNCTION
+|  |  |     `- DATA
+|  |  |- rho
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     `- RECEIVER_FUNCTION
+|  |- USGS_GSC
+|  |  |- Vp
+|  |  |  |- RECEIVER_FUNCTION
+|  |  |  |  `- DATA
+|  |  |  |- REFLECTION
+|  |  |  |  `- DATA
+|  |  |  |- REVERSED_REFRACTION
+|  |  |  |  `- DATA
+|  |  |  `- UNREVERSED_REFRACTION
+|  |  |     `- DATA
+|  |  |- Vs
+|  |  |  |- RECEIVER_FUNCTION
+|  |  |  |  `- DATA
+|  |  |  |- REFLECTION
+|  |  |  |  `- DATA
+|  |  |  |- REVERSED_REFRACTION
+|  |  |  |  `- DATA
+|  |  |  `- UNREVERSED_REFRACTION
+|  |  |     `- DATA
+|  |  |- vp_rho_stephenson_T_DEPENDENT
+|  |  |  |- RECEIVER_FUNCTION
+|  |  |  |- REFLECTION
+|  |  |  |- REVERSED_REFRACTION
+|  |  |  `- UNREVERSED_REFRACTION
+|  |  `- vs_rho_stephenson_T_DEPENDENT
+|  |     |- RECEIVER_FUNCTION
+|  |     |- REFLECTION
+|  |     |- REVERSED_REFRACTION
+|  |     `- UNREVERSED_REFRACTION
+|  `- WEST_TIBET
+|     |- Vs
+|     |  `- RECEIVER_FUNCTION
+|     |     `- DATA
+|     |- vs_rho_brocher
+|     |  `- RECEIVER_FUNCTION
+|     `- vs_rho_stephenson_T_DEPENDENT
+|        `- RECEIVER_FUNCTION
+</pre></div></div>
+</div>
+<p>To convert multiple profiles, we will be using the <code class="docutils literal notranslate"><span class="pre">MultiConversion</span></code> class within the density_functions module. Before we get started, let’s take a look at the docstring for the <code class="docutils literal notranslate"><span class="pre">MultiConversion</span></code> class.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>smd.MultiConversion<span class="o">?</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">Init signature:</span>
+smd<span class="ansi-blue-fg">.</span>MultiConversion<span class="ansi-blue-fg">(</span>
+    path<span class="ansi-blue-fg">,</span>
+    which_location<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;ALL&#39;</span><span class="ansi-blue-fg">,</span>
+    write_data<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
+    approach<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;stephenson&#39;</span><span class="ansi-blue-fg">,</span>
+    parameters<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    master_geotherm<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    constant_depth<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    constant_density<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    T_dependence<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">Docstring:</span>
+Wrapper class to extract multiple files from path to send to
+Convert class using specified density conversion approach.
+Check that all required arguments have been provided.
+
+Attributes:
+    path (str): The master directory where all data are stored in
+        directories named after their location.
+    which_location (str or list, optional): Determines which
+        locations the user wants to convert. Defaults to &#34;ALL,&#34;
+        indicating that all locations will be converted. If specific
+        locations are desired, provide a list of location names.
+    write_data (bool, optional): Specifies whether to write the
+        converted data to files. Defaults to False.
+    approach (str, optional): The density conversion approach to use.
+        Options are &#34;stephenson&#34; or &#34;brocher.&#34; Defaults to
+        &#34;stephenson.&#34;
+    parameters (class instance, optional): Class instance of the
+        Constants class.  Must be provided if using approach &#39;stephenson&#39;.
+        Must contain a material_constants attribute if T_dependence is
+        set to True.
+    master_geotherm: An instance of the Geotherm class that is used as a
+        reference or template for other operations. When the `master`
+        attribute of `master_geotherm` is set to True, deep copies are
+        made and parameters are updated for all individual profiles.
+    constant_depth (float, optional): The depth (from the surface)
+        over which to use a constant density value (in kilometers).
+        Defaults to None.
+    constant_density (float, optional): The value of the constant
+        density to use for the uppermost few kilometers (in Mg/m3),
+        if `constant_depth` is set.  Defaults to None.
+    T_dependence (bool, optional): Determines whether to include
+        temperature dependence of velocity to density conversion,
+        including thermal expansion and compressibility. Defaults
+        to False.
+
+Methods:
+    assemble_file_lists(): Assembles file lists and necessary parameters
+        for density conversion based on provided settings.
+    send_to_conversion_function(parallel=False): Initiates the density
+        conversion process for each profile and assembles a list of data
+        dictionaries containing velocity, Moho, density information, etc.
+        The method provides an option for parallel processing but
+        currently is not functional due to pickling issues.
+    _assemble_params: Assemble parameters for density conversion. This method
+        assembles a list of parameters required for density conversion,
+        including file information, profile type, write data option, path,
+        approach, and location name. If the approach is &#34;stephenson,&#34;
+        additional extra parameters are included. Returns a list of assembled
+        parameters for density conversion.
+    _process_file_list: Process a list of files to assemble necessary data
+        and metadata. This method iterates through a list of files and
+        extracts location names from file paths. It assembles parameter lists
+        using the provided `profile_type` and any extra parameters. The
+        assembled parameters are appended to the `convert_metadata` attribute
+        of the class.
+<span class="ansi-red-fg">Init docstring:</span> Initialize a MultiConversion instance with specified parameters.
+<span class="ansi-red-fg">File:</span>           ~/Work/SMV2rho/src/SMV2rho/density_functions.py
+<span class="ansi-red-fg">Type:</span>           type
+<span class="ansi-red-fg">Subclasses:</span>
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create the constants object.</span>
+<span class="n">constants</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Constants</span><span class="p">()</span>
+
+<span class="n">constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vp&#39;</span><span class="p">)</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vs&#39;</span><span class="p">)</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_material_constants</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Creating-the-master-Geotherm-object">
+<h2>Creating the master Geotherm object<a class="headerlink" href="#Creating-the-master-Geotherm-object" title="Link to this heading">¶</a></h2>
+<p>We first need to create geotherm instances for every profile. They will then be packaged up as a dictionary entry in the MultiConversion class so that the correct geothermal parametrisation travels with the profile of interest. For example, this can be useful if each profile is associated with different geothermal parameters, like surface heatflow or crustal thickness etc.</p>
+<p>In this example we will use the heat flux difference method and we will just use constant default values for every profile. It is of course possible to enter custom values for the geothermal parameters if needed.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">geotherm</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Geotherm</span><span class="p">(</span><span class="n">geotherm_type</span><span class="o">=</span><span class="s1">&#39;single_layer_flux_difference&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we will read the files using the <code class="docutils literal notranslate"><span class="pre">MultiConversion</span></code> class within the density_functions module. We will set <code class="docutils literal notranslate"><span class="pre">which_profiles</span></code> to <code class="docutils literal notranslate"><span class="pre">'ALL'</span></code>, but note that we can set this to a location subdirectory name, for example, we could set it to <code class="docutils literal notranslate"><span class="pre">'MADAGASCAR'</span></code> is we were only interested in converting profiles from the ‘MADAGASCAR’ subdirectory.</p>
+<p>Using the multiple profiles conversion functionality requires some understanding of classes, but using them is relatively simple and doesn’t need to deviate from the procedure outlined below. We will set <code class="docutils literal notranslate"><span class="pre">write_data</span></code> to false, but this should be set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if the output should be written. If <code class="docutils literal notranslate"><span class="pre">True</span></code> is set, then new directories will be automatically created within the file system containing the outputs of the density conversion with a subdirectory heading that corresponds to the chosen
+method.</p>
+<p>We will run the <code class="docutils literal notranslate"><span class="pre">stephenson</span></code> method with a constant density set in the uppermost 7 km and temperature dependence included. If Brocher’s (2005) method is preferred, then <code class="docutils literal notranslate"><span class="pre">'brocher'</span></code> should be set. If temperature dependence is not desired then set <code class="docutils literal notranslate"><span class="pre">T_dependence</span> <span class="pre">=</span> <span class="pre">False</span></code>. If <code class="docutils literal notranslate"><span class="pre">write_data</span> <span class="pre">=</span> <span class="pre">True</span></code>, then these options will determine the output directory heading.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert all profiles</span>
+<span class="n">which_profiles</span> <span class="o">=</span> <span class="s1">&#39;ALL&#39;</span>
+<span class="n">approach</span> <span class="o">=</span> <span class="s1">&#39;stephenson&#39;</span>
+
+<span class="c1"># set up the class instance to convert multiple profiles at once</span>
+<span class="n">profiles</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">MultiConversion</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">which_location</span> <span class="o">=</span> <span class="n">which_profiles</span><span class="p">,</span>
+    <span class="n">write_data</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">approach</span> <span class="o">=</span> <span class="n">approach</span><span class="p">,</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">constants</span><span class="p">,</span>
+    <span class="n">master_geotherm</span> <span class="o">=</span> <span class="n">geotherm</span><span class="p">,</span>
+    <span class="n">constant_depth</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="n">constant_density</span> <span class="o">=</span> <span class="mf">2.75</span><span class="p">,</span>
+    <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Assemble-file-lists">
+<h2>Assemble file lists<a class="headerlink" href="#Assemble-file-lists" title="Link to this heading">¶</a></h2>
+<p>We can now assemble the necessary file paths and extract data from the files using the <code class="docutils literal notranslate"><span class="pre">assemble_file_lists</span></code> method. We should see a list of the location subdirectories for which file lists are being assmbled.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># assemble necessary information to carry out conversion</span>
+<span class="c1">#  e.g. file paths, parameters, other metadata etc.</span>
+<span class="n">profiles</span><span class="o">.</span><span class="n">assemble_file_lists</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ALL selected, assembling file lists for all profiles...
+   -- assembling lists for WEST_TIBET
+   -- assembling lists for N_ATLANTIC
+   -- assembling lists for HUDSON_BAY
+   -- assembling lists for SE_ASIA
+   -- assembling lists for N_AFRICA
+   -- assembling lists for ARABIA
+   -- assembling lists for TIEN_SHAN
+   -- assembling lists for E_AFRICA
+   -- assembling lists for CARIBBEAN
+   -- assembling lists for USGS_GSC
+   -- assembling lists for EUROPE
+   -- assembling lists for INDIA
+   -- assembling lists for S_AFRICA
+   -- assembling lists for MADAGASCAR
+   -- assembling lists for IRAN
+   -- assembling lists for S_AMERICA
+Reading in data and converting to density using stephenson approach...
+</pre></div></div>
+</div>
+<p>This command will produce an attribute within the <code class="docutils literal notranslate"><span class="pre">Profiles</span></code> class instance called <code class="docutils literal notranslate"><span class="pre">convert_metadata</span></code>, which is a list of the metadata required to convert each individual profile into density. <span class="math notranslate nohighlight">\(V_P\)</span> profiles will be assigned <span class="math notranslate nohighlight">\(V_P\)</span> conversion parameters etc. Let’s have a look at the <code class="docutils literal notranslate"><span class="pre">convert_metadata</span></code> entry for the first profile.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">profiles</span><span class="o">.</span><span class="n">convert_metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+../../SEISCRUST_WORKING/CRUSTAL_STRUCTURE/CARIBBEAN/Vp/RECEIVER_FUNCTION/DATA/T03_LMG_Vp.dat
+Vp
+False
+../../SEISCRUST_WORKING/CRUSTAL_STRUCTURE/
+stephenson
+CARIBBEAN
+Constants(vp_constants=VpConstants(v0=-0.93521, b=0.00169478, d0=2.55911, dp=-0.00047605, c=1.674065, k=0.01953466, m=-0.0004, v0_unc=None, b_unc=None, d0_unc=None, dp_unc=None, c_unc=None, k_unc=None, m_unc=0.0001), vs_constants=VsConstants(v0=-0.60777, b=0.0010345, d0=1.4808, dp=-0.00029773, c=0.7374, k=0.020041, m=-0.00023, v0_unc=None, b_unc=None, d0_unc=None, dp_unc=None, c_unc=None, k_unc=None, m_unc=0.0001), material_constants=MaterialConstants(alpha0=1e-05, alpha1=2.9e-08, K=90000000000.0, alpha0_unc=5e-06, alpha1_unc=5e-09, K_unc=20000000000.0))
+7
+2.75
+True
+Geotherm(tc=None, T0=10.0, T1=600.0, q0=0.059, qm=0.03, k=2.5, H0=7e-10, hr=10.0, rho=2.9)
+</pre></div></div>
+</div>
+</section>
+<section id="Convert-profiles">
+<h2>Convert profiles<a class="headerlink" href="#Convert-profiles" title="Link to this heading">¶</a></h2>
+<p>Now we can call the <code class="docutils literal notranslate"><span class="pre">send_to_conversion_function</span></code> method, which will convert all of the profiles to density. When this code block is run, you should see a progress bar showing how close to completion the conversion is. Note there may be the odd integration warning. As before, these only appear because velocity profiles can bve discontinuous, and these warnings can be safely ignored.</p>
+<p>We will set the output of this function as a new object <code class="docutils literal notranslate"><span class="pre">station_profiles</span></code>, but all outputs will be returned to the <code class="docutils literal notranslate"><span class="pre">Profiles</span></code> object as class attributes.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># run density conversion for all profiles</span>
+<span class="n">station_profiles</span> <span class="o">=</span> <span class="n">profiles</span><span class="o">.</span><span class="n">send_to_conversion_function</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[                                                  ] 0%
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/Work/SMV2rho/src/SMV2rho/density_functions.py:1802: IntegrationWarning: The occurrence of roundoff error is detected, which prevents
+  the requested tolerance from being achieved.  The error may be
+  underestimated.
+  int_val = integrate.quad(interp_profile, bins_low_res[e],
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[                                                  ] 0%
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/Work/SMV2rho/src/SMV2rho/density_functions.py:1802: IntegrationWarning: The maximum number of subdivisions (50) has been achieved.
+  If increasing the limit yields no improvement it is advised to analyze
+  the integrand in order to determine the difficulties.  If the position of a
+  local difficulty can be determined (singularity, discontinuity) one will
+  probably gain from splitting up the interval and calling the integrator
+  on the subranges.  Perhaps a special-purpose integrator should be used.
+  int_val = integrate.quad(interp_profile, bins_low_res[e],
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[==================================================] 100%
+</pre></div></div>
+</div>
+<p>Now we can interrogate the output of the the <code class="docutils literal notranslate"><span class="pre">station_profiles</span></code> attribute of the <code class="docutils literal notranslate"><span class="pre">Profiles</span></code> object and compare it to the <code class="docutils literal notranslate"><span class="pre">station_profiles</span></code> object. Both are identical and contain a list of individual profile dictionaries. These dictionaries are equvalent to the profile dictionaries that we have been using in the previous tutorials.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">station_profiles</span><span class="p">)</span><span class="si">}</span><span class="s2"> profiles processed&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+3969 profiles processed
+</pre></div></div>
+</div>
+<p>Let’s take a look at some of the statistics of the data. We can plot up a histogram of bulk <span class="math notranslate nohighlight">\(V_P\)</span>, <span class="math notranslate nohighlight">\(V_S\)</span> and density. We can create a summary table of bulk properties using the <code class="docutils literal notranslate"><span class="pre">profiles_to_dataframe</span></code> method.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create output dataframe of bulk information...</span>
+<span class="n">output_data_converted</span> <span class="o">=</span> <span class="n">profiles</span><span class="o">.</span><span class="n">profiles_to_dataframe</span><span class="p">()</span>
+
+<span class="c1"># plot summary information (exclude lat and lon columns)</span>
+<span class="n">described_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_data_converted</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">]]</span>
+<span class="n">output_data_converted</span><span class="p">[</span><span class="n">described_columns</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>moho</th>
+      <th>av_vp</th>
+      <th>av_vs</th>
+      <th>av_rho</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>3969.000000</td>
+      <td>2748.000000</td>
+      <td>1221.000000</td>
+      <td>3969.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>39.833890</td>
+      <td>6.328866</td>
+      <td>3.650388</td>
+      <td>2.881826</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>9.059417</td>
+      <td>0.262100</td>
+      <td>0.165082</td>
+      <td>0.085024</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>15.000000</td>
+      <td>4.997044</td>
+      <td>2.778049</td>
+      <td>2.502679</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>34.130000</td>
+      <td>6.179220</td>
+      <td>3.544301</td>
+      <td>2.825981</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>39.800000</td>
+      <td>6.339850</td>
+      <td>3.679932</td>
+      <td>2.885719</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>44.800000</td>
+      <td>6.513310</td>
+      <td>3.767512</td>
+      <td>2.939954</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>77.000000</td>
+      <td>8.009966</td>
+      <td>4.115312</td>
+      <td>3.336094</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the number of bins</span>
+<span class="n">num_bins</span> <span class="o">=</span> <span class="mi">30</span>
+
+<span class="c1"># Create a figure and axes</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="c1"># Plot histograms and KDE plots for &#39;av_vp&#39; and &#39;av_vs&#39;</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;av_vp&#39;</span><span class="p">,</span> <span class="s1">&#39;av_vs&#39;</span><span class="p">]):</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">output_data_converted</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+                  <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span>
+                  <span class="n">stat</span><span class="o">=</span><span class="s2">&quot;density&quot;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">)</span>
+
+<span class="c1"># Plot semi-transparent histograms and KDE plots for &#39;av_rho&#39;</span>
+<span class="n">av_vp_not_nan</span> <span class="o">=</span> <span class="n">output_data_converted</span><span class="p">[</span>
+    <span class="n">output_data_converted</span><span class="p">[</span><span class="s1">&#39;av_vp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()][</span><span class="s1">&#39;av_rho&#39;</span><span class="p">]</span>
+<span class="n">av_vs_not_nan</span> <span class="o">=</span> <span class="n">output_data_converted</span><span class="p">[</span>
+    <span class="n">output_data_converted</span><span class="p">[</span><span class="s1">&#39;av_vs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()][</span><span class="s1">&#39;av_rho&#39;</span><span class="p">]</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">av_vp_not_nan</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">stat</span><span class="o">=</span><span class="s2">&quot;density&quot;</span><span class="p">,</span>
+             <span class="n">bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;av_vp&#39;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">av_vs_not_nan</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">stat</span><span class="o">=</span><span class="s2">&quot;density&quot;</span><span class="p">,</span>
+              <span class="n">bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;av_vs&#39;</span><span class="p">)</span>
+
+<span class="c1"># Add a legend to the third plot</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c1"># Set column titles</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Histogram and KDE of average P velocity&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Histogram and KDE of average S velocity&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Histogram and KDE of average density&#39;</span><span class="p">)</span>
+
+<span class="c1"># Display the plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_21_1.png" src="../_images/TUTORIALS_tutorial_7_21_1.png" />
+</div>
+</div>
+</section>
+<section id="Locating-coincident-profiles">
+<h2>Locating coincident profiles<a class="headerlink" href="#Locating-coincident-profiles" title="Link to this heading">¶</a></h2>
+<p>Now we will locate <span class="math notranslate nohighlight">\(V_P\)</span> and <span class="math notranslate nohighlight">\(V_S\)</span> profiles that are within a given distance of one another to check how the density conversion performs and wether crustal thickness estimates match up etc.</p>
+<p>First we need to divide the <code class="docutils literal notranslate"><span class="pre">station_profiles</span></code> list up into two batches, in this case of Vp and Vs profiles. Note that we can divide the <code class="docutils literal notranslate"><span class="pre">station_profiles</span></code> list in any arbitary way to make comparisons.</p>
+<p>Next we will run the <code class="docutils literal notranslate"><span class="pre">get_coincident_profiles</span></code> function in the <code class="docutils literal notranslate"><span class="pre">coincident_profiles</span></code> module. Running this function will print a progress report tracking how far through the station_profiles list the program has progressed. It will return a list of stations that are in the same location as another profile given a buffer distance <code class="docutils literal notranslate"><span class="pre">buff_dist</span></code>. This list will be organised in the same way as <code class="docutils literal notranslate"><span class="pre">station_profiles</span></code>, but will have empty entries where there are no profiles coincident with that
+station.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buff_dist</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># buffer distance to nearest profile</span>
+
+<span class="c1"># extract vs profiles and vp profiles from station_profiles</span>
+<span class="n">vs_profiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">station</span><span class="p">:</span>
+                            <span class="n">station</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Vs&#39;</span><span class="p">,</span> <span class="n">station_profiles</span><span class="p">)))</span>
+<span class="n">vp_profiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">station</span><span class="p">:</span>
+                            <span class="n">station</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Vp&#39;</span><span class="p">,</span> <span class="n">station_profiles</span><span class="p">)))</span>
+
+<span class="c1"># calculate coincident vp and vs profiles within buffer distance, buff</span>
+<span class="n">coincident_profiles</span><span class="p">,</span> <span class="n">vp_profiles</span><span class="p">,</span> <span class="n">vs_profiles</span> <span class="o">=</span> <span class="n">cnc</span><span class="o">.</span><span class="n">get_coincident_profiles</span><span class="p">(</span><span class="n">vp_profiles</span><span class="p">,</span> <span class="n">vs_profiles</span><span class="p">,</span> <span class="n">buff_dist</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Finding stations with coincident Vp and Vs surveys...
+   -- this may take a few minutes...!
+   -- taking locations &lt; 20.0 km from vp measurement
+       - currently on item 100 of 2748
+       - currently on item 200 of 2748
+       - currently on item 300 of 2748
+       - currently on item 400 of 2748
+       - currently on item 500 of 2748
+       - currently on item 600 of 2748
+       - currently on item 700 of 2748
+       - currently on item 800 of 2748
+       - currently on item 900 of 2748
+       - currently on item 1000 of 2748
+       - currently on item 1100 of 2748
+       - currently on item 1200 of 2748
+       - currently on item 1300 of 2748
+       - currently on item 1400 of 2748
+       - currently on item 1500 of 2748
+       - currently on item 1600 of 2748
+       - currently on item 1700 of 2748
+       - currently on item 1800 of 2748
+       - currently on item 1900 of 2748
+       - currently on item 2000 of 2748
+       - currently on item 2100 of 2748
+       - currently on item 2200 of 2748
+       - currently on item 2300 of 2748
+       - currently on item 2400 of 2748
+       - currently on item 2500 of 2748
+       - currently on item 2600 of 2748
+       - currently on item 2700 of 2748
+</pre></div></div>
+</div>
+<p>We can now extract bulk properties of these profiles that are located in the same place. For example, we can compare bulk seismic velocities and moho depth etc.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># get some bulk crustal properties for the coincident profiles,</span>
+<span class="c1">#  e.g. compare densities or moho depth etc.</span>
+<span class="c1"># also return the location of coincident profiles.</span>
+<span class="n">vp_vs_vpcalc</span><span class="p">,</span> <span class="n">rho_rho</span><span class="p">,</span> <span class="n">moho_moho</span><span class="p">,</span> <span class="n">lon_lat</span> <span class="o">=</span> \
+    <span class="n">cnc</span><span class="o">.</span><span class="n">compare_adjacent_profiles</span><span class="p">(</span><span class="n">vp_profiles</span><span class="p">,</span> <span class="n">coincident_profiles</span><span class="p">,</span> <span class="n">approach</span><span class="o">=</span><span class="s2">&quot;stephenson&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Output-and-plotting">
+<h2>Output and plotting<a class="headerlink" href="#Output-and-plotting" title="Link to this heading">¶</a></h2>
+<p>Now we can plot up the results of locating these coincident profiles. We will again use some functionality from the <code class="docutils literal notranslate"><span class="pre">plotting</span></code> module in <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Locations of coincident profiles (Vp density)</span>
+<span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">lon_lat</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">lon_lat</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">color</span> <span class="o">=</span> <span class="n">rho_rho</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_geographic_locations</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Coincident profiles Vp&#39;</span><span class="p">,</span>
+                         <span class="n">third_field_label</span><span class="o">=</span><span class="s1">&#39;Density&#39;</span><span class="p">,</span>
+                         <span class="n">colorbar_range</span><span class="o">=</span><span class="p">[</span><span class="mf">2.6</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">])</span>
+
+<span class="c1"># Locations of coincident profiles (Vs density)</span>
+<span class="n">color</span> <span class="o">=</span> <span class="n">rho_rho</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_geographic_locations</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;Mollweide&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Coincident profiles Vs&#39;</span><span class="p">,</span>
+                         <span class="n">third_field_label</span><span class="o">=</span><span class="s1">&#39;Density&#39;</span><span class="p">,</span>
+                         <span class="n">colorbar_range</span><span class="o">=</span><span class="p">[</span><span class="mf">2.6</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">])</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_27_0.png" src="../_images/TUTORIALS_tutorial_7_27_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_27_1.png" src="../_images/TUTORIALS_tutorial_7_27_1.png" />
+</div>
+</div>
+<p>We can now plot scatter crossplots of <span class="math notranslate nohighlight">\(V_P\)</span> and aginst <span class="math notranslate nohighlight">\(V_S\)</span>, densities and moho depths. The red lines in the plots represent the best-fitting orthogonal-distance regression line. ODR regression assues errors are present in both <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> coordinates.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">smplt</span><span class="o">.</span><span class="n">plot_three_scatter</span><span class="p">(</span><span class="n">vp_vs_vpcalc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                   <span class="n">rho_rho</span><span class="p">,</span> <span class="n">moho_moho</span><span class="p">,</span>
+                   <span class="n">x_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Vp observed&quot;</span><span class="p">,</span> <span class="s2">&quot;Vp density&quot;</span><span class="p">,</span> <span class="s2">&quot;Vp, moho&quot;</span><span class="p">],</span>
+                   <span class="n">y_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Vs observed&quot;</span><span class="p">,</span> <span class="s2">&quot;Vs density&quot;</span><span class="p">,</span> <span class="s2">&quot;Vs moho&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_29_0.png" src="../_images/TUTORIALS_tutorial_7_29_0.png" />
+</div>
+</div>
+<p>We can see that there is a central, positive relationship between <span class="math notranslate nohighlight">\(V_P\)</span> and <span class="math notranslate nohighlight">\(V_S\)</span> and the densities that we have calculated. There is clearly significant scatter, which is likely due to variations in crustal structure over the buffer distance between profiles, the difficulties in estimating crustal structure from seismic velocities and uncertainties in the parameters and parametrisation used to convert from seismic velocity to density. These results indicate both that this scheme is
+a useful approximation for calculating density from velocity profiles, but can only be as good as the (significant) uncertainties and errors in the input data and parameters!</p>
+</section>
+<section id="Clean-up-some-obvious-outliers">
+<h2>Clean up some obvious outliers<a class="headerlink" href="#Clean-up-some-obvious-outliers" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filtered_station_profiles</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">station_profiles</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;av_Vs&#39;</span> <span class="ow">in</span> <span class="n">i</span> <span class="ow">and</span> <span class="mf">3.05</span> <span class="o">&lt;</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;av_Vs&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">4.25</span><span class="p">:</span>
+        <span class="n">filtered_station_profiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;av_Vp&#39;</span> <span class="ow">in</span> <span class="n">i</span> <span class="ow">and</span> <span class="mf">5.1</span> <span class="o">&lt;</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;av_Vp&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">7.1</span><span class="p">:</span>
+        <span class="n">filtered_station_profiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># set the filtered station profiles as the new station profiles</span>
+<span class="c1">#  allow objects to remain linked so that if we filter again both</span>
+<span class="c1">#  will be updated.</span>
+<span class="n">profiles</span><span class="o">.</span><span class="n">station_profiles</span> <span class="o">=</span> <span class="n">filtered_station_profiles</span>
+
+<span class="nb">len</span><span class="p">(</span><span class="n">filtered_station_profiles</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+3962
+</pre></div></div>
+</div>
+</section>
+<section id="Relationship-between-crustal-thickness-and-bulk-density">
+<h2>Relationship between crustal thickness and bulk density<a class="headerlink" href="#Relationship-between-crustal-thickness-and-bulk-density" title="Link to this heading">¶</a></h2>
+<p>We can now explore the relationship between crustal thickness and bulk density. To do this, we will load in the crustal thickness database from SeisCRUST and calculate a relationship between crustal thickness and bulk density from our data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_crustal_thickness_file</span> <span class="o">=</span> <span class="s2">&quot;../../SEISCRUST_WORKING/CRUSTAL_THICKNESS/seisCRUST_thickness_QC.csv&quot;</span>
+
+<span class="c1"># read in the crustal thickness database</span>
+<span class="n">all_crustal_thickness_data</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">read_no_profile_data</span><span class="p">(</span><span class="n">all_crustal_thickness_file</span><span class="p">)</span>
+
+<span class="c1"># print some summary statistics of the crustal thickness database</span>
+<span class="n">all_crustal_thickness_data</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lon</th>
+      <th>lat</th>
+      <th>moho</th>
+      <th>vp_vs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>26725.000000</td>
+      <td>26725.000000</td>
+      <td>26725.000000</td>
+      <td>17003.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>25.792699</td>
+      <td>31.095287</td>
+      <td>39.679261</td>
+      <td>1.763848</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>84.198021</td>
+      <td>23.714109</td>
+      <td>10.042792</td>
+      <td>0.076951</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>-179.335000</td>
+      <td>-82.120000</td>
+      <td>8.000000</td>
+      <td>1.130000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>-51.330000</td>
+      <td>25.125000</td>
+      <td>32.740974</td>
+      <td>1.720000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>34.830000</td>
+      <td>36.700000</td>
+      <td>38.500000</td>
+      <td>1.750000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>103.418000</td>
+      <td>45.020000</td>
+      <td>44.900000</td>
+      <td>1.800000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>179.952000</td>
+      <td>82.503300</td>
+      <td>94.500000</td>
+      <td>2.601000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Next we will collate together bulk information for each profile</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># collate bulk information for each profile</span>
+<span class="n">station_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">])</span>
+<span class="n">lon_lat_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ll</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ll</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">])</span>
+<span class="n">av_rho_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;av_rho&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">])</span>
+<span class="n">moho_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;moho&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">])</span>
+<span class="n">region_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rgn</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">rgn</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">])</span>
+
+<span class="c1"># get arrays of average Vp and Vs</span>
+<span class="n">av_vp_array</span> <span class="o">=</span> <span class="p">[</span><span class="n">station</span><span class="p">[</span><span class="s1">&#39;av_Vp&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;av_Vp&#39;</span> <span class="ow">in</span> <span class="n">station</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+               <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">]</span>
+<span class="n">av_vs_array</span> <span class="o">=</span> <span class="p">[</span><span class="n">station</span><span class="p">[</span><span class="s1">&#39;av_Vs&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;av_Vs&#39;</span> <span class="ow">in</span> <span class="n">station</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+               <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">]</span>
+
+<span class="c1"># create output dataframe of bulk information...</span>
+<span class="c1">#   [station_name, lon, lat, crust_thickness,</span>
+<span class="c1">#    average_vp, average_vs, average_density]</span>
+<span class="c1">#   if original velocity file is vp, write vs = np.nan and vice versa</span>
+<span class="c1">#output_data = np.column_stack((station_array, lon_lat_array, moho_array,</span>
+<span class="c1">#                                av_vp_array, av_vs_array, av_rho_array))</span>
+<span class="n">output_data_converted</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;station&#39;</span><span class="p">:</span> <span class="n">station_array</span><span class="p">,</span>
+                                      <span class="s1">&#39;lon&#39;</span><span class="p">:</span> <span class="n">lon_lat_array</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span>
+                                      <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="n">lon_lat_array</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span>
+                                      <span class="s1">&#39;moho&#39;</span><span class="p">:</span> <span class="n">moho_array</span><span class="p">,</span>
+                                      <span class="s1">&#39;av_vp&#39;</span><span class="p">:</span> <span class="n">av_vp_array</span><span class="p">,</span>
+                                      <span class="s1">&#39;av_vs&#39;</span><span class="p">:</span> <span class="n">av_vs_array</span><span class="p">,</span>
+                                      <span class="s1">&#39;av_rho&#39;</span><span class="p">:</span> <span class="n">av_rho_array</span><span class="p">,</span>
+                                      <span class="s1">&#39;region&#39;</span><span class="p">:</span> <span class="n">region_array</span><span class="p">})</span>
+
+<span class="c1"># print sumamry statistics for the velocity profile dataframe</span>
+<span class="n">output_data_converted</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lon</th>
+      <th>lat</th>
+      <th>moho</th>
+      <th>av_vp</th>
+      <th>av_vs</th>
+      <th>av_rho</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>3962.000000</td>
+      <td>3962.000000</td>
+      <td>3962.000000</td>
+      <td>2745.000000</td>
+      <td>1217.000000</td>
+      <td>3962.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>8.472987</td>
+      <td>34.249828</td>
+      <td>39.856085</td>
+      <td>6.329190</td>
+      <td>3.652798</td>
+      <td>2.882111</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>81.070183</td>
+      <td>27.872786</td>
+      <td>9.047484</td>
+      <td>0.257949</td>
+      <td>0.159803</td>
+      <td>0.084106</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>-168.970000</td>
+      <td>-67.300000</td>
+      <td>15.000000</td>
+      <td>5.131414</td>
+      <td>3.062088</td>
+      <td>2.594869</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>-73.179950</td>
+      <td>28.000000</td>
+      <td>34.200000</td>
+      <td>6.179599</td>
+      <td>3.545403</td>
+      <td>2.826151</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>27.500000</td>
+      <td>40.635000</td>
+      <td>39.800000</td>
+      <td>6.339900</td>
+      <td>3.680549</td>
+      <td>2.885902</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>74.180000</td>
+      <td>53.040000</td>
+      <td>44.875000</td>
+      <td>6.513255</td>
+      <td>3.767663</td>
+      <td>2.939968</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>175.230000</td>
+      <td>80.170000</td>
+      <td>77.000000</td>
+      <td>6.982412</td>
+      <td>4.115312</td>
+      <td>3.249685</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Next we will generate an average and bulk velocity profile and bulk density profile using the <code class="docutils literal notranslate"><span class="pre">av_profile</span></code> function in the density_functions module.</p>
+<p>This function reads in a family of profiles and calculates the average property as a function of depth. For example, it can calculate average <span class="math notranslate nohighlight">\(V_P\)</span> as a function of depth. We will calculate average <span class="math notranslate nohighlight">\(V_P\)</span>, <span class="math notranslate nohighlight">\(V_S\)</span> and <span class="math notranslate nohighlight">\(\rho\)</span>. The function will also average the average profile to yield a bulk crustal property as a function of crustal thickness. For example, we can calculate average <span class="math notranslate nohighlight">\(V_P\)</span> as a function of crustal thickness etc. This will allow us to make a prediction of
+bulk crustal velocity and density as a function of crustal thickness alone. We can set <code class="docutils literal notranslate"><span class="pre">bulk_depth_limit</span></code> if we want to limit the maximum crustal thickness up to which we calculate the bulk property curves.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># maximum depth down to which bulk crustal properties will be calculated</span>
+<span class="c1"># ie. average and bulk vp, va, rho</span>
+<span class="n">bulk_depth_limit</span> <span class="o">=</span> <span class="mi">70</span>
+
+<span class="c1"># averaging approach (i.e. mean or median)</span>
+<span class="c1">#average_type = &quot;median&quot;</span>
+<span class="n">average_type</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span>
+
+<span class="c1"># get average density as function of depth and bulk density as function</span>
+<span class="c1"># of crustal thickness</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Getting average density, Vp and Vs profiles&quot;</span><span class="p">)</span>
+<span class="n">rho_z</span><span class="p">,</span> <span class="n">rho_tc</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">av_profile</span><span class="p">([</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;rho_hi_res&#39;</span><span class="p">]</span>
+                             <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span><span class="p">],</span>
+                             <span class="n">bulk_depth_limit</span><span class="p">,</span>
+                             <span class="n">average_type</span> <span class="o">=</span> <span class="n">average_type</span><span class="p">)</span>
+<span class="n">Vp_z</span><span class="p">,</span> <span class="n">Vp_tc</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">av_profile</span><span class="p">([</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;Vp_hi_res&#39;</span><span class="p">]</span>
+                          <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span>
+                          <span class="k">if</span> <span class="s1">&#39;Vp&#39;</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">],</span>
+                          <span class="n">bulk_depth_limit</span><span class="p">,</span> <span class="n">average_type</span> <span class="o">=</span> <span class="n">average_type</span><span class="p">)</span>
+<span class="n">Vs_z</span><span class="p">,</span> <span class="n">Vs_tc</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">av_profile</span><span class="p">([</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;Vs_hi_res&#39;</span><span class="p">]</span>
+                          <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">filtered_station_profiles</span>
+                          <span class="k">if</span> <span class="s1">&#39;Vs&#39;</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">],</span>
+                          <span class="n">bulk_depth_limit</span><span class="p">,</span> <span class="n">average_type</span> <span class="o">=</span> <span class="n">average_type</span><span class="p">)</span>
+
+<span class="c1"># calculate bulk density from bulk crustal thickness for places without V profiles</span>
+<span class="c1"># write nan if the density is outside the depth limit</span>
+<span class="c1"># (I.e. on really thick crust where bulk profile is unreliable)</span>
+<span class="n">all_crustal_thickness_data</span><span class="p">[</span><span class="s1">&#39;av_rho&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                                <span class="n">all_crustal_thickness_data</span><span class="p">[</span><span class="s1">&#39;moho&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bulk_depth_limit</span><span class="p">,</span>
+                                <span class="n">rho_tc</span><span class="p">(</span><span class="n">all_crustal_thickness_data</span><span class="p">[</span><span class="s1">&#39;moho&#39;</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+<span class="c1"># merge dataframes to create single output file (how=&#39;outer&#39; to preserve all keys)</span>
+<span class="n">output_data_all</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">output_data_converted</span><span class="p">,</span>
+                           <span class="n">all_crustal_thickness_data</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Getting average density, Vp and Vs profiles
+</pre></div></div>
+</div>
+<p>We have now generated a database of crustal thickness data, bulk seismic velocity and bulk density. Note that we have duplicated the locations where we have velocity profiles by calculating bulk density directly from the profiles, but then also from the bulk density approximation.</p>
+<p>Now print the coefficients for he polynomial functions that best-fit the empirical relationship calculated above.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># average density as a function of depth</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">rho_z</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="c1"># density as a function of crustal thickness</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">rho_tc</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span> <span class="mi">3</span><span class="p">))</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[-1.00043922e-05  7.41640294e-04 -5.19943605e-03  2.75241101e+00]
+[-2.55587463e-06  2.52046448e-04 -2.72723257e-03  2.75341063e+00]
+</pre></div></div>
+</div>
+<section id="Data-Exploration">
+<h3>Data Exploration<a class="headerlink" href="#Data-Exploration" title="Link to this heading">¶</a></h3>
+<p>We can now explore our whole database. First we will print the key statistics of the database.</p>
+<p>next, we will plot up all density information on a map showing those locations with velocity profiles and those locations without that are absed upon bulk density as a function of crustal thickness.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_data_all</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lon</th>
+      <th>lat</th>
+      <th>moho</th>
+      <th>av_vp</th>
+      <th>av_vs</th>
+      <th>av_rho</th>
+      <th>vp_vs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>30694.000000</td>
+      <td>30694.000000</td>
+      <td>30694.000000</td>
+      <td>2748.000000</td>
+      <td>1221.000000</td>
+      <td>30369.000000</td>
+      <td>17003.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>23.565642</td>
+      <td>31.497311</td>
+      <td>39.699256</td>
+      <td>6.328866</td>
+      <td>3.650388</td>
+      <td>2.875710</td>
+      <td>1.763848</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>83.998577</td>
+      <td>24.317463</td>
+      <td>9.921119</td>
+      <td>0.262100</td>
+      <td>0.165082</td>
+      <td>0.049375</td>
+      <td>0.076951</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>-179.335000</td>
+      <td>-82.120000</td>
+      <td>8.000000</td>
+      <td>4.997044</td>
+      <td>2.778049</td>
+      <td>2.502679</td>
+      <td>1.130000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>-62.730000</td>
+      <td>25.270000</td>
+      <td>33.000000</td>
+      <td>6.179220</td>
+      <td>3.544301</td>
+      <td>2.841827</td>
+      <td>1.720000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>33.675000</td>
+      <td>37.125000</td>
+      <td>38.700000</td>
+      <td>6.339850</td>
+      <td>3.679932</td>
+      <td>2.875132</td>
+      <td>1.750000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>102.800000</td>
+      <td>45.884750</td>
+      <td>44.900000</td>
+      <td>6.513310</td>
+      <td>3.767512</td>
+      <td>2.909096</td>
+      <td>1.800000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>179.952000</td>
+      <td>82.503300</td>
+      <td>94.500000</td>
+      <td>8.009966</td>
+      <td>4.115312</td>
+      <td>3.336094</td>
+      <td>2.601000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define color scale limits</span>
+<span class="n">vmin</span> <span class="o">=</span> <span class="mf">2.65</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="mf">3.1</span>
+
+<span class="c1"># Create a map for places where the station field is not NaN</span>
+<span class="n">fig1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax1</span> <span class="o">=</span> <span class="n">fig1</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">coastlines</span><span class="p">()</span>
+
+<span class="c1"># Filter data where station is not NaN</span>
+<span class="n">data_not_nan</span> <span class="o">=</span> <span class="n">output_data_all</span><span class="p">[</span><span class="n">output_data_all</span><span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span>
+
+<span class="c1"># Plot &#39;av_rho&#39; field with color mapping</span>
+<span class="n">sc1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">data_not_nan</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">],</span> <span class="n">data_not_nan</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">data_not_nan</span><span class="p">[</span><span class="s1">&#39;av_rho&#39;</span><span class="p">],</span>
+                  <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+<span class="c1"># Add colorbar</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sc1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;av_rho&#39;</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Create a map for places where the station field is NaN</span>
+<span class="n">fig2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">fig2</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">coastlines</span><span class="p">()</span>
+
+<span class="c1"># Filter data where station is NaN</span>
+<span class="n">data_nan</span> <span class="o">=</span> <span class="n">output_data_all</span><span class="p">[</span><span class="n">output_data_all</span><span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()]</span>
+
+<span class="c1"># Plot &#39;av_rho&#39; field with color mapping</span>
+<span class="n">sc2</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">data_nan</span><span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">],</span> <span class="n">data_nan</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">data_nan</span><span class="p">[</span><span class="s1">&#39;av_rho&#39;</span><span class="p">],</span>
+                  <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+<span class="c1"># Add colorbar</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sc2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;av_rho&#39;</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_43_0.png" src="../_images/TUTORIALS_tutorial_7_43_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_43_1.png" src="../_images/TUTORIALS_tutorial_7_43_1.png" />
+</div>
+</div>
+<p>Now we can use <code class="docutils literal notranslate"><span class="pre">seaborn</span></code> to plot a scatter pairplot of all parameters against one another in order to explore the relationships between the aprameters. This script may spit out a <code class="docutils literal notranslate"><span class="pre">FutureWarning</span></code> that can be safely ignored. This warning is caused the backend of <code class="docutils literal notranslate"><span class="pre">seaborn</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the figure size</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="c1"># Create the pairplot with KDE plots on the diagonal</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">pairplot</span><span class="p">(</span><span class="n">output_data_all</span><span class="p">[[</span><span class="s1">&#39;moho&#39;</span><span class="p">,</span> <span class="s1">&#39;av_vp&#39;</span><span class="p">,</span> <span class="s1">&#39;av_vs&#39;</span><span class="p">,</span> <span class="s1">&#39;av_rho&#39;</span><span class="p">]],</span>
+             <span class="n">plot_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;grey&#39;</span><span class="p">},</span>
+             <span class="n">diag_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;grey&#39;</span><span class="p">},</span>
+             <span class="n">diag_kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">)</span>
+
+<span class="c1"># Show the plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1119: FutureWarning: use_inf_as_na option is deprecated and will be removed in a future version. Convert inf values to NaN before operating instead.
+  with pd.option_context(&#39;mode.use_inf_as_na&#39;, True):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+/Users/eart0518/opt/anaconda3/envs/density/lib/python3.11/site-packages/seaborn/_oldcore.py:1498: FutureWarning: is_categorical_dtype is deprecated and will be removed in a future version. Use isinstance(dtype, CategoricalDtype) instead
+  if pd.api.types.is_categorical_dtype(vector):
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;Figure size 1000x1000 with 0 Axes&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_7_45_2.png" src="../_images/TUTORIALS_tutorial_7_45_2.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Write-final-data-tables">
+<h2>Write final data tables<a class="headerlink" href="#Write-final-data-tables" title="Link to this heading">¶</a></h2>
+<p>Finally, we can write out some of the data calculated and explored in this tutorial. There are not bespoke functions to write a lot of these data because exactly what each user wants from their data may vary substantially! The code below might give a little bit of an indication as to the sorts of things you may want to write.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># WRITE OUTPUT DATA FILES</span>
+
+<span class="n">outpath</span> <span class="o">=</span> <span class="s2">&quot;../../SEISCRUST_WORKING/CRUSTAL_THICKNESS/BULK_PROPERTIES/&quot;</span>
+
+<span class="c1"># file containing all moho depth, bulk crustal thickness and velocity estimates</span>
+<span class="n">av_vp_vs_rho_file</span> <span class="o">=</span> <span class="s2">&quot;av_vp_vs_rho_all&quot;</span>
+
+<span class="c1"># empirical average density as function of depth function</span>
+<span class="n">average_rho_z_file</span> <span class="o">=</span> <span class="s2">&quot;av_dens_depth_function_T_DEPENDENT.dat&quot;</span>
+<span class="n">average_vp_z_file</span> <span class="o">=</span> <span class="s2">&quot;av_vp_depth_function_T_DEPENDENT.dat&quot;</span>
+<span class="n">average_vs_z_file</span> <span class="o">=</span> <span class="s2">&quot;av_vs_depth_function_T_DEPENDENT.dat&quot;</span>
+
+<span class="c1"># empirial bulk density as function of crustal thickness function</span>
+<span class="n">bulk_rho_tc_file</span> <span class="o">=</span> <span class="s2">&quot;bulk_rho_tc_function_T_DEPENDENT.dat&quot;</span>
+<span class="n">bulk_vp_tc_file</span> <span class="o">=</span> <span class="s2">&quot;bulk_vp_tc_function_T_DEPENDENT.dat&quot;</span>
+<span class="n">bulk_vs_tc_file</span> <span class="o">=</span> <span class="s2">&quot;bulk_vs_tc_function_T_DEPENDENT.dat&quot;</span>
+
+<span class="c1"># check approach and whether T dependence is being used for outfile path names</span>
+<span class="k">if</span> <span class="n">approach</span> <span class="o">==</span> <span class="s1">&#39;stephenson&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">profiles</span><span class="o">.</span><span class="n">T_dependence</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving T dependent bulk density file...&quot;</span><span class="p">)</span>
+        <span class="n">approach</span> <span class="o">=</span> <span class="n">approach</span> <span class="o">+</span> <span class="s2">&quot;_T_DEPENDENT&quot;</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">outpath</span> <span class="o">+</span> <span class="n">av_vp_vs_rho_file</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">approach</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving T bulk density file...&quot;</span><span class="p">)</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">outpath</span> <span class="o">+</span> <span class="n">av_vp_vs_rho_file</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">approach</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span>
+
+<span class="c1"># save global average velocity and density</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving concatenated, high-resolution velocity and density files...&quot;</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">outpath</span> <span class="o">+</span> <span class="s2">&quot;density_high_res_global&quot;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">approach</span> <span class="o">+</span> <span class="s2">&quot;.dat&quot;</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;rho_hi_res&#39;</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">station_profiles</span><span class="p">]))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">outpath</span> <span class="o">+</span> <span class="s2">&quot;Vp_high_res_global.dat&quot;</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;Vp_hi_res&#39;</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">station_profiles</span> <span class="k">if</span>
+                            <span class="s1">&#39;Vp_hi_res&#39;</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">]))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">outpath</span> <span class="o">+</span> <span class="s2">&quot;Vs_high_res_global.dat&quot;</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;Vs_hi_res&#39;</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">station_profiles</span> <span class="k">if</span>
+                            <span class="s1">&#39;Vs_hi_res&#39;</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">]))</span>
+
+<span class="c1"># save average density, Vp and Vs as function of depth and bulk density as function</span>
+<span class="c1">#   of crustal thickness.  Ensure NaNs appear as &#39;nan&#39; and separator is space.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving bulk density data file...&quot;</span><span class="p">)</span>
+<span class="n">output_data_all</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">na_rep</span><span class="o">=</span><span class="s1">&#39;nan&#39;</span><span class="p">,</span>
+                        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;moho&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;av_vp&#39;</span><span class="p">,</span> <span class="s1">&#39;av_vs&#39;</span><span class="p">,</span> <span class="s1">&#39;av_rho&#39;</span><span class="p">])</span>
+
+<span class="n">smd</span><span class="o">.</span><span class="n">save_bulk_profiles</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">average_rho_z_file</span><span class="p">,</span> <span class="n">rho_z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">smd</span><span class="o">.</span><span class="n">save_bulk_profiles</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">bulk_rho_tc_file</span><span class="p">,</span> <span class="n">rho_tc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">smd</span><span class="o">.</span><span class="n">save_bulk_profiles</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">average_vp_z_file</span><span class="p">,</span> <span class="n">Vp_z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">smd</span><span class="o">.</span><span class="n">save_bulk_profiles</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">bulk_vp_tc_file</span><span class="p">,</span> <span class="n">Vp_tc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">smd</span><span class="o">.</span><span class="n">save_bulk_profiles</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">average_vs_z_file</span><span class="p">,</span> <span class="n">Vs_z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">smd</span><span class="o">.</span><span class="n">save_bulk_profiles</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">bulk_vs_tc_file</span><span class="p">,</span> <span class="n">Vs_tc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Saving T dependent bulk density file...
+Saving concatenated, high-resolution velocity and density files...
+Saving bulk density data file...
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SMV2rho</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_1.html">SMV2rho: Tutorial 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_2.html">SMV2rho: Tutorial 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_3.html">SMV2rho: Tutorial 3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_4.html">SMV2rho: Tutorial 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_5.html">SMV2rho: Tutorial 5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_6.html">SMV2rho: Tutorial 6</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SMV2rho: Tutorial 7</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Reading-files">Reading files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Creating-the-master-Geotherm-object">Creating the master Geotherm object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Assemble-file-lists">Assemble file lists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Convert-profiles">Convert profiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Locating-coincident-profiles">Locating coincident profiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Output-and-plotting">Output and plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Clean-up-some-obvious-outliers">Clean up some obvious outliers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Relationship-between-crustal-thickness-and-bulk-density">Relationship between crustal thickness and bulk density</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Write-final-data-tables">Write final data tables</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorial_6.html" title="previous chapter">SMV2rho: Tutorial 6</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Simon Stephenson, Mark Hoggard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/TUTORIALS/tutorial_7.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

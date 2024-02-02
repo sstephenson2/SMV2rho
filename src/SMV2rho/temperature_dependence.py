@@ -9,7 +9,6 @@
 ###################################################################
 # import modules
 import numpy as np
-import sys
 import os, os.path
 from dataclasses import dataclass
 
@@ -355,52 +354,6 @@ class Geotherm(GeothermConstants):
         self.T_family = T_family
 
         return self.z, self.T_family
-
-
-
-
-###################################################################
-
-# define linear continental geotherm
-# z, hr must be in metres
-def cont_geotherm_linear(z, T1, tc, T0=10):
-    return T0 + ((T1 - T0)/tc) * z/1000
-
-# define geotherm with internal heat generation
-# (1 layer from Turcotte and Schubert)
-# z, hr must be in metres
-def cont_geotherm_internal_heat(z, T0=10, qm=30e-3, k=2.5, rho=2800, 
-                                H0=7e-10, hr=10000):
-    return T0 + (qm * z / k) + (rho * H0 * hr**2 / k) * (1 - np.exp(-z/hr))
-
-# define geotherm with internal heat generation by difference between 
-#    basal and surface flux
-# (1 layer from Turcotte and Schubert)
-# z must be in metres
-def cont_geotherm_heat_flux_difference(z, T0=10, qm=30e-3, q0=59e-3, 
-                                       k=2.5, hr=10000):
-    return T0 + (qm * z / k) + ((q0 - qm) * hr / k) * (1 - np.exp(-z/hr))
-
-# define geotherm with constant basal and surface temperature
-# and internal heat generation and given crustal thickness, tc.
-# z must be in metres
-def cont_geotherm_temperature(z, T1=600, T0=10, rho=2850, 
-                              H0=7e-10, k=2.5, hr=10000, tc=30000):
-    """
-    Calculate geotherm based on constant basal and surface temperature,
-    heat production and crustal thickness
-    Arguments: - z - depth
-               - T1 - basal tmperature (in degrees C).  Default = 600C.
-               - T0 - Surface temperature (in degrees C).  Default 10C.
-               - rho - rock density (in kg/m3).  Default 2850.
-               - H0 - internal heat generation.  Default 7e-7.
-               - k - thermal conductivity (in W/m/C).  Default = 2.5
-               - hr - decay lengthscale of radioactive heat generation (in m),
-                        default = 10000m
-               - tc - Crustal thickness (in m).  Default = 30000m
-    """
-    return (T0 + ((z/tc) * (T1-T0)) + ((rho * H0 * hr**2)/k) * 
-            (((z/tc) * (np.exp(-tc/hr) - 1)) + (1 - np.exp(-z/hr))))
 
 ###################################################################
 

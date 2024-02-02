@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SMV2rho: Tutorial 5 &#8212; SMV2rho v1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=76e2d817"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SMV2rho: Tutorial 6" href="tutorial_6.html" />
+    <link rel="prev" title="SMV2rho: Tutorial 4" href="tutorial_4.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="SMV2rho:-Tutorial-5">
+<h1>SMV2rho: Tutorial 5<a class="headerlink" href="#SMV2rho:-Tutorial-5" title="Link to this heading">¶</a></h1>
+<p>In this tutorial we will see how we can include temperature dependence within the density conversion scheme. Note that this is only pssible with the <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code> <code class="docutils literal notranslate"><span class="pre">'stephenson'</span></code> scheme because the <code class="docutils literal notranslate"><span class="pre">'brocher'</span></code> approach is explicitly not a temperature or pressure dependent approach and so we do not recommend including this dependency with this scheme.</p>
+<p>Secondly, we will explore the option to set the uppermost layer of the crust to have a constant density. This option allows us to exclude the portion of the crust that experiences an exponential velocity drop-off.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import modules</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">plotting</span> <span class="k">as</span> <span class="n">smplt</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">density_functions</span> <span class="k">as</span> <span class="n">smd</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">c</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">temperature_dependence</span> <span class="k">as</span> <span class="n">td</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+</pre></div></div>
+</div>
+<section id="Class-approach">
+<h2>Class approach<a class="headerlink" href="#Class-approach" title="Link to this heading">¶</a></h2>
+<p>Again we will first go through this procedure step-by-step so that we can query the outputs.</p>
+<section id="Load-file">
+<h3>Load file<a class="headerlink" href="#Load-file" title="Link to this heading">¶</a></h3>
+<p>Let’s define the velocity profile that we are interested in converting, initialise the Convert and Constants classes and read in the profile data file.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to test velocity file</span>
+<span class="c1">#  - this file comes with the distribution so there is no need to change this path</span>
+<span class="n">vp_file</span> <span class="o">=</span> <span class="s2">&quot;../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat&quot;</span>
+
+<span class="c1"># create the constants object.</span>
+<span class="n">constants</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Constants</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Creating-the-geotherm-object">
+<h2>Creating the <code class="docutils literal notranslate"><span class="pre">geotherm</span></code> object<a class="headerlink" href="#Creating-the-geotherm-object" title="Link to this heading">¶</a></h2>
+<p>For a temperature-dependent parametrisation, we must provide an estimate of the temperature structure at depth. To do so, we need to parameterise the geothermal gradient. <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code> incorporates a number of geothermal parametrisations, with hopefully more to come.</p>
+<p>To create the geotherm object, we frst instantiate the <code class="docutils literal notranslate"><span class="pre">Geotherm</span></code> class within the <code class="docutils literal notranslate"><span class="pre">temperature_dependence</span></code> module. At this stage, we can select a number of different parametrisations for the geotherm, including a simple, linear geotherm or various different approches that solve the 1D heat equation with internal heat production for various boundary conditions. Which geotherm you pick will depend on the constraints present (e.g. do you have a constraint on Moho temperature vs Moho heat flux
+etc?). the default option is <code class="docutils literal notranslate"><span class="pre">'linear'</span></code>, i.e. a simple geotherm that is linear and defined by surface and basal temperature. Please see the documentation for the <code class="docutils literal notranslate"><span class="pre">Geotherm</span></code> class and the <code class="docutils literal notranslate"><span class="pre">GeothermConstants</span></code> dataclass for more information.</p>
+<p>Note that for the <code class="docutils literal notranslate"><span class="pre">Geotherm</span></code> class, depths, including crustal thickness, depth below surface, and the depth range over which geothermal heat production decays away <strong>must be given in positive kilometres</strong> and density <strong>must be given in g/cm3</strong>. This is consistent with other parameters elsewhere in <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code>, although we acknowledge that using SI units would be preferable in some circumstances.</p>
+<p>below we will generate three geotherms using different methods. Note all will use default values stored in the <code class="docutils literal notranslate"><span class="pre">GeothermConstants</span></code> data class, which can all be set manually when creating the geotherm object. For example <code class="docutils literal notranslate"><span class="pre">geotherm</span> <span class="pre">=</span> <span class="pre">td.Geotherm(geotherm_type</span> <span class="pre">=</span> <span class="pre">&quot;linear&quot;,</span> <span class="pre">tc</span> <span class="pre">=</span> <span class="pre">30,</span> <span class="pre">k</span> <span class="pre">=</span> <span class="pre">3.0,</span> <span class="pre">H0</span> <span class="pre">=</span> <span class="pre">7.5e-10</span> <span class="pre">...)</span></code> to select manual options.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a depth array for plotting</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># create a linear geotherm object providing a crustal thickness (in m)</span>
+<span class="n">geotherm1</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Geotherm</span><span class="p">(</span><span class="n">tc</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
+<span class="c1"># calculate the geotherm by calling the geotherm class</span>
+<span class="n">T_arr1</span> <span class="o">=</span> <span class="n">geotherm1</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+<span class="c1"># create a geotherm object that depends on heat flux at surface and moho</span>
+<span class="c1"># note this does not require a crustal thickness argument</span>
+<span class="n">geotherm2</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Geotherm</span><span class="p">(</span><span class="n">geotherm_type</span> <span class="o">=</span> <span class="s1">&#39;single_layer_flux_difference&#39;</span><span class="p">)</span>
+<span class="n">T_arr2</span> <span class="o">=</span> <span class="n">geotherm2</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+<span class="c1"># create a geotherm object that depends on temperature at the surface and at the moho</span>
+<span class="n">geotherm3</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Geotherm</span><span class="p">(</span><span class="n">geotherm_type</span> <span class="o">=</span> <span class="s1">&#39;single_layer_temperature_difference&#39;</span><span class="p">,</span> <span class="n">tc</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">T_arr3</span> <span class="o">=</span> <span class="n">geotherm3</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+<span class="c1">#### PLOTTING ####</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">T_arr1</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="o">-</span><span class="n">z</span><span class="p">}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span>  <span class="n">T_arr2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="o">-</span><span class="n">z</span><span class="p">}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span>  <span class="n">T_arr2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="o">-</span><span class="n">z</span><span class="p">}]</span>
+
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;q difference&#39;</span><span class="p">,</span> <span class="s1">&#39;T difference&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span>
+    <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span>
+    <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+    <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_5_0.png" src="../_images/TUTORIALS_tutorial_5_5_0.png" />
+</div>
+</div>
+<p>Let’s create the geotherm object for the profile that we will be using. We will use a single-layer model with internal heat generation defined by surface and basal heat flow using</p>
+<div align="center"><p><span class="math notranslate nohighlight">\(T(z) = T_0 + \frac{q_m z}{k} + \frac{(q_0 - q_m) h_r}{k} \left[ 1 - \exp \left( \frac{-z}{h_r} \right) \right]\)</span>,</p>
+</div><p>where <span class="math notranslate nohighlight">\(T_0 = 10\)</span>~:nbsphinx-math:<cite>textdegree `C is the temperature at the surface, :math:`q_0 = 59 pm 14</cite> mW m $^{-2} $ and <span class="math notranslate nohighlight">\(q_m = 30 \pm 10\)</span> mW m <span class="math notranslate nohighlight">\(^{-2}\)</span> are the surface and Moho heat flux, respectively, <span class="math notranslate nohighlight">\(h_r = 10\)</span> km is a characteristic length scale describing the rate of decrease of internal heat production with depth, and <span class="math notranslate nohighlight">\(k = 2.5\)</span> W m <span class="math notranslate nohighlight">\(^{-1}\)</span> K <span class="math notranslate nohighlight">\(^{-1}\)</span> is the thermal conductivity.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">geotherm</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Geotherm</span><span class="p">(</span><span class="n">geotherm_type</span> <span class="o">=</span> <span class="s1">&#39;single_layer_flux_difference&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Convert-Profile">
+<h2>Convert Profile<a class="headerlink" href="#Convert-Profile" title="Link to this heading">¶</a></h2>
+<p>This time we will set <code class="docutils literal notranslate"><span class="pre">T_dependence</span> <span class="pre">=</span> <span class="pre">True</span></code>, which is the default setting so we won’t pass it as an argument here. This option will prompt the program to look for a a <code class="docutils literal notranslate"><span class="pre">material_constants</span></code> attribute within the <code class="docutils literal notranslate"><span class="pre">constants</span></code> class instance. At the moment, this object does not exist and so the program will throw an error!</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load a profile into the Convert class</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">Convert</span><span class="p">(</span>
+    <span class="n">vp_file</span><span class="p">,</span>
+    <span class="n">profile_type</span> <span class="o">=</span> <span class="s2">&quot;Vp&quot;</span><span class="p">,</span>
+    <span class="n">geotherm</span> <span class="o">=</span> <span class="n">geotherm</span>
+    <span class="p">)</span>
+
+<span class="c1"># read data</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">read_data</span><span class="p">()</span>
+
+<span class="c1"># calculate density profile -- note default is the temperature dependence is True!</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">V_to_density_stephenson</span><span class="p">(</span>
+    <span class="n">constants</span><span class="p">,</span>
+    <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[5], line 12</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> profile<span style="color: rgb(98,98,98)">.</span>read_data()
+<span class="ansi-green-intense-fg ansi-bold">     11</span> <span style="color: rgb(95,135,135)"># calculate density profile -- note default is the temperature dependence is True!</span>
+<span class="ansi-green-fg">---&gt; 12</span> <span class="ansi-yellow-bg">profile</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">V_to_density_stephenson</span><span class="ansi-yellow-bg">(</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">constants</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span>
+<span class="ansi-green-intense-fg ansi-bold">     14</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">T_dependence</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span>
+<span class="ansi-green-intense-fg ansi-bold">     15</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/Work/SMV2rho/src/SMV2rho/density_functions.py:474</span>, in <span class="ansi-cyan-fg">Convert.V_to_density_stephenson</span><span class="ansi-blue-fg">(self, parameters, dz, constant_depth, constant_density, T_dependence, plot)</span>
+<span class="ansi-green-intense-fg ansi-bold">    439</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">V_to_density_stephenson</span>(<span style="color: rgb(0,135,0)">self</span>, parameters,
+<span class="ansi-green-intense-fg ansi-bold">    440</span>                             dz<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(98,98,98)">0.1</span>,
+<span class="ansi-green-intense-fg ansi-bold">    441</span>                             constant_depth <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>,
+<span class="ansi-green-intense-fg ansi-bold">    442</span>                             constant_density <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>,
+<span class="ansi-green-intense-fg ansi-bold">    443</span>                             T_dependence <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-intense-fg ansi-bold">    444</span>                             plot <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">False</span>):
+<span class="ansi-green-intense-fg ansi-bold">    445</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    446</span> <span style="color: rgb(175,0,0)">    Convert seismic velocity profiles to density using the Stephenson </span>
+<span class="ansi-green-intense-fg ansi-bold">    447</span> <span style="color: rgb(175,0,0)">    method.</span>
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    471</span> <span style="color: rgb(175,0,0)">        None</span>
+<span class="ansi-green-intense-fg ansi-bold">    472</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; 474</span>     <span class="ansi-yellow-bg">check_arguments</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">T_dependence</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">constant_depth</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">constant_density</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    475</span> <span class="ansi-yellow-bg">                        </span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">stephenson</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameters</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">geotherm</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    477</span>     <span style="color: rgb(95,135,135)"># instantiate convert profile calss</span>
+<span class="ansi-green-intense-fg ansi-bold">    478</span>     ProfileConvert <span style="color: rgb(98,98,98)">=</span> V2RhoStephenson(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data,
+<span class="ansi-green-intense-fg ansi-bold">    479</span>                                      parameters,
+<span class="ansi-green-intense-fg ansi-bold">    480</span>                                      <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>profile_type,
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    483</span>                                      T_dependence,
+<span class="ansi-green-intense-fg ansi-bold">    484</span>                                      <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>geotherm)
+
+File <span class="ansi-green-fg">~/Work/SMV2rho/src/SMV2rho/density_functions.py:1379</span>, in <span class="ansi-cyan-fg">check_arguments</span><span class="ansi-blue-fg">(T_dependence, constant_depth, constant_density, approach, parameters, geotherm)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1377</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span style="color: rgb(0,135,0)">isinstance</span>(parameters, c<span style="color: rgb(98,98,98)">.</span>Constants) <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-intense-fg ansi-bold">   1378</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> parameters<span style="color: rgb(98,98,98)">.</span>material_constants <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">-&gt; 1379</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">T_dependence is set to True but </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1380</span>                     <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">material_constants instance of the Constants </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1381</span>                     <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">class has not been set.</span><span style="color: rgb(175,0,0)">&#34;</span>)
+<span class="ansi-green-intense-fg ansi-bold">   1383</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> geotherm:
+<span class="ansi-green-intense-fg ansi-bold">   1384</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">Please create a geotherm object using the `Geotherm` </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1385</span>           <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">class</span><span style="color: rgb(175,0,0)">&#34;</span>)
+
+<span class="ansi-red-fg">ValueError</span>: T_dependence is set to True but material_constants instance of the Constants class has not been set.
+</pre></div></div>
+</div>
+<p>We can now set up the constants object by calling the <code class="docutils literal notranslate"><span class="pre">get_v_constants</span></code> method as in the last tutorial. This time we will also call the <code class="docutils literal notranslate"><span class="pre">get_material_constants</span></code> method which will generate the constants for the temperature-dependent part of the conversion.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># call the get_v_constants method asking for Vp constants</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vp&#39;</span><span class="p">)</span>
+
+<span class="c1"># call the get_material_constants method</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_material_constants</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Constants(vp_constants=VpConstants(v0=-0.93521, b=0.00169478, d0=2.55911, dp=-0.00047605, c=1.674065, k=0.01953466, m=-0.0004, v0_unc=None, b_unc=None, d0_unc=None, dp_unc=None, c_unc=None, k_unc=None, m_unc=0.0001), vs_constants=None, material_constants=MaterialConstants(alpha0=1e-05, alpha1=2.9e-08, K=90000000000.0, alpha0_unc=5e-06, alpha1_unc=5e-09, K_unc=20000000000.0))
+</pre></div></div>
+</div>
+<p>We can see that the constants object now contains a <code class="docutils literal notranslate"><span class="pre">VpConstants</span></code> object and a <code class="docutils literal notranslate"><span class="pre">MaterialsConstants</span></code> object.</p>
+<p>Now we can run the conversion again and this time it will work.</p>
+<p>Note, as with the previous tutorial, running this function may result in an integration warning. This warning can be safely ignored and is generated because the velocity and density profile functions <span class="math notranslate nohighlight">\(V_P(z)\)</span> and <span class="math notranslate nohighlight">\(\rho (z)\)</span> contain discontinuities.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">constants</span><span class="o">.</span><span class="n">material_constants</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+MaterialConstants(alpha0=1e-05, alpha1=2.9e-08, K=90000000000.0, alpha0_unc=5e-06, alpha1_unc=5e-09, K_unc=20000000000.0)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># calculate density profile -- note default is the temperature dependence is True!</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">V_to_density_stephenson</span><span class="p">(</span><span class="n">constants</span><span class="p">,</span> <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/Work/SMV2rho/src/SMV2rho/density_functions.py:1698: IntegrationWarning: The maximum number of subdivisions (50) has been achieved.
+  If increasing the limit yields no improvement it is advised to analyze
+  the integrand in order to determine the difficulties.  If the position of a
+  local difficulty can be determined (singularity, discontinuity) one will
+  probably gain from splitting up the interval and calling the integrator
+  on the subranges.  Perhaps a special-purpose integrator should be used.
+  int_val = integrate.quad(interp_profile, bins_low_res[e],
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;station&#39;, &#39;Vp_file&#39;, &#39;region&#39;, &#39;moho&#39;, &#39;location&#39;, &#39;av_Vp&#39;, &#39;Vp&#39;, &#39;type&#39;, &#39;method&#39;, &#39;geotherm&#39;, &#39;rho&#39;, &#39;av_rho&#39;, &#39;rho_hi_res&#39;, &#39;Vp_hi_res&#39;, &#39;p&#39;, &#39;T&#39;])
+</pre></div></div>
+</div>
+</section>
+<section id="Outputs-and-plotting">
+<h2>Outputs and plotting<a class="headerlink" href="#Outputs-and-plotting" title="Link to this heading">¶</a></h2>
+<p>We can now explore the outputs. We can already see that we now have a <code class="docutils literal notranslate"><span class="pre">'T'</span></code> key within the output dictionary. This temperature profile is generated using a constant moho and surface heat flux with heat production concentrated within the upper 10 km. It is possible to edit the parametrisation of the geotherm within the <code class="docutils literal notranslate"><span class="pre">temperature_dependence</span></code> and <code class="docutils literal notranslate"><span class="pre">density_functions</span></code> modules.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define plot settings</span>
+<span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;line&#39;</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Temperature $^\circ$C&#39;</span><span class="p">,</span> <span class="s1">&#39;P (MPa)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">],</span>
+    <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span>
+    <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+    <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_16_0.png" src="../_images/TUTORIALS_tutorial_5_16_0.png" />
+</div>
+</div>
+<p>Now let’s plot up the velocity and density curves</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define plot settings</span>
+<span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;line&#39;</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Observed $</span><span class="si">{V_p}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Calculated $\rho$&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">],</span>
+    <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span>
+    <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+    <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_18_0.png" src="../_images/TUTORIALS_tutorial_5_18_0.png" />
+</div>
+</div>
+<section id="Function-approach">
+<h3>Function approach<a class="headerlink" href="#Function-approach" title="Link to this heading">¶</a></h3>
+<p>Again, it is possible, by using the options in the <code class="docutils literal notranslate"><span class="pre">convert_V_profile</span></code> function, to convert this velocity profile using a function rather than step-by-step using the class objects.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># call density conversion function</span>
+<span class="c1"># note that using profile_type=&quot;Vs&quot; first calls a function to convert to Vp</span>
+<span class="c1"># as is required by Brocher&#39;s (2005) approach.</span>
+<span class="n">profile_stephenson</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">convert_V_profile</span><span class="p">(</span>
+    <span class="n">vp_file</span><span class="p">,</span>
+    <span class="n">profile_type</span><span class="o">=</span><span class="s2">&quot;Vp&quot;</span><span class="p">,</span>
+    <span class="n">approach</span><span class="o">=</span><span class="s2">&quot;stephenson&quot;</span><span class="p">,</span>
+    <span class="n">print_working_file</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">constants</span><span class="p">,</span>
+    <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">geotherm</span> <span class="o">=</span> <span class="n">geotherm</span>
+    <span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+working on ../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Observed $</span><span class="si">{V_p}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Calculated $\rho$&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure (MPa)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span>
+    <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span>
+    <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+    <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_21_0.png" src="../_images/TUTORIALS_tutorial_5_21_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Excluding-the-uppermost-x-km">
+<h2>Excluding the uppermost <span class="math notranslate nohighlight">\(x\)</span> km<a class="headerlink" href="#Excluding-the-uppermost-x-km" title="Link to this heading">¶</a></h2>
+<p>We can exclude the uppermost <span class="math notranslate nohighlight">\(x\)</span> km from the density conversion, setting it to a constant value in order to avoid mismatches between exponential drop-off in the density conversion scheme that may or may not be present in the true velocity profile. This effect can be seen in the above example, where the layers are relatively coarse, and so an exponential veocity dropoff is imposed upon a layer of constant velocity.</p>
+<p>To avoid this mismatch, we can set the <code class="docutils literal notranslate"><span class="pre">constant_density</span></code> and <code class="docutils literal notranslate"><span class="pre">constant_depth</span></code> parameters. Both of these parameters must be set together.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># calculate density profile -- note default is that temperature dependence is True!</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">V_to_density_stephenson</span><span class="p">(</span>
+    <span class="n">constants</span><span class="p">,</span>
+    <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">constant_density</span> <span class="o">=</span> <span class="mf">2.75</span><span class="p">,</span>
+    <span class="n">constant_depth</span> <span class="o">=</span> <span class="mi">7</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we can plot the <code class="docutils literal notranslate"><span class="pre">'rho_hi_res'</span></code> array and see that the uppermost 7 km have been set to a density of 2.75 Mg/m3. Note that if we are using the <code class="docutils literal notranslate"><span class="pre">temperature_dependence</span> <span class="pre">=</span> <span class="pre">True</span></code> option, then we are setting <span class="math notranslate nohighlight">\(\rho_\circ\)</span> to constant, but this density value will still be subject to thermal expansion and compression.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define plot settings</span>
+<span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;line&#39;</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Observed $</span><span class="si">{V_p}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Calculated $\rho$&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">,</span> <span class="s1">&#39;P (MPa)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span>
+    <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span>
+    <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+    <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_25_0.png" src="../_images/TUTORIALS_tutorial_5_25_0.png" />
+</div>
+</div>
+<p>And now we can plot the <code class="docutils literal notranslate"><span class="pre">'rho'</span></code> array to see what the profile looks like after averaging into the same layers as contained in the input velocity profile.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define plot settings</span>
+<span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;line&#39;</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Observed $</span><span class="si">{V_p}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Calculated $\rho$&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">,</span> <span class="s1">&#39;P (MPa)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span>
+    <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+    <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span>
+    <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+    <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_27_0.png" src="../_images/TUTORIALS_tutorial_5_27_0.png" />
+</div>
+</div>
+<section id="Exploring-different-parameter-values">
+<h3>Exploring different parameter values<a class="headerlink" href="#Exploring-different-parameter-values" title="Link to this heading">¶</a></h3>
+<p>We can explore the effects of using different values of various parameters. Let’s explore the rfesult if we use a different value for <span class="math notranslate nohighlight">\(m\)</span>, the linear dependence of velocity on <span class="math notranslate nohighlight">\(T\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">constants1</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Constants</span><span class="p">()</span>
+
+<span class="c1"># call the get_v_constants method asking for Vp constants</span>
+<span class="n">constants1</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vp&#39;</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1e-4</span><span class="p">)</span>
+
+<span class="c1"># call the get_material_constants method</span>
+<span class="n">constants1</span><span class="o">.</span><span class="n">get_material_constants</span><span class="p">()</span>
+
+<span class="c1"># call density conversion function</span>
+<span class="c1"># note that using profile_type=&quot;Vs&quot; first calls a function to convert to Vp</span>
+<span class="c1"># as is required by Brocher&#39;s (2005) approach.</span>
+<span class="n">profile1_stephenson</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">convert_V_profile</span><span class="p">(</span>
+    <span class="n">vp_file</span><span class="p">,</span>
+    <span class="n">profile_type</span><span class="o">=</span><span class="s2">&quot;Vp&quot;</span><span class="p">,</span>
+    <span class="n">approach</span><span class="o">=</span><span class="s2">&quot;stephenson&quot;</span><span class="p">,</span>
+    <span class="n">print_working_file</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">constants1</span><span class="p">,</span>
+    <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">geotherm</span> <span class="o">=</span> <span class="n">geotherm</span><span class="p">)</span>
+
+<span class="c1"># plot density profiles</span>
+<span class="n">data_m_test</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile1_stephenson</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span>
+     <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile1_stephenson</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">],</span>
+     <span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;small m&#39;</span><span class="p">},</span>
+     <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span>
+      <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">],</span>
+      <span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;larger m&#39;</span><span class="p">}</span>
+      <span class="p">]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">([</span><span class="n">data_m_test</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">xlabels</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">],</span> <span class="n">ylabels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">],</span>
+            <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+working on ../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/Work/SMV2rho/src/SMV2rho/density_functions.py:1698: IntegrationWarning: The maximum number of subdivisions (50) has been achieved.
+  If increasing the limit yields no improvement it is advised to analyze
+  the integrand in order to determine the difficulties.  If the position of a
+  local difficulty can be determined (singularity, discontinuity) one will
+  probably gain from splitting up the interval and calling the integrator
+  on the subranges.  Perhaps a special-purpose integrator should be used.
+  int_val = integrate.quad(interp_profile, bins_low_res[e],
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_5_29_2.png" src="../_images/TUTORIALS_tutorial_5_29_2.png" />
+</div>
+</div>
+<p>So we can clearly see that picking a larger value of <span class="math notranslate nohighlight">\(m\)</span>, or <span class="math notranslate nohighlight">\(\frac{\partial V_P}{\partial T}_P\)</span> leads to an increase in our density estimate.</p>
+</section>
+</section>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Link to this heading">¶</a></h2>
+<p>We have now included temperature dependence within the density conversion scheme. We have explored how to create an instance of the <code class="docutils literal notranslate"><span class="pre">Constants</span></code> class including a <code class="docutils literal notranslate"><span class="pre">material_constants</span></code> object and we have explored how to set the uppermost <span class="math notranslate nohighlight">\(x\)</span> km to a constant value to mitigate cases where the expected exponential dropoff in velocity is not reflected in the velocity profile. We also played with changing certain parameters to explore the effect that they have on velocity profiles.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SMV2rho</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_1.html">SMV2rho: Tutorial 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_2.html">SMV2rho: Tutorial 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_3.html">SMV2rho: Tutorial 3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_4.html">SMV2rho: Tutorial 4</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SMV2rho: Tutorial 5</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Class-approach">Class approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Creating-the-geotherm-object">Creating the <code class="docutils literal notranslate"><span class="pre">geotherm</span></code> object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Convert-Profile">Convert Profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Outputs-and-plotting">Outputs and plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Excluding-the-uppermost-x-km">Excluding the uppermost <span class="math notranslate nohighlight">\(x\)</span> km</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_6.html">SMV2rho: Tutorial 6</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_7.html">SMV2rho: Tutorial 7</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorial_4.html" title="previous chapter">SMV2rho: Tutorial 4</a></li>
+      <li>Next: <a href="tutorial_6.html" title="next chapter">SMV2rho: Tutorial 6</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Simon Stephenson, Mark Hoggard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/TUTORIALS/tutorial_5.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

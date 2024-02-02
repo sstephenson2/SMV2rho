@@ -15,7 +15,6 @@ import glob
 import os, os.path
 import SMV2rho.temperature_dependence as td
 import SMV2rho.constants as c
-from multiprocessing import Pool, Manager
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -28,11 +27,14 @@ def ensure_dir(filename):
     Ensure that the directory for the given filename exists. If the directory 
     does not exist, it will be created.
 
-    Args:
-        filename (str): The path to the file.
+    Parameters
+    ----------
+    filename : str
+        The path to the file.
 
-    Returns:
-        None
+    Returns
+    -------
+    None
     """
     d = os.path.dirname(filename)
     if not os.path.exists(d):
@@ -43,13 +45,18 @@ def read_file(filename, delimiter = None):
     """
     Read the contents of a file and return them as a list of lines.
 
-    Args:
-        filename (str): The path to the file.
-        delimiter (str, optional): The delimiter used to split lines into 
-            elements (default is None, which means lines are not split).
+    Parameters
+    ----------
+    filename : str
+        The path to the file.
+    delimiter : str, optional
+        The delimiter used to split lines into elements (default is None, 
+        which means lines are not split).
 
-    Returns:
-        list: A list of lines from the file.
+    Returns
+    -------
+    list
+        A list of lines from the file.
     """
 
     data = []
@@ -67,12 +74,16 @@ def write_profile_to_file(data, filename):
     """
     Write data to a file.
 
-    Args:
-        data (list): A list of data to be written to the file.
-        filename (str): The path to the output file.
+    Parameters
+    ----------
+    data : list
+        A list of data to be written to the file.
+    filename : str
+        The path to the output file.
 
-    Returns:
-        None
+    Returns
+    -------
+    None
     """
 
     f = open(filename, 'w')
@@ -98,12 +109,17 @@ def Vs2Vp_brocher(Vs):
     Convert shear wave velocity (Vs) to compressional wave velocity (Vp) 
     using Brocher's (2005) regression fit.
 
-    Args:
-        Vs (float or numpy.ndarray): Shear wave velocity in km/s.
+    Parameters
+    ----------
+    Vs : float or numpy.ndarray
+        Shear wave velocity in km/s.
 
-    Returns:
-        float or numpy.ndarray: Compressional wave velocity (Vp) in km/s.
+    Returns
+    -------
+    float or numpy.ndarray
+        Compressional wave velocity (Vp) in km/s.
     """
+
     return (0.9409 + 2.0947 * Vs - 0.8206 * 
             Vs**2. + 0.2683 * Vs**3. - 0.0251 * Vs**4.)
 
@@ -113,12 +129,17 @@ def Vp2rho_brocher(Vp):
     Convert compressional wave velocity (Vp) to density (g/cm³) using the 
     Nafe-Drake relationship.
 
-    Args:
-        Vp (float or numpy.ndarray): Compressional wave velocity in km/s.
+    Parameters
+    ----------
+    Vp : float or numpy.ndarray
+        Compressional wave velocity in km/s.
 
-    Returns:
-        float or numpy.ndarray: Density in g/cm³.
+    Returns
+    -------
+    float or numpy.ndarray
+        Density in g/cm³.
     """
+
     return (1.6612 * Vp - 0.4721 * Vp**2. + 0.0671 * Vp**3. - 
             0.0043 * Vp**4. + 0.000106 * Vp**5.)
 
@@ -137,25 +158,29 @@ def V2rho_stephenson(data, parameters):
     parameter values will differ. Ensure you use the correct parameters for 
     the velocity type.
 
-    Args:
-        data (array-like): An array of pressure and velocity data where 
-            data[0] is pressure (in GPa) and data[1] is velocity (in km/s).
-        parameters (class instance): Instance of the Constants or
-            TemperatureDependentConstants class containig the parameters
-            listed below: 
+    Parameters
+    ----------
+    data : array-like
+        An array of pressure and velocity data where data[0] is pressure 
+        (in GPa) and data[1] is velocity (in km/s).
+    parameters : class instance
+        Instance of the VpConstants or VsConstants classes containing the 
+        attributes listed below: 
 
-            - v0 (float): Intercept velocity.
-            - b (float): Velocity gradient with respect to density.
-            - d0 (float): Partial derivative of velocity gradient (dvdr) with 
-                respect to pressure (dp).
-            - dp (float): Velocity gradient with respect to pressure (dvdpr).
-            - c (float): Amplitude of the velocity drop-off at low pressure.
-            - k (float): Lengthscale of the velocity drop-off.
+        - v0 (float): Intercept velocity.
+        - b (float): Velocity gradient with respect to density.
+        - d0 (float): Partial derivative of velocity gradient (dvdr) with 
+            respect to pressure (dp).
+        - dp (float): Velocity gradient with respect to pressure (dvdpr).
+        - c (float): Amplitude of the velocity drop-off at low pressure.
+        - k (float): Lengthscale of the velocity drop-off.
 
-    Returns:
-        float or numpy.ndarray: Density at standard temperature and pressure 
-        (s.t.p.) in g/cm³.
+    Returns
+    -------
+    float or numpy.ndarray
+        Density at standard temperature and pressure (s.t.p.) in g/cm³.
     """
+
     p = data[0]
     v = data[1]
     return ((v - parameters.v0 - (parameters.b * p) + 
@@ -174,45 +199,45 @@ class Convert:
     them to other parameters using different approaches, and write the 
     converted data to output files.
 
-    Args:
-        profile (str): File path to the seismic profile data.
-        profile_type (str): Type of the seismic profile, "Vp" or "Vs."
-        region_name (str, optional): Geographic location of the profile. 
-            Default is None.
-        seismic_method_name (str): Method used to acquire the velocity 
-            profile. If set to None, the read_data method will pick up the 
-            argument from the file string. Note if set to None the strict 
-            file convention must be set (see README.md) and tutorial_1.ipynb.
-        geotherm (class instance): Instance of the Geotherm class containing
-            information about the temperature profile at the site of the
-            seismic profile.
+    Parameters
+    ----------
+    profile : str
+        File path to the seismic profile data.
+    profile_type : str
+        Type of the seismic profile, "Vp" or "Vs."
+    region_name : str, optional
+        Geographic location of the profile. Default is None.
+    seismic_method_name : str
+        Method used to acquire the velocity profile. If set to None, the 
+        read_data method will pick up the argument from the file string. 
+        Note if set to None the strict file convention must be set 
+        (see README.md) and tutorial_1.ipynb.
+    geotherm : class instance
+        Instance of the Geotherm class containing information about the 
+        temperature profile at the site of the seismic profile.
 
-    Attributes:
-        data (dict): Dictionary containing parsed seismic profile data.
-        profile_type (str): Type of profile.  "Vp" or "Vs".
-        moho (float): Moho depth parsed from the profile data.
-        geotherm: Instance of the Geotherm class (if using temperature-
-            dependent conversion. Default None)
-        region_name (str): geographic location of the file (parsed from file
-            string or given as argument)
-        method (str): method used to collect the velocity profile.  Parsed
-            from file string or given as argument (e.g. 'REFRACTION').
-        rho, av_rho, rho_hi_res: Attributes generated by the Vs_to_Vp_brocher,
-            Vp_to_density_brocher, and V_to_density_stephenson methods.
-        vp_calc (np.ndarr): calculated vp profile generated by 
-            Vs_to_Vp_brocher method.
-            
-    Methods:
-        read_data: Read in data file and parse it into a data dictionary.
-        Vs_to_Vp_brocher: Convert Vs profile to Vp using Brocher's 
-            (2005) approach. Generates 'vp_calc'.
-        Vp_to_density_brocher: Convert Vp profile to density using Brocher 
-            (2005) method. Generates 'rho', 'av_rho', and 'rho_hi_res'.
-        V_to_density_stephenson: Convert Vp profile to density using the 
-            Stephenson method. Generates 'rho', 'av_rho', and 'rho_hi_res'.
-        write_data: Write the converted data to appropriate file locations 
-            based on the specified conversion approach and temperature 
-            dependence settings.
+    Attributes
+    ----------
+    data : dict
+        Dictionary containing parsed seismic profile data.
+    profile_type : str
+        Type of profile.  "Vp" or "Vs".
+    moho : float
+        Moho depth parsed from the profile data.
+    geotherm : class instance
+        Instance of the Geotherm class (if using temperature-dependent 
+        conversion. Default None)
+    region_name : str
+        Geographic location of the file (parsed from file string or given 
+        as argument)
+    method : str
+        Method used to collect the velocity profile.  Parsed from file 
+        string or given as argument (e.g. 'REFRACTION').
+    rho, av_rho, rho_hi_res : various types
+        Attributes generated by the Vs_to_Vp_brocher, Vp_to_density_brocher, 
+        and V_to_density_stephenson methods.
+    vp_calc : np.ndarray
+        Calculated vp profile generated by Vs_to_Vp_brocher method.
     """
 
     def __init__(self, profile, profile_type = None, region_name = None,
@@ -273,12 +298,15 @@ class Convert:
         8. Constructs a data dictionary based on the profile type (Vs or Vp) 
             and stores it in `self.data`.
 
-        Returns:
-            None: The parsed data is stored in `self.data` for further use.
+        Returns
+        -------
+        None
+            The parsed data is stored in `self.data` for further use.
 
-        Note:
-            This method assumes that `self.profile_type` has been set to 
-            "Vs" or "Vp" to indicate the type of seismic profile being read.
+        Note
+        ----
+        This method assumes that `self.profile_type` has been set to 
+        "Vs" or "Vp" to indicate the type of seismic profile being read.
         """
         data = read_file(self.profile)        
 
@@ -369,16 +397,19 @@ class Convert:
         Brocher's (2005) approach. It updates the `self.data` dictionary to 
         include the `Vp_calc` profile field, average Vp, and Vp/Vs ratio.
 
-        Raises:
-            Exception: If the profile type is not "Vs," indicating that you 
-                must be using a Vs profile for conversion. In such cases, it 
-                advises the user to re-initiate the class.
-            NameError: If the `data` dictionary has not been created yet, it 
-                reminds the user to run `read_data` first to create the data 
-                dictionary.
+        Raises
+        ------
+        Exception
+            If the profile type is not "Vs," indicating that you must be using 
+            a Vs profile for conversion. In such cases, it advises the user to 
+            re-initiate the class.
+        NameError
+            If the `data` dictionary has not been created yet, it reminds the 
+            user to run `read_data` first to create the data dictionary.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
         """
 
         # catch if you are trying to convert a Vp profile...
@@ -409,13 +440,16 @@ class Convert:
         profile exists and performs the conversion accordingly. The resulting 
         density fields are added to the `self.data` dictionary.
 
-        Raises:
-            KeyError: If no Vp or calculated Vp profile is found when 
-                converting a Vs profile. In such cases, it reminds the user 
-                to convert Vs to Vp first.
+        Raises
+        ------
+        KeyError
+            If no Vp or calculated Vp profile is found when converting a Vs 
+            profile. In such cases, it reminds the user to convert Vs to Vp 
+            first.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
         """
 
         # check velocity profile type and carry out the appropriate conversion
@@ -436,7 +470,8 @@ class Convert:
         # add new values to data dictionary
         self.data.update(rho = rho, av_rho = av_rho)
 
-    def V_to_density_stephenson(self, parameters, 
+    def V_to_density_stephenson(self, 
+                                parameters, 
                                 dz=0.1,
                                 constant_depth = None,
                                 constant_density = None,
@@ -446,29 +481,32 @@ class Convert:
         Convert seismic velocity profiles to density using the Stephenson 
         method.
 
-        This function takes seismic velocity profiles and converts them 
-        to density profiles using the Stephenson density conversion 
-        approach. It provides options for specifying conversion parameters, 
-        depth increment, constant density values, temperature dependence, 
-        and plotting.  The resulting density fileds are added to the 
-        'self.data' dictionary.
+        This method takes seismic velocity profiles and converts them to 
+        density profiles using the Stephenson density conversion approach. It 
+        provides options for specifying conversion parameters, depth 
+        increment, constant density values, temperature dependence, and 
+        plotting. The resulting density fields are added to the 'self.data' 
+        dictionary.
 
-        Args:
-            parameters (Constants or TemperatureDependentConstants class 
-                instance): Parameters for density conversion.
-            profile (str, optional): The seismic profile type, "Vp" (default) 
-                or "Vs".
-            dz (float, optional): Depth increment for density calculation 
-                (default is 0.1 km).
-            constant_depth (float, optional): Depth for constant density (km).
-            constant_density (float, optional): Constant density value.
-            T_dependence (bool, optional): Include temperature dependence 
-                (default is True).
-            plot (bool, optional): Whether to plot the density and pressure 
-                profiles (default is False).
+        Parameters
+        ----------
+        parameters : Constants or TemperatureDependentConstants class instance
+            Parameters for density conversion.
+        dz : float, optional
+            Depth increment for density calculation (default is 0.1 km).
+        constant_depth : float, optional
+            Depth for constant density (km).
+        constant_density : float, optional
+            Constant density value.
+        T_dependence : bool, optional
+            Include temperature dependence (default is True).
+        plot : bool, optional
+            Whether to plot the density and pressure profiles (default is 
+            False).
 
-        Returns:
-            None
+        Returns
+        -------
+        None
         """
         
         check_arguments(T_dependence, constant_depth, constant_density,
@@ -528,8 +566,11 @@ class Convert:
             plt.show()
 
     # write out data
-    def write_data(self, path, file_structure = None, approach="stephenson",
-                   T_dependence = False):
+    def write_data(self, 
+                   path, 
+                   file_structure=None, 
+                   approach="stephenson", 
+                   T_dependence=False):
         """
         Write seismic profile data to appropriate file locations.
 
@@ -538,24 +579,28 @@ class Convert:
         specified density conversion approach and temperature dependence 
         settings.
 
-        Args:
-            path (str): The path to the directory containing all velocity 
-                data.  See README for directory structure details.
-            file_structure (str): If set to None (Default) then we will 
-                construct the path from the information in 
-                the metadata (i.e. following the default file structure).  
-                Otherwise a manual outpath needs to be used that leads to the
-                output location.  We will then append relevant method 
-                information to the output filename to bookmark the output 
-                profiles.
-            approach (str, optional): The density (and Vp-Vs if used) 
-                conversion approach, which is needed for the file path 
-                (default is "stephenson").
-            T_dependence (bool, optional): Specifies whether temperature 
-                dependence is included (default is False).
+        Parameters
+        ----------
+        path : str
+            The path to the directory containing all velocity data. See README 
+            for directory structure details.
+        file_structure : str, optional
+            If set to None (Default) then we will construct the path from the 
+            information in the metadata (i.e. following the default file 
+            structure). Otherwise a manual outpath needs to be used that leads 
+            to the output location. We will then append relevant method 
+            information to the output filename to bookmark the output 
+            profiles.
+        approach : str, optional
+            The density (and Vp-Vs if used) conversion approach, which is 
+            needed for the file path (default is "stephenson").
+        T_dependence : bool, optional
+            Specifies whether temperature dependence is included (default is 
+            False).
 
-        Returns:
-            None
+        Returns
+        -------
+        None
         """
         
         # create lists to write out
@@ -642,56 +687,54 @@ class Convert:
 class V2RhoStephenson:
     """
     Class for density conversion of a given seismic profile using the 
-    stephenson method.  Only handles single profiles.
+    Stephenson method. Only handles single profiles.
+
     If you are converting a single profile, it is easiest to use the 
     functionality in this class through the convert_V_profile function.
     If you are converting multiple profiles, then it is easiest to access
     the functionality in this class through the MultiConversion class.
 
-    Args:
-        data (dict): Seismic profile data containing depth, velocity, and 
-            density.  This is the output from the read_data method
-            of the Convert class.
-        parameters (numpy.ndarray): Instance of the Constants, VpConstants
-            or VsConstants class.  If T_dependence is True, then this
-            must be an instance of Constants class and must contain 
-            material_constants attribute.
-        profile (str): Profile type, "Vp" or "Vs."
-        constant_depth (float): Depth for constant density for uppermost x km.
-        constant_density (float): Constant density value for uppermost x km.
-        T_dependence (bool): True for temperature dependence inclusion 
-            (default True).
-        geotherm (list): Instance of the Geotherm class, must be set if
-            T_dependence is True (default None).
+    Parameters
+    ----------
+    data : dict
+        Seismic profile data containing depth, velocity, and density. This 
+        is the output from the read_data method of the Convert class.
+    parameters : numpy.ndarray
+        Instance of the Constants, VpConstants or VsConstants class. If 
+        T_dependence is True, then this must be an instance of Constants 
+        class and must contain material_constants attribute.
+    profile : str
+        Profile type, "Vp" or "Vs."
+    constant_depth : float
+        Depth for constant density for uppermost x km.
+    constant_density : float
+        Constant density value for uppermost x km.
+    T_dependence : bool
+        True for temperature dependence inclusion (default True).
+    geotherm : list
+        Instance of the Geotherm class, must be set if T_dependence is True 
+        (default None).
 
-    Attributes:
-        data (dict): Seismic profile data containing depth, velocity, and 
-            density.  This is the output from the read_data method
-            of the Convert class.
-        parameters (numpy.ndarray): Instance of the Constants, VpConstants
-            or VsConstants class.  If T_dependence is True, then this
-            must be an instance of Constants class and must contain 
-            material_constants attribute.
-        profile (str): Profile type, "Vp" or "Vs."
-        constant_depth (float): Depth for constant density for uppermost x km.
-        constant_density (float): Constant density value for uppermost x km.
-        T_dependence (bool): True for temperature dependence inclusion 
-            (default True).
-        geotherm (list): Instance of the Geotherm class, must be set if
-            T_dependence is True (default None).
-
-    Methods:
-        calculate_density_profile(dz=0.1): Calculate density profile.
-        _set_up_arrays(dz): Set up depth and velocity arrays.
-        _overburden_density(rho_arr, z_arr): Calculate overburden density.
-        _pressure(rho_overburden, z): Calculate pressure using overburden 
-            density.
-        _thermal_expansion_compression(rho_0, T, P): Calculate thermal 
-            expansion and compression.
-        _calculate_density_pressure(z_arr, V_arr=None, rho_arr=None, 
-            T_arr=None, dz=0.1):
-            Calculate density as a function of depth.
-
+    Attributes
+    ----------
+    data : dict
+        Seismic profile data containing depth, velocity, and density. This 
+        is the output from the read_data method of the Convert class.
+    parameters : numpy.ndarray
+        Instance of the Constants, VpConstants or VsConstants class. If 
+        T_dependence is True, then this must be an instance of Constants 
+        class and must contain material_constants attribute.
+    profile : str
+        Profile type, "Vp" or "Vs."
+    constant_depth : float
+        Depth for constant density for uppermost x km.
+    constant_density : float
+        Constant density value for uppermost x km.
+    T_dependence : bool
+        True for temperature dependence inclusion (default True).
+    geotherm : list
+        Instance of the Geotherm class, must be set if T_dependence is True 
+        (default None).
     """
 
     def __init__(
@@ -768,13 +811,16 @@ class V2RhoStephenson:
         seismic data and parameters, taking into account temperature 
         dependence if specified.
 
-        Parameters:
-            dz (float, optional): Depth interval for calculations (default 
-                is 0.1 km).
+        Parameters
+        ----------
+        dz : float, optional
+            Depth interval for calculations (default is 0.1 km).
 
-        Returns:
-            data (dict): Seismic profile data including density.  Also
-                returns as an attribute of the calss.
+        Returns
+        -------
+        data : dict
+            Seismic profile data including density. Also returns as an 
+            attribute of the class.
         """
 
         # run the density calculation
@@ -824,7 +870,7 @@ class V2RhoStephenson:
         # calculate average density
         av_rho = integrate.trapz(P_rho[:,1], z_v_arr[:,0]) / self.data["moho"]
 
-        # update class instance with new variables
+        
         # check for T dependence so that we only append T array if it exists
         if self.T_dependence is True:
             Tz_arr = np.column_stack((-z_v_arr[:,0], T_arr))
@@ -853,11 +899,15 @@ class V2RhoStephenson:
         """
         Set up depth and velocity arrays for density calculations.
 
-        Parameters:
-            dz (float): Depth interval for calculations.
+        Parameters
+        ----------
+        dz : float
+            Depth interval for calculations.
 
-        Returns:
-            numpy.ndarray: Arrays of depth and velocity.
+        Returns
+        -------
+        numpy.ndarray
+            Arrays of depth and velocity.
         """
         # extract depth and velocity arrays
         # depth array needs to be increasing for use in this function
@@ -878,12 +928,17 @@ class V2RhoStephenson:
         """
         Calculate overburden density.
 
-        Parameters:
-            rho_arr (numpy.ndarray): Density array.
-            z_arr (numpy.ndarray): Depth array (km).
+        Parameters
+        ----------
+        rho_arr : numpy.ndarray
+            Density array.
+        z_arr : numpy.ndarray
+            Depth array (km).
 
-        Returns:
-            float: Overburden density.
+        Returns
+        -------
+        float
+            Overburden density.
         """
         return integrate.trapz(rho_arr, z_arr) / z_arr[-1]
 
@@ -892,12 +947,17 @@ class V2RhoStephenson:
         """
         Calculate pressure using overburden density (in MPa).
 
-        Parameters:
-            rho_overburden (float): Overburden density (in Mg/m3).
-            z (float): Depth (in km).
+        Parameters
+        ----------
+        rho_overburden : float
+            Overburden density (in Mg/m3).
+        z : float
+            Depth (in km).
 
-        Returns:
-            float: Pressure in MPa.
+        Returns
+        -------
+        float
+            Pressure in MPa.
         """
         return p(rho_overburden, z) / 1e6
     
@@ -907,13 +967,19 @@ class V2RhoStephenson:
         """
         Calculate thermal expansion and compression.
 
-        Parameters:
-            rho_0 (float): Initial density (arbitrary units).
-            T (float): Temperature (in C).
-            P (float): Pressure (in MPa).
+        Parameters
+        ----------
+        rho_0 : float
+            Initial density (arbitrary units).
+        T : float
+            Temperature (in C).
+        P : float
+            Pressure (in MPa).
 
-        Returns:
-            float: density as a function of pressure and temperature.
+        Returns
+        -------
+        float
+            Density as a function of pressure and temperature.
         """
         return (rho_0 * td.rho_thermal2(rho_0, T, 
                             self.material_constants.alpha0, 
@@ -921,24 +987,32 @@ class V2RhoStephenson:
                       * td.compressibility(rho_0, P, 
                             self.material_constants.K)[1])
 
-    def _calculate_density_pressure(self, z_arr, V_arr = None, 
-                                    rho_arr = None, T_arr = None,
+    def _calculate_density_pressure(self, 
+                                    z_arr, 
+                                    V_arr=None, 
+                                    rho_arr=None, 
+                                    T_arr=None, 
                                     dz=0.1):
         """
         Calculate density as a function of depth.
 
-        Parameters:
-            z_arr (numpy.ndarray): Depth array (in km).
-            V_arr (numpy.ndarray, optional): Velocity array (default is None).
-            rho_arr (numpy.ndarray, optional): Density array (default 
-                is None).
-            T_arr (numpy.ndarray, optional): Temperature array (default 
-                is None).
-            dz (float, optional): Depth interval for discretisation
-                (default is 0.1 km).
+        Parameters
+        ----------
+        z_arr : numpy.ndarray
+            Depth array (in km).
+        V_arr : numpy.ndarray, optional
+            Velocity array (default is None).
+        rho_arr : numpy.ndarray, optional
+            Density array (default is None).
+        T_arr : numpy.ndarray, optional
+            Temperature array (default is None).
+        dz : float, optional
+            Depth interval for discretisation (default is 0.1 km).
 
-        Returns:
-            numpy.ndarray: Pressure and density values.
+        Returns
+        -------
+        numpy.ndarray
+            Pressure and density values.
         """
                 
         # if first entry return 0.1 for P and calculate surface 
@@ -1004,57 +1078,70 @@ class MultiConversion:
     Convert class using specified density conversion approach.
     Check that all required arguments have been provided.
     
-    Attributes:
-        path (str): The master directory where all data are stored in 
-            directories named after their location.
-        which_location (str or list, optional): Determines which 
-            locations the user wants to convert. Defaults to "ALL," 
-            indicating that all locations will be converted. If specific 
-            locations are desired, provide a list of location names.
-        write_data (bool, optional): Specifies whether to write the 
-            converted data to files. Defaults to False.
-        approach (str, optional): The density conversion approach to use. 
-            Options are "stephenson" or "brocher." Defaults to 
-            "stephenson."
-        parameters (class instance, optional): Class instance of the 
-            Constants class.  Must be provided if using approach 'stephenson'.
-            Must contain a material_constants attribute if T_dependence is
-            set to True.
-        master_geotherm: An instance of the Geotherm class that is used as a 
-            reference or template for other operations. When the `master` 
-            attribute of `master_geotherm` is set to True, deep copies are 
-            made and parameters are updated for all individual profiles.
-        constant_depth (float, optional): The depth (from the surface) 
-            over which to use a constant density value (in kilometers). 
-            Defaults to None.
-        constant_density (float, optional): The value of the constant 
-            density to use for the uppermost few kilometers (in Mg/m3),
-            if `constant_depth` is set.  Defaults to None.
-        T_dependence (bool, optional): Determines whether to include 
-            temperature dependence of velocity to density conversion, 
-            including thermal expansion and compressibility. Defaults 
-            to False.
+    Parameters
+    ----------
+    path : str
+        The master directory where all data are stored in 
+        directories named after their location.
+    which_location : str or list, optional
+        Determines which locations the user wants to convert. 
+        Defaults to "ALL," indicating that all locations will be 
+        converted. If specific locations are desired, provide a 
+        list of location names.
+    write_data : bool, optional
+        Specifies whether to write the converted data to files. 
+        Defaults to False.
+    approach : str, optional
+        The density conversion approach to use. Options are 
+        "stephenson" or "brocher." Defaults to "stephenson."
+    parameters : class instance, optional
+        Class instance of the Constants class. Must be provided 
+        if using approach 'stephenson'. Must contain a 
+        material_constants attribute if T_dependence is True.
+    master_geotherm : instance of Geotherm class, optional
+        Used as a reference or template for other operations. 
+        When the `master` attribute of `master_geotherm` is True, 
+        deep copies are made and parameters are updated for all 
+        individual profiles.
+    constant_depth : float, optional
+        The depth (from the surface) over which to use a constant 
+        density value (in kilometers). Defaults to None.
+    constant_density : float, optional
+        The value of the constant density to use for the uppermost 
+        few kilometers (in Mg/m3), if `constant_depth` is set.  
+        Defaults to None.
+    T_dependence : bool, optional
+        Determines whether to include temperature dependence of 
+        velocity to density conversion, including thermal 
+        expansion and compressibility. Defaults to False.
 
-    Methods:
-        assemble_file_lists(): Assembles file lists and necessary parameters 
-            for density conversion based on provided settings.
-        send_to_conversion_function(parallel=False): Initiates the density 
-            conversion process for each profile and assembles a list of data 
-            dictionaries containing velocity, Moho, density information, etc. 
-            The method provides an option for parallel processing but 
-            currently is not functional due to pickling issues.
-        _assemble_params: Assemble parameters for density conversion. This method 
-            assembles a list of parameters required for density conversion, 
-            including file information, profile type, write data option, path, 
-            approach, and location name. If the approach is "stephenson," 
-            additional extra parameters are included. Returns a list of assembled 
-            parameters for density conversion.
-        _process_file_list: Process a list of files to assemble necessary data 
-            and metadata. This method iterates through a list of files and 
-            extracts location names from file paths. It assembles parameter lists 
-            using the provided `profile_type` and any extra parameters. The 
-            assembled parameters are appended to the `convert_metadata` attribute 
-            of the class.
+    Attributes
+    ----------
+    path : str
+        The master directory where all data are stored.
+    which_location : str or list
+        The locations to convert.
+    write_data : bool
+        Whether to write the converted data to files.
+    approach : str
+        The density conversion approach to use.
+    parameters : class instance
+        Instance of the Constants class.
+    master_geotherm : instance of Geotherm class
+        Used as a reference or template for other operations.
+    constant_depth : float
+        The depth over which to use a constant density value.
+    constant_density : float
+        The value of the constant density to use for the uppermost 
+        few kilometers.
+    T_dependence : bool
+        Whether to include temperature dependence of velocity to 
+        density conversion.
+    convert_metadata : list
+        Metadata for the conversion process.  This is a list of
+        dictionaries that is appended to in the process_file_list
+        method.  It is used to store information about the conversion
+        process for each profile.
     """
 
     def __init__(
@@ -1222,19 +1309,21 @@ class MultiConversion:
         to pickling issues. It works with both parallel and 
         single-processor modes.
 
-        Parameters:
-            parallel (bool, optional): Whether to use parallel processing 
-                    (default is False).  Note that this functionality is
-                    not currently available owing to issues with the class-
-                    based architecture for handling constants and some
-                    non-pickleable objects.  This bug will be fixed in a 
-                    later release.  Setting parallel=True will trigger an
-                    exception.
+        Parameters
+        ----------
+        parallel : bool, optional
+            Whether to use parallel processing (default is False). Note that 
+            this functionality is not currently available owing to issues with 
+            the class-based architecture for handling constants and some
+            non-pickleable objects. This bug will be fixed in a later 
+            release. 
+            Setting parallel=True will trigger an exception.
 
-        Returns:
-            np.ndarray: An array containing station profiles for further use.
-        
-    """
+        Returns
+        -------
+        np.ndarray
+            An array containing station profiles for further use.
+        """
         # carry out velocity conversion for each profile
         # make list of data dictionaries containing velocity, 
         # moho, density info etc.
@@ -1261,8 +1350,11 @@ class MultiConversion:
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def _assemble_params(self, file, profile_type, 
-                         location_name, *extra_params):
+    def _assemble_params(self, 
+                         file, 
+                         profile_type, 
+                         location_name, 
+                         *extra_params):
         """
         Assemble parameters for density conversion.
 
@@ -1271,18 +1363,21 @@ class MultiConversion:
         option, path, approach, and location name. If the approach is 
         "stephenson," additional extra parameters are included.
 
-        Parameters:
-            file (str): The file path being processed.
-            profile_type (str): The type of profile being processed 
-                    (e.g., 'Vp' or 'Vs').
-            location_name (str): The name of the location associated with 
-                    the file.
-            *extra_params: Variable number of extra parameters specific to 
-                    the approach.
+        Parameters
+        ----------
+        file : str
+            The file path being processed.
+        profile_type : str
+            The type of profile being processed (e.g., 'Vp' or 'Vs').
+        location_name : str
+            The name of the location associated with the file.
+        *extra_params : 
+            Variable number of extra parameters specific to the approach.
 
-        Returns:
-            list: A list of assembled parameters for density conversion.
-
+        Returns
+        -------
+        list
+            A list of assembled parameters for density conversion.
         """
         # assemble parameter list
         params = [file, profile_type, self.write_data, 
@@ -1297,7 +1392,9 @@ class MultiConversion:
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def _process_file_list(self, file_list, profile_type, 
+    def _process_file_list(self, 
+                           file_list, 
+                           profile_type, 
                            *extra_params):
         """
         Process a list of files to assemble necessary data and metadata.
@@ -1309,17 +1406,16 @@ class MultiConversion:
         The assembled parameters are appended to the `convert_metadata` 
         attribute of the class.
 
-        Parameters:
-            file_list (list): A list of file paths to be processed.
-            profile_type (str): The type of profile being processed 
-                    (e.g., 'Vp' or 'Vs').
-            *extra_params: Variable number of extra parameters 
-                    specific to the profile type.
+        Parameters
+        ----------
+        file_list : list
+            A list of file paths to be processed.
+        profile_type : str
+            The type of profile being processed (e.g., 'Vp' or 'Vs').
+        *extra_params : 
+            Variable number of extra parameters specific to the profile type.
 
-        Returns:
-            None
-
-    """
+        """
         # loop through files in file_list and assemble necessary data 
         # and metadata
         for files in file_list:
@@ -1337,7 +1433,7 @@ class MultiConversion:
     
     def profiles_to_dataframe(self):
         """
-        Convert station profiles to a pandas DataFrame fo bulk information.
+        Convert station profiles to a pandas DataFrame for bulk information.
 
         This method iterates over the station profiles stored in the 
         `station_profiles` attribute of the class instance. For each profile, 
@@ -1351,18 +1447,16 @@ class MultiConversion:
         in the `station_profiles_df` attribute of the class instance, and is 
         also returned by the method.
 
-        Parameters:
-            None
-
-        Returns:
-            pd.DataFrame: A pandas DataFrame where each row represents a 
-            station profile, and the columns represent the 'station', 'lon', 
-            'lat', 'moho', 'av_vp', 'av_vs', 'av_rho', and 'region' attributes
-            of the profile. 'lon' and 'lat' are derived from the 'location' 
-            attribute of the profile, which is assumed to be a two-element 
-            array or list. If 'av_Vp', 'av_Vs', or 'av_Vp_calc' do not exist 
-            in a profile, their values in the DataFrame are set to NaN.
-
+        Returns
+        -------
+        pd.DataFrame
+            A pandas DataFrame where each row represents a station profile, 
+            and the columns represent the 'station', 'lon', 'lat', 'moho', 
+            'av_vp', 'av_vs', 'av_rho', and 'region' attributes of the profile. 
+            'lon' and 'lat' are derived from the 'location' attribute of the 
+            profile, which is assumed to be a two-element array or list. If 
+            'av_Vp', 'av_Vs', or 'av_Vp_calc' do not exist in a profile, their 
+            values in the DataFrame are set to NaN.
         """
 
         try:
@@ -1455,22 +1549,27 @@ def check_arguments(T_dependence,
     and raises errors if any required information is missing based on the 
     selected conversion approach.  Prevents conflicting options.
 
-    Args:
-        T_dependence (bool): Flag indicating whether to correct for 
-            temperature and pressure.
-        constant_depth (float): Depth range for constant density from the 
-            surface.
-        constant_density (float): Constant density value for the uppermost 
-            x kilometers.
-        approach (str): Density conversion scheme, "brocher" or "stephenson".
-        parameters (str): Constants class instance if using the Stephenson 
-            scheme.
-        geotherm (Geotherm, optional): Geotherm class instance object for 
-            temperature dependence. Defaults to None.
+    Parameters
+    ----------
+    T_dependence : bool
+        Flag indicating whether to correct for temperature and pressure.
+    constant_depth : float
+        Depth range for constant density from the surface.
+    constant_density : float
+        Constant density value for the uppermost x kilometers.
+    approach : str
+        Density conversion scheme, "brocher" or "stephenson".
+    parameters : str
+        Constants class instance if using the Stephenson scheme.
+    geotherm : Geotherm, optional
+        Geotherm class instance object for temperature dependence. 
+        Defaults to None.
 
-    Raises:
-        ValueError: If required arguments are missing or incompatible with 
-            the selected approach.
+    Raises
+    ------
+    ValueError
+        If required arguments are missing or incompatible with the selected 
+        approach.
     """
     # check that all the necessary information has been provided
     if T_dependence is True:
@@ -1515,47 +1614,54 @@ def convert_V_profile(
         geotherm = None,
         print_working_file = False
         ):
-
     """
     Convert a single Vp or Vs velocity profile to a density profile.
 
-    Args:
-        file (str): Path to the input velocity profile file.
-        profile_type (str): Type of velocity profile, 'Vp' or 'Vs'.
-        write_data (bool, optional): If True, writes the converted data to 
-            files. Default is False.
-        path (str, optional): Path to write the results. Default is None.
-        approach (str, optional): Density conversion scheme to use, "brocher" 
-            or "stephenson". Default is "stephenson".
-        location (str, optional): Regional location of the profile. 
-            Default is None.
-        parameters (np.ndarray, optional): Instance of the Constants, 
-            VpConstants or VsConstants classes.  Must be instance
-            of the Constants class with a material_constants object if 
-            T_dependence is set to True.
-        constant_depth (float, optional): Depth range for constant density 
-            from the surface. Default is None.
-        constant_density (float, optional): Constant density value for the 
-            uppermost x kilometers. Default is None.
-        T_dependence (bool, optional): If True, corrects velocity and density 
-            for temperature and pressure. Default is False.
-        geotherm (object, optional): Instance of the Geotherm class for 
-            temperature dependence.  Must be provided if T_dependence is set 
-            to True.  Default is None.
-        print_working_file (bool, optional): If True, prints the file that is 
-            being converted. Default is False.
+    Parameters
+    ----------
+    file : str
+        Path to the input velocity profile file.
+    profile_type : str
+        Type of velocity profile, 'Vp' or 'Vs'.
+    write_data : bool, optional
+        If True, writes the converted data to files. Default is False.
+    path : str, optional
+        Path to write the results. Default is None.
+    approach : str, optional
+        Density conversion scheme to use, "brocher" or "stephenson". 
+        Default is "stephenson".
+    location : str, optional
+        Regional location of the profile. Default is None.
+    parameters : np.ndarray, optional
+        Instance of the Constants, VpConstants or VsConstants classes.  
+        Must be instance of the Constants class with a material_constants 
+        object if T_dependence is set to True.
+    constant_depth : float, optional
+        Depth range for constant density from the surface. Default is None.
+    constant_density : float, optional
+        Constant density value for the uppermost x kilometers. Default is None.
+    T_dependence : bool, optional
+        If True, corrects velocity and density for temperature and pressure. 
+        Default is False.
+    geotherm : object, optional
+        Instance of the Geotherm class for temperature dependence.  
+        Must be provided if T_dependence is set to True.  Default is None.
+    print_working_file : bool, optional
+        If True, prints the file that is being converted. Default is False.
 
-    Returns:
-        pd.DataFrame: DataFrame containing the converted velocity and 
-            density data.
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing the converted velocity and density data.
 
-    Example:
-        >>> convert_V_profile('velocity_profile.dat', 'Vp', write_data=True,
-        ...                   path='output/', approach='stephenson',
-        ...                   location='Region1', parameters=constants_object,
-        ...                   constant_depth=10.0, constant_density=2.7,
-        ...                   T_dependence=True, geotherm=geotherm_object,
-        ...                   print_working_file=True)
+    Example
+    -------
+    >>> convert_V_profile('velocity_profile.dat', 'Vp', write_data=True,
+    ...                   path='output/', approach='stephenson',
+    ...                   location='Region1', parameters=constants_object,
+    ...                   constant_depth=10.0, constant_density=2.7,
+    ...                   T_dependence=True, geotherm=geotherm_object,
+    ...                   print_working_file=True)
     """
 
     # check that the program will run -- are all options provided?
@@ -1610,7 +1716,9 @@ def convert_V_profile(
 
 ###################################################################
 
-def av_profile(profiles, base_depth, average_type = 'median'):
+def av_profile(profiles, 
+               base_depth, 
+               average_type = 'median'):
     """
     Calculate the average profile and bulk property profile given a family 
     of profiles.
@@ -1619,37 +1727,41 @@ def av_profile(profiles, base_depth, average_type = 'median'):
     as a NumPy array with columns [depth, property]. It calculates the 
     average profile and the bulk property profile as a function of depth.
 
-    Args:
-        profiles (list of np.ndarray): List of profiles 
-            (e.g., Vp, Vs, P, T, rho, etc.). Each profile must contain at 
-            least two columns: depth and property.
-        base_depth (float): Depth to which the bulk property should be 
-            averaged.
-        average_type (str, optional): Method of averaging ('median' or 
-            'mean'). Default is 'median'.
+    Parameters
+    ----------
+    profiles : list of np.ndarray
+        List of profiles (e.g., Vp, Vs, P, T, rho, etc.). Each profile must 
+        contain at least two columns: depth and property.
+    base_depth : float
+        Depth to which the bulk property should be averaged.
+    average_type : str, optional
+        Method of averaging ('median' or 'mean'). Default is 'median'.
 
-    Returns:
-        av_z_f (scipy.interpolate.CubicSpline): Average profile as a function 
-            of depth.
-        bulk_base_depth_f (scipy.interpolate.CubicSpline): Bulk property 
-            profile as a function of base depth.
+    Returns
+    -------
+    av_z_f : scipy.interpolate.CubicSpline
+        Average profile as a function of depth.
+    bulk_base_depth_f : scipy.interpolate.CubicSpline
+        Bulk property profile as a function of base depth.
 
-    Example:
-        >>> profiles = [np.array([[0.0, 1.5], 
-                                  [5.0, 2.0], 
-                                  [10.0, 2.5]]),
-                        np.array([[0.0, 1.6], 
-                                  [5.0, 2.1], 
-                                  [10.0, 2.6]])]
-        >>> av_z_f, bulk_base_depth_f = av_profile(profiles, base_depth=15.0, 
-                                            average_type='mean')
+    Example
+    -------
+    >>> profiles = [np.array([[0.0, 1.5], 
+    ...                       [5.0, 2.0], 
+    ...                       [10.0, 2.5]]),
+    ...               np.array([[0.0, 1.6], 
+    ...                       [5.0, 2.1], 
+    ...                       [10.0, 2.6]])]
+    >>> av_z_f, bulk_base_depth_f = av_profile(profiles, base_depth=15.0, 
+                                        average_type='mean')
 
-    Notes:
-        - This function interpolates the input profiles and calculates the 
-            average profile at each depth.
-        - It also computes the bulk property profile as a function of base 
-            depth.  (e.g. bulk crustal velocity as a function of crustal 
-            thickness)
+    Notes
+    -----
+    - This function interpolates the input profiles and calculates the 
+        average profile at each depth.
+    - It also computes the bulk property profile as a function of base 
+        depth.  (e.g. bulk crustal velocity as a function of crustal 
+        thickness)
     """
     
     # interpolate profiles and make list of functions
@@ -1705,30 +1817,46 @@ def av_profile(profiles, base_depth, average_type = 'median'):
 
 ###################################################################
 
-def save_bulk_profiles(outpath, filename, data_function, start, stop, step):
+def save_bulk_profiles(
+        outpath, 
+        filename, 
+        data_function, 
+        start, 
+        stop, 
+        step
+        ):
     """
     Save bulk profiles data to a file.
-
-    Args:
-        outpath (str): The output directory where the data file will be saved.
-        filename (str): The name of the output data file.
-        data_function (function): A function that computes the data values 
-            based on x-values.
-        start (float): The start value for the x-values.
-        stop (float): The stop value for the x-values.
-        step (float): The step size for generating x-values.
-
-    Returns:
-        None
 
     This function generates x-values using numpy.arange() based on the 
     specified start, stop, and step values.
     It computes the data values using the provided data_function and saves 
     the data to a file in the specified outpath.
 
-    Example usage:
-    save_bulk_profiles("/output/directory/", 
-                       "bulk_data.txt", bulk_function, 0, 50.5, 0.5)
+    Parameters
+    ----------
+    outpath : str
+        The output directory where the data file will be saved.
+    filename : str
+        The name of the output data file.
+    data_function : function
+        A function that computes the data values based on x-values.
+    start : float
+        The start value for the x-values.
+    stop : float
+        The stop value for the x-values.
+    step : float
+        The step size for generating x-values.
+
+    Returns
+    -------
+    None
+
+    Example
+    -------
+    >>> save_bulk_profiles("/output/directory/", 
+    ...                       "bulk_data.txt", 
+    ...                       bulk_function, 0, 50.5, 0.5)
     """
     x = np.arange(start, stop, step)
     data = np.column_stack((x, data_function(x)))
@@ -1742,38 +1870,43 @@ def convert_to_same_depth_intervals(profile1, profile2):
     Convert profiles to have the same depth intervals.  Takes depth
     as first column and any arbitrary y value as second.  profiles 1 and 2
     need not have the same y field.
-    
+
     This function bins velocity profiles so that they have the same depth 
-    ranges.It is suitable for profiles with distinct layers rather than 
+    ranges. It is suitable for profiles with distinct layers rather than 
     those with gradients, although it is designed to produce a reasonable
     solution in both cases.
 
-    Args:
-        profile1 (np.ndarray): The first profile as a NumPy array 
-            with columns [depth, velocity].
-        profile2 (np.ndarray): The second profile as a NumPy array 
-            with columns [depth, velocity].
+    Parameters
+    ----------
+    profile1 : np.ndarray
+        The first profile as a NumPy array with columns [depth, velocity].
+    profile2 : np.ndarray
+        The second profile as a NumPy array with columns [depth, velocity].
 
-    Returns:
-        np.ndarray: A binned velocity profile aligned with the depth 
-            intervals of the lowest-resolution profile.
+    Returns
+    -------
+    np.ndarray
+        A binned velocity profile aligned with the depth intervals of the 
+        lowest-resolution profile.
 
-    Example:
-        >>> binned_profile = convert_to_same_depth_intervals(profile1, profile2)
-        >>> print(binned_profile)
-        array([[ 0. , 1600. ],
-               [ 2.5, 1600. ],
-               [ 2.5 , 2050. ],
-               [10. , 2050. ]])
+    Example
+    -------
+    >>> binned_profile = convert_to_same_depth_intervals(profile1, profile2)
+    >>> print(binned_profile)
+    array([[ 0. , 1600. ],
+           [ 2.5, 1600. ],
+           [ 2.5 , 2050. ],
+           [10. , 2050. ]])
 
-    Notes:
-        - This function finds the lowest-resolution profile and interpolates the 
-            other profile accordingly.
-        - It returns a binned profile with the same depth intervals as the 
-            lowest-resolution profile.
-        - It works best when lowest-resoltion profile has discrete layers 
-            rather than gradients, although it will return reasonable values
-            in both cases.
+    Notes
+    -----
+    - This function finds the lowest-resolution profile and interpolates the 
+        other profile accordingly.
+    - It returns a binned profile with the same depth intervals as the 
+        lowest-resolution profile.
+    - It works best when lowest-resolution profile has discrete layers 
+        rather than gradients, although it will return reasonable values
+        in both cases.
     """
 
     # Extract depth and velocity arrays from profile1 and profile2
@@ -1818,14 +1951,18 @@ def read_no_profile_data(data_file, region_name = None):
     """
     Read crustal data from a database of crustal thickness estimates and 
     vp/vs ratios.
-    
-    Args:
-        data_file (str): Path to the data file to be read.
-        region_name (str, optional): Optional regional location of the 
-        profile.
 
-    Returns:
-        pd.DataFrame: A Pandas DataFrame containing the following columns:
+    Parameters
+    ----------
+    data_file : str
+        Path to the data file to be read.
+    region_name : str, optional
+        Optional regional location of the profile.
+
+    Returns
+    -------
+    pd.DataFrame
+        A Pandas DataFrame containing the following columns:
         
         - 'region' (str): Regional location of the profile (if provided, 
             otherwise None).
@@ -1834,16 +1971,17 @@ def read_no_profile_data(data_file, region_name = None):
         - 'moho' (float): Crustal thickness estimate.
         - 'vp_vs' (float): Ratio of seismic velocities (vp/vs).
 
-    Example:
-        >>> df = read_no_profile_data('crustal_data.csv', 
-                region_name='Example_Region')
-        >>> print(df.head())
-            region     lon     lat   moho   vp_vs
-        0  Example Region  -75.56   40.21  36.58  1.73
-        1  Example Region  -72.89   42.17  38.12  1.68
-        2  Example Region  -80.12   35.69  33.45  1.80
-        3  Example Region  -76.55   39.29  40.27  1.64
-        4  Example Region  -74.21   41.54  35.78  1.75
+    Example
+    -------
+    >>> df = read_no_profile_data('crustal_data.csv', 
+                                  region_name='Example_Region')
+    >>> print(df.head())
+        region     lon     lat   moho   vp_vs
+    0  Example Region  -75.56   40.21  36.58  1.73
+    1  Example Region  -72.89   42.17  38.12  1.68
+    2  Example Region  -80.12   35.69  33.45  1.80
+    3  Example Region  -76.55   39.29  40.27  1.64
+    4  Example Region  -74.21   41.54  35.78  1.75
     """
     data_raw = read_file(data_file, delimiter = ",")
     
@@ -1868,68 +2006,26 @@ def p(rho, h, g=9.81):
     Calculate lithostatic pressure given average density of
     overburden and thickness of the overburden.
 
-    Parameters:
-        rho (float): Average density of the overburden in Mg/m³.
-        h (float): Thickness of the overburden in kilometers.
-        g (float, optional): Acceleration due to gravity in m/s². 
-            Default is 9.81 m/s².
+    Parameters
+    ----------
+    rho : float
+        Average density of the overburden in Mg/m³.
+    h : float
+        Thickness of the overburden in kilometers.
+    g : float, optional
+        Acceleration due to gravity in m/s². Default is 9.81 m/s².
 
-    Returns:
-        float: Lithostatic pressure in Pascals (Pa).
-        
-    Formula:
-        The lithostatic pressure (P) is calculated using the formula:
-        P = rho * g * h * 1e6
+    Returns
+    -------
+    float
+        Lithostatic pressure in Pascals (Pa).
+
+    Notes
+    -----
+    The lithostatic pressure (P) is calculated using the formula:
+    P = rho * g * h * 1e6
     """
-    
-    return rho * g * h * 1e6
 
-###################################################################
-
-class Corrections:
-    """
-    Calculate corrections for variable crustal densities
-    
-    Arguments: tc: crustal thicknesses
-               rho_av: average observed density of the crust
-               rho_a = asthenospheric mantle density
-               rho_o = reference density to correct to, 
-                       default = 2.85 g/cm^3
-    """
-    def __init__(self, tc, rho_av, rho_a, rho_o=2.85):
-        self.tc, self.rho_av = tc, rho_av
-        self.rho_a, self.rho_o = rho_a, rho_o
-
-    def correct_thickness(self):
-        """
-        Calculate magnitude of the crustal thickness correction for
-        a given reference density.   Returns magnitude of correction
-        and the corrected thickness.  Accommodates numpy arrays.
-        """
-        
-        tc, rho_av = self.tc, self.rho_av
-        rho_a, rho_o = self.rho_a, self.rho_o
-        
-        drho = rho_av - rho_o
-        correction_factor = drho / (rho_a - drho - rho_av)
-        
-        return -tc * correction_factor, (-tc * correction_factor) + tc
-
-    def correct_elevation(self):
-        """
-        Calculate magnitude of the elevation correction for
-        a given reference density.   Returns magnitude of correction.
-        Accommodates numpy arrays.
-        
-        Arguments: e: elevation array for each station
-        """
-        
-        tc, rho_av = self.tc, self.rho_av
-        rho_a, rho_o = self.rho_a, self.rho_o        
-        
-        de = tc * (rho_av - rho_o) / rho_a
-        
-        return de
 
 ###################################################################
 
@@ -1937,15 +2033,20 @@ def progress_bar(iterable, length=50):
     """
     Create a text-based progress bar to track the progress of an iterable.
 
-    Parameters:
-    iterable (iterable): The iterable object (e.g., list, range) 
-    to iterate through.
-    length (int, optional): The length of the progress bar. Defaults to 50.
+    Parameters
+    ----------
+    iterable : iterable
+        The iterable object (e.g., list, range) to iterate through.
+    length : int, optional
+        The length of the progress bar. Defaults to 50.
 
-    Yields:
-    item: The current item from the iterable.
+    Yields
+    ------
+    item
+        The current item from the iterable.
 
-    Example:
+    Example
+    -------
     >>> for item in progress_bar(range(100)):
     ...     # Simulate some processing
     ...     time.sleep(0.1)

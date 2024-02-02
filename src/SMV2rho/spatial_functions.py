@@ -8,9 +8,10 @@ def haversine(loc1, loc2, r = 6371):
     """
     Calculate the great circle distance between two points 
     on the earth (specified in decimal degrees)
-    arguments: loc1 - array of coordinates of first point
-               loc2 - array of coordinates of second point
-               r (float, optional) - Radius of earth in kilometers.
+    arguments: 
+        loc1 (float): array of coordinates of first point
+        loc2 (float): array of coordinates of second point
+        r (float, optional): Radius of earth in kilometers.
     """
     
     # convert decimal degrees to radians 

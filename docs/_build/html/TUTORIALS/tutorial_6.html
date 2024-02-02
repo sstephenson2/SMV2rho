@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SMV2rho: Tutorial 6 &#8212; SMV2rho v1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=76e2d817"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SMV2rho: Tutorial 7" href="tutorial_7.html" />
+    <link rel="prev" title="SMV2rho: Tutorial 5" href="tutorial_5.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="SMV2rho:-Tutorial-6">
+<h1>SMV2rho: Tutorial 6<a class="headerlink" href="#SMV2rho:-Tutorial-6" title="Link to this heading">¶</a></h1>
+<p>In this tutorial we will propagate uncertainties through the density conversion scheme.</p>
+<p>Let’s import the appropriate functions and get started.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import modules</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">plotting</span> <span class="k">as</span> <span class="n">smplt</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">density_functions</span> <span class="k">as</span> <span class="n">smd</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">uncertainties</span> <span class="k">as</span> <span class="n">unc</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">c</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">temperature_dependence</span> <span class="k">as</span> <span class="n">td</span>
+</pre></div>
+</div>
+</div>
+<p>As usual, first create the constants object…</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create the constants object.</span>
+<span class="n">constants</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Constants</span><span class="p">()</span>
+
+<span class="n">constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vp&#39;</span><span class="p">)</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vs&#39;</span><span class="p">)</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_material_constants</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Now create the geotherm object. This time we will pass an uncertainty_constants object when we create the class instance.</p>
+<p>We will set the crustal thickness for our profile to 45 km for this example. Note that we do not actually have to provide a velocity profile to estimate uncertainties because we are assuming that our parameter uncertainties do not depend on the abolute velocity. The slight wrinkle in the assumption is that the geothermal gradient in some parametrisations depends on the absolute value of density, <span class="math notranslate nohighlight">\(\rho\)</span>. However, we can just assume <span class="math notranslate nohighlight">\(\rho = 2.9\)</span> g/cm3 for this example. When we
+calculate uncertainties on real profiles, we will use the value for bulk density of the profile. This assumption also means we may not quite capture the exact uncertainty of density as a function of depth, but we will be close enough for most purposes.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create the geotherm object using default parameters</span>
+<span class="n">geotherm</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Geotherm</span><span class="p">(</span>
+    <span class="n">geotherm_type</span><span class="o">=</span><span class="s1">&#39;single_layer_flux_difference&#39;</span><span class="p">,</span>
+    <span class="n">uncertainty_constants</span><span class="o">=</span><span class="n">td</span><span class="o">.</span><span class="n">GeothermConstantUncertainties</span><span class="p">(),</span>
+    <span class="n">tc</span> <span class="o">=</span> <span class="mi">45</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Geotherm parameters:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">geotherm</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;geotherm uncertainty parameters:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">geotherm</span><span class="o">.</span><span class="n">uncertainties</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Geotherm parameters:
+Geotherm(tc=45, T0=10.0, T1=600.0, q0=0.059, qm=0.03, k=2.5, H0=7e-10, hr=10.0, rho=2.9)
+geotherm uncertainty parameters:
+GeothermConstantUncertainties(tc_unc=0.0, T0_unc=0.0, T1_unc=200.0, q0_unc=0.014, qm_unc=0.01, k_unc=0, H0_unc=2e-10, hr_unc=5.0, rho_unc=0.0)
+</pre></div></div>
+</div>
+<section id="Outputs-and-plotting">
+<h2>Outputs and plotting<a class="headerlink" href="#Outputs-and-plotting" title="Link to this heading">¶</a></h2>
+<p>We can now run the uncertainty propagation with the option <code class="docutils literal notranslate"><span class="pre">make_plots</span> <span class="pre">=</span> <span class="pre">True</span></code> and inspect the outputs below…</p>
+<p>The plots show the mean value of the errors and corrections.</p>
+<p>In the first two plots, we are looking at the magnitude of the correction that must be applied to the <span class="math notranslate nohighlight">\(\rho_\circ\)</span> value obtained from the pressure-dependent density conversion. This correction accounts for the temperature-dependent reduction in <span class="math notranslate nohighlight">\(v\)</span> given a range of geothermal gradients, and the uncertainty in the <span class="math notranslate nohighlight">\(m\)</span> parameter. The first panel shows the mean absolute value of the corerection by summing errors in <span class="math notranslate nohighlight">\(\rho\)</span>. The second panel shows the mean value of the
+correction and error by propagating fractional errors in <span class="math notranslate nohighlight">\(\rho\)</span>. The second panel is the preferred approach.</p>
+<p>The third panel shows uncertainties in geothermal gradient calculated by randomly sampling the parameters defining the geotherm. Note again that we only currently support one method of calculating the geotherm (see Stephenson <em>et al.</em>, 2024). This will be improved in later releases.</p>
+<p>Other panels show the mean value of corrections applied as a result of compression and thermal expansion and their uncertainties, both by summing errors and by calculating and multiplying fractional uncertainties.</p>
+<p>The final panel shows the error in <span class="math notranslate nohighlight">\(\rho_\circ\)</span> arising from uncertainty in both the geothermal gradient and the uncertainty in <span class="math notranslate nohighlight">\(m\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sigma</span> <span class="o">=</span> <span class="n">unc</span><span class="o">.</span><span class="n">rho_err</span><span class="p">(</span>
+    <span class="n">constants</span><span class="p">,</span>
+    <span class="n">geotherm</span><span class="p">,</span>
+    <span class="n">N</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">z_slices</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">profile_type</span><span class="o">=</span><span class="s1">&#39;Vp&#39;</span><span class="p">,</span>
+    <span class="n">make_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_plots</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_6_7_0.png" src="../_images/TUTORIALS_tutorial_6_7_0.png" />
+</div>
+</div>
+</section>
+<section id="Bulk-crustal-uncertainty">
+<h2>Bulk crustal uncertainty<a class="headerlink" href="#Bulk-crustal-uncertainty" title="Link to this heading">¶</a></h2>
+<p>We can now see the estimate of bulk crustal density uncertainty arising from these uncertainty values. Again, we can see the error by propagating fractional errors, or by summing errors. We can see that the result is not hugely different. Note that we must multiply by the error in the pressure-dependent velocity-to-density conversion in order to see the total uncertainty in density. The error in velocity-to-density conversion dominates the combined error.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dens_conv_err</span> <span class="o">=</span> <span class="mf">0.11</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Absolute bulk density error = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dens_conv_err</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Absolute bulk density error = 0.11414697416616712
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SMV2rho</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_1.html">SMV2rho: Tutorial 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_2.html">SMV2rho: Tutorial 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_3.html">SMV2rho: Tutorial 3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_4.html">SMV2rho: Tutorial 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_5.html">SMV2rho: Tutorial 5</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SMV2rho: Tutorial 6</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Outputs-and-plotting">Outputs and plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Bulk-crustal-uncertainty">Bulk crustal uncertainty</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_7.html">SMV2rho: Tutorial 7</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorial_5.html" title="previous chapter">SMV2rho: Tutorial 5</a></li>
+      <li>Next: <a href="tutorial_7.html" title="next chapter">SMV2rho: Tutorial 7</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Simon Stephenson, Mark Hoggard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/TUTORIALS/tutorial_6.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

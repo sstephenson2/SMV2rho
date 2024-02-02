@@ -4,7 +4,6 @@
 
 from distutils.config import DEFAULT_PYPIRC
 import numpy as np
-import sys
 import matplotlib.pyplot as plt
 from SMV2rho.density_functions import V2rho_stephenson as V2rho
 from SMV2rho.temperature_dependence import rho_thermal2, compressibility

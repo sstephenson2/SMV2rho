@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SMV2rho: Tutorial 1 &#8212; SMV2rho v1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=76e2d817"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SMV2rho: Tutorial 2" href="tutorial_2.html" />
+    <link rel="prev" title="Welcome to SMV2rho’s documentation!" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="SMV2rho:-Tutorial-1">
+<h1>SMV2rho: Tutorial 1<a class="headerlink" href="#SMV2rho:-Tutorial-1" title="Link to this heading">¶</a></h1>
+<p>This notebook will show you how to load a velocity profile into <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code>.</p>
+<p>Before starting this tutorial, please refer to the <code class="docutils literal notranslate"><span class="pre">README</span></code> for installation instructions.</p>
+<p>The installation of SMV2rho should have checked that all dependencies are installed. If errors arise relating to missing modules such as <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, then please refere to <code class="docutils literal notranslate"><span class="pre">README.md</span></code> for further information.</p>
+<section id="Importing-the-relevant-modules">
+<h2>Importing the relevant modules<a class="headerlink" href="#Importing-the-relevant-modules" title="Link to this heading">¶</a></h2>
+<p>For this tutorial we need to import the <code class="docutils literal notranslate"><span class="pre">plotting</span></code> and <code class="docutils literal notranslate"><span class="pre">density_functions</span></code> modules from the <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code> package.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">plotting</span> <span class="k">as</span> <span class="n">smplt</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">density_functions</span> <span class="k">as</span> <span class="n">smd</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+</pre></div></div>
+</div>
+</section>
+<section id="File-layout">
+<h2>File layout<a class="headerlink" href="#File-layout" title="Link to this heading">¶</a></h2>
+<p>First let’s take a look at the necessary file structure required by this family of programs.</p>
+<p>The required file format is strict because the scripts will read the file in a particular order. If the file is not presented in this format then errors will occur that could lead to erroneous results. Please note that this requirement means that continuous 3-D velocity models must first be converted into 1-D profiles before using the software. Run the following cell to see the required file layout. Note only ascii text files with the <code class="docutils literal notranslate"><span class="pre">.dat</span></code> suffix are acceptable.</p>
+<p>Depth must be in the <strong>second column</strong> and <strong>negative</strong>. At this stage it does not matter, but when coverting profiles later on, depth must be in <strong>km/s</strong> and depth in <strong>negative km</strong>.</p>
+<p>First we will use a local file stored in the <code class="docutils literal notranslate"><span class="pre">TEST_DATA</span></code> directory that is provided with this distribution.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot an example data file</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Example file:</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       ID </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       lon lat </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       crustal_thickness </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       V  -depth </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       .   . </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       .   . </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">       .   . </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Example file:
+        ID
+        lon lat
+        crustal_thickness
+        V  -depth
+        .   .
+        .   .
+        .   .
+
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to test velocity file</span>
+<span class="c1">#  - this file comes with the distribution so there is no need to change this path</span>
+<span class="n">vp_file</span> <span class="o">=</span> <span class="s2">&quot;../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat&quot;</span>
+
+<span class="c1"># print the file format</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Real file...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">print_text_file</span><span class="p">(</span><span class="n">vp_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Real file...
+
+M19_AQU_Vp
+13.48   42.34
+37.2
+4.84865  0
+4.84865  -2.5
+7.23144  -2.5
+7.23144  -16.2
+6.42768  -16.2
+6.42768  -37.2
+6.55704  -37.2
+6.55704  -65.9
+
+</pre></div></div>
+</div>
+</section>
+<section id="Data-Structure">
+<h2>Data Structure<a class="headerlink" href="#Data-Structure" title="Link to this heading">¶</a></h2>
+<p>While arbitrary file structures are supported, it is highly advisable that the file structure is organised as follows. A typical velocity profile file path will look like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Vp/METHOD/DATA/my_profile_name.dat</span></code></p>
+<p>Using this file structure will allow us to automatically detect metadata like profile location etc. from the file path string. We can draw a file tree using the <code class="docutils literal notranslate"><span class="pre">draw_fie_tree</span></code> function in the <code class="docutils literal notranslate"><span class="pre">plotting</span></code> module to look at the recommended file structure</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># draw a file tree</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">draw_file_tree</span><span class="p">(</span><span class="s1">&#39;../TEST_DATA&#39;</span><span class="p">,</span> <span class="n">include_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">suppress_pycache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">suppress_hidden</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TEST_DATA
+|- TEST_DATA
+|  |- EUROPE
+|  |  `- Vp
+|  |     `- RECEIVER_FUNCTION
+|  |        `- DATA
+|  `- HUDSON_BAY
+|     `- Vs
+|        `- RECEIVER_FUNCTION
+|           `- DATA
+</pre></div></div>
+</div>
+</section>
+<section id="Loading-files">
+<h2>Loading files<a class="headerlink" href="#Loading-files" title="Link to this heading">¶</a></h2>
+<p>We will now load this velocity profile into the program using the Convert class. Note that if the <code class="docutils literal notranslate"><span class="pre">profile_type</span></code> variable is not set, you will receive a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> asking for <code class="docutils literal notranslate"><span class="pre">profile_type</span></code> to be set. This error ensures that we keep a log of whether the profile is a <span class="math notranslate nohighlight">\(V_P\)</span> or <span class="math notranslate nohighlight">\(V_S\)</span> profile throughout the workflow.</p>
+<p>Here we will also set the <code class="docutils literal notranslate"><span class="pre">region_name</span></code> and <code class="docutils literal notranslate"><span class="pre">seismic_method_name</span></code> variables. Note that if the recommended file structure is used then these arguments will be read from the file path string automatically and do not need to be provided. Since the profiles in <code class="docutils literal notranslate"><span class="pre">TEST_DATA</span></code> follow this recommended layout, these arguments are not sctrictly necessary here. You can play with seting these values to <code class="docutils literal notranslate"><span class="pre">None</span></code> and seeing that the relevant information is read from the file path string. If these
+parameters are not known, then a placeholder such as <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;na&quot;</span></code> can be used.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load a profile into the Convert class</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">Convert</span><span class="p">(</span><span class="n">vp_file</span><span class="p">,</span> <span class="n">profile_type</span> <span class="o">=</span> <span class="s2">&quot;Vp&quot;</span><span class="p">,</span>
+                      <span class="n">region_name</span> <span class="o">=</span> <span class="s2">&quot;EUROPE&quot;</span><span class="p">,</span>
+                      <span class="n">seismic_method_name</span> <span class="o">=</span> <span class="s2">&quot;RF&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Documentation for all objects (e.g. modules, classes, functions) is availiable by typing the object of interest followed by a question mark. Let’s take a look at the docstring for the <code class="docutils literal notranslate"><span class="pre">Convert</span></code> calss…</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># manual for Convert class</span>
+smd.Convert<span class="o">?</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">Init signature:</span>
+smd<span class="ansi-blue-fg">.</span>Convert<span class="ansi-blue-fg">(</span>
+    profile<span class="ansi-blue-fg">,</span>
+    profile_type<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    region_name<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    seismic_method_name<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+    geotherm<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">Docstring:</span>
+Convert seismic velocity profiles to various parameters using different
+approaches.
+
+This class provides methods to read seismic velocity profiles, convert
+them to other parameters, and write the converted data to output files.
+
+Args:
+    profile (str): The file path to the seismic profile data.
+    profile_type (str): The type of the seismic profile, either &#34;Vp&#34; or
+        &#34;Vs.&#34;
+    region_name (str, optional): The geographic location of the profile,
+        e.g., &#34;MADAGASCAR.&#34; (default is None)
+    seismic_method_name (str): The method used to acquire the vlocity
+        profile.  e.g. &#34;RECEIVER_FUNCTION&#34;.  If set to None, the read_data
+        metod will pick up the argument from the file string.  Note if
+        set to None the strict file convention must be set (see README.md)
+        and tutorial_1.ipynb.
+    geotherm (class instance): instance of the Geotherm class containing
+        information about the temperature profile at the site of the
+        seismic profile.
+
+Attributes:
+    data (dict): A dictionary containing parsed seismic profile data.
+    moho (float): The Moho depth parsed from the profile data.
+
+Methods:
+    read_data: Read in data file and parse it into a data dictionary.
+    convert_profile_brocher: Convert Vs profile to Vp profile using
+        Brocher&#39;s (2005) approach.
+    Vp_to_density_brocher: Convert Vp profile to density using Brocher
+        (2005) method.
+    V_to_density_stephenson: Convert Vp profile to density using the
+        Stephenson method described in the study.
+    write_data: Write the converted data to appropriate file locations
+        based on the specified conversion approach and temperature
+        dependence settings.
+<span class="ansi-red-fg">File:</span>           ~/Work/SMV2rho/src/SMV2rho/density_functions.py
+<span class="ansi-red-fg">Type:</span>           type
+<span class="ansi-red-fg">Subclasses:</span>
+</pre></div></div>
+</div>
+</section>
+<section id="Reading-the-file">
+<h2>Reading the file<a class="headerlink" href="#Reading-the-file" title="Link to this heading">¶</a></h2>
+<p>We will now read the profile and generate a <code class="docutils literal notranslate"><span class="pre">&quot;Vp&quot;</span></code> attribute within the <code class="docutils literal notranslate"><span class="pre">profile</span></code> object. The <code class="docutils literal notranslate"><span class="pre">read_data</span></code> method will unpack the information contained in the file and calculate the average velocity for the profile.</p>
+<p>The data, <code class="docutils literal notranslate"><span class="pre">profile.data</span></code>, will be stored as a disctionary.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read in the file</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">read_data</span><span class="p">()</span>
+
+<span class="c1"># print the data dictionary</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;station&#39;: &#39;M19_AQU_Vp&#39;,
+ &#39;Vp_file&#39;: &#39;../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat&#39;,
+ &#39;region&#39;: &#39;EUROPE&#39;,
+ &#39;moho&#39;: 37.2,
+ &#39;location&#39;: array([13.48, 42.34]),
+ &#39;av_Vp&#39;: 6.617358544354839,
+ &#39;Vp&#39;: array([[  0.     ,   4.84865],
+        [ -2.5    ,   4.84865],
+        [ -2.51   ,   7.23144],
+        [-16.2    ,   7.23144],
+        [-16.21   ,   6.42768],
+        [-37.2    ,   6.42768]]),
+ &#39;type&#39;: &#39;Vp&#39;,
+ &#39;method&#39;: &#39;RF&#39;,
+ &#39;geotherm&#39;: None}
+</pre></div></div>
+</div>
+<p>We can inspect the different data types that are stored using…</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># show velocity profile dictionary keys</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;station&#39;, &#39;Vp_file&#39;, &#39;region&#39;, &#39;moho&#39;, &#39;location&#39;, &#39;av_Vp&#39;, &#39;Vp&#39;, &#39;type&#39;, &#39;method&#39;])
+</pre></div></div>
+</div>
+<p>We can access different variables, such as the average, bulk velocity by querying this dictionary.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># print average velocity and moho depth</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;av_Vp&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;moho&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Vp
+RF
+6.617358544354839
+37.2
+</pre></div></div>
+</div>
+</section>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Link to this heading">¶</a></h2>
+<p>We have now imported modules, loaded a velocity profile and interrogated some of their attributes. Let’s plot the velocity profile to check what it looks like.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot velocity profile</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">([</span><span class="n">data1</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">xlabels</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">],</span> <span class="n">ylabels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">],</span>
+            <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_1_20_0.png" src="../_images/TUTORIALS_tutorial_1_20_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SMV2rho</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SMV2rho: Tutorial 1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Importing-the-relevant-modules">Importing the relevant modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#File-layout">File layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Data-Structure">Data Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Loading-files">Loading files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Reading-the-file">Reading the file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_2.html">SMV2rho: Tutorial 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_3.html">SMV2rho: Tutorial 3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_4.html">SMV2rho: Tutorial 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_5.html">SMV2rho: Tutorial 5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_6.html">SMV2rho: Tutorial 6</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_7.html">SMV2rho: Tutorial 7</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to SMV2rho’s documentation!</a></li>
+      <li>Next: <a href="tutorial_2.html" title="next chapter">SMV2rho: Tutorial 2</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Simon Stephenson, Mark Hoggard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/TUTORIALS/tutorial_1.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

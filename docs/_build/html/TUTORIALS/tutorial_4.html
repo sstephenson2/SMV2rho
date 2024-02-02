@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SMV2rho: Tutorial 4 &#8212; SMV2rho v1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=76e2d817"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SMV2rho: Tutorial 5" href="tutorial_5.html" />
+    <link rel="prev" title="SMV2rho: Tutorial 3" href="tutorial_3.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="SMV2rho:-Tutorial-4">
+<h1>SMV2rho: Tutorial 4<a class="headerlink" href="#SMV2rho:-Tutorial-4" title="Link to this heading">¶</a></h1>
+<p>In this tutorial we will convert from velocity to density using the new <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code> approach, which is outlined in Stephenson et al (<em>in review</em>)</p>
+<p>First let’s import the required modules from <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import modules</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">plotting</span> <span class="k">as</span> <span class="n">smplt</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">density_functions</span> <span class="k">as</span> <span class="n">smd</span>
+<span class="kn">from</span> <span class="nn">SMV2rho</span> <span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">c</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+</pre></div></div>
+</div>
+<section id="Class-approach">
+<h2>Class approach<a class="headerlink" href="#Class-approach" title="Link to this heading">¶</a></h2>
+<p>Again we will first go through this procedure step-by-step so that we can query the outputs.</p>
+<section id="Load-file">
+<h3>Load file<a class="headerlink" href="#Load-file" title="Link to this heading">¶</a></h3>
+<p>Let’s define the velocity profile that we are interested in converting, initialise the <code class="docutils literal notranslate"><span class="pre">Convert</span></code> class and read in the profile data file.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to test velocity file</span>
+<span class="c1">#  - this file comes with the distribution so there is no need to change this path</span>
+<span class="n">vp_file</span> <span class="o">=</span> <span class="s2">&quot;../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat&quot;</span>
+
+<span class="c1"># load a profile into the Convert class</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">Convert</span><span class="p">(</span><span class="n">vp_file</span><span class="p">,</span> <span class="n">profile_type</span> <span class="o">=</span> <span class="s2">&quot;Vp&quot;</span><span class="p">)</span>
+
+<span class="c1"># read data</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">read_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Convert-profile">
+<h3>Convert profile<a class="headerlink" href="#Convert-profile" title="Link to this heading">¶</a></h3>
+<p>Now we can convert the profile into density. To do this, we need to create an object containing all of the parameters needed to convert from <span class="math notranslate nohighlight">\(V_P\)</span> into density. Initially, we will set all arguments to default. We will not include temperature dependence or compressibility for now.</p>
+<p>The parameters will be created by default when we call the get_v_parameters method within the Constants dataclass. Run the cell below to see how this works.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create the constants object.  This will store all of the constants we need for the conversion to work.</span>
+<span class="n">constants</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Constants</span><span class="p">()</span>
+
+<span class="c1"># print the contents of the constants dataclass</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+
+<span class="c1"># call the get_v_constants method asking for Vp constants</span>
+<span class="n">constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vp&#39;</span><span class="p">)</span>
+
+<span class="c1"># check the variables stored in the constants data class</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Constants(vp_constants=None, vs_constants=None, material_constants=None)
+Constants(vp_constants=VpConstants(v0=-0.93521, b=0.00169478, d0=2.55911, dp=-0.00047605, c=1.674065, k=0.01953466, m=-0.0004), vs_constants=None, material_constants=None)
+</pre></div></div>
+</div>
+<p>See that initially, when we created the constants object, it contains three attributes of <code class="docutils literal notranslate"><span class="pre">Nonetype</span></code>, called <code class="docutils literal notranslate"><span class="pre">vs_constants</span></code>, <code class="docutils literal notranslate"><span class="pre">vp_constants</span></code> and <code class="docutils literal notranslate"><span class="pre">material_constants</span></code>. These objects are filled with values when the <code class="docutils literal notranslate"><span class="pre">get_v_constants</span></code> or <code class="docutils literal notranslate"><span class="pre">get_material_constants</span></code> methods are called.</p>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">vp_constants</span></code> object is an instance of the <code class="docutils literal notranslate"><span class="pre">VpConstants</span></code> dataclass. This is just a convenient way to store constant values that are used throughout the program and so don’t worry too much if this is not a concept you have come across before!</p>
+<p>So we have an object <code class="docutils literal notranslate"><span class="pre">constants</span></code> that is an instance of the <code class="docutils literal notranslate"><span class="pre">Constants</span></code> master dataclass, which contains attributes that are instances of the <code class="docutils literal notranslate"><span class="pre">VpConstants</span></code>, <code class="docutils literal notranslate"><span class="pre">VsConstants</span></code> and the <code class="docutils literal notranslate"><span class="pre">MaterialConstants</span></code> classes.</p>
+<p>We can access individual constants like this…</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set the make a new variable called vp_constants that takes only the vp_constants from the constants class</span>
+<span class="n">vp_constants</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">vp_constants</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">vp_constants</span><span class="p">)</span>
+
+<span class="c1"># now let&#39;s print the `b` parameter</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b: </span><span class="si">{</span><span class="n">vp_constants</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+VpConstants(v0=-0.93521, b=0.00169478, d0=2.55911, dp=-0.00047605, c=1.674065, k=0.01953466, m=-0.0004)
+b: 0.00169478
+</pre></div></div>
+</div>
+<p>So we access the constants just by writing <code class="docutils literal notranslate"><span class="pre">vp_constants.{parameter_name}</span></code>.</p>
+<p>Note that we can also set custom values for the constants if we want to. These are given as keyword arguments after the constant type when calling the <code class="docutils literal notranslate"><span class="pre">get_v_constants</span></code> method. Let’s make a new object called <code class="docutils literal notranslate"><span class="pre">custom_constants</span></code> and set some custom values. Note that any values not set will be automatically set to the default values specified in the <code class="docutils literal notranslate"><span class="pre">VsConstants</span></code> class in the <code class="docutils literal notranslate"><span class="pre">constants</span></code> module. You can find these values by typing e.g. <code class="docutils literal notranslate"><span class="pre">c.VsConstants?</span></code>. The default values are shown under
+the <code class="docutils literal notranslate"><span class="pre">Init</span> <span class="pre">signature:</span></code> and also written in the docstring underneath.</p>
+<p>Please see <strong>Stephenson et al. (2024), JGR: Solid Earth</strong> for information about the constant values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>c.VsConstants<span class="o">?</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">Init signature:</span>
+c<span class="ansi-blue-fg">.</span>VsConstants<span class="ansi-blue-fg">(</span>
+    v0<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">0.60777</span><span class="ansi-blue-fg">,</span>
+    b<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">0.0010345</span><span class="ansi-blue-fg">,</span>
+    d0<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">1.4808</span><span class="ansi-blue-fg">,</span>
+    dp<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">0.00029773</span><span class="ansi-blue-fg">,</span>
+    c<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">0.7374</span><span class="ansi-blue-fg">,</span>
+    k<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">0.020041</span><span class="ansi-blue-fg">,</span>
+    m<span class="ansi-blue-fg">:</span> float <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">0.00023</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-&gt;</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-red-fg">Docstring:</span>
+Constants for shear wave velocity (Vs).
+
+Attributes:
+v0: float = -6.0777e-01  # Initial velocity at reference conditions
+b: float = 1.0345e-03    # Velocity gradient as function of pressure at
+                           constant temperature
+d0: float = 1.4808       # Velocity gradient with respect to density at
+                           standard temperature and pressure
+dp: float = -2.9773e-04  # Pressure dependence of velocity gradient with
+                           respect to density
+c: float = 7.3740e-01    # Exponential drop-off magnitude
+k: float = 2.0041e-02    # Exponential drop-off of Vs at low pressure
+m: float = -2.3e-4       # Velocity gradient as function of temperature at
+                           constant pressure
+<span class="ansi-red-fg">File:</span>           ~/Work/SMV2rho/src/SMV2rho/constants.py
+<span class="ansi-red-fg">Type:</span>           type
+<span class="ansi-red-fg">Subclasses:</span>
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">custom_constants</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Constants</span><span class="p">()</span>
+
+<span class="c1"># set custom values for `v0` and `k` and defaults for other constants</span>
+<span class="n">custom_constants</span><span class="o">.</span><span class="n">get_v_constants</span><span class="p">(</span><span class="s1">&#39;Vs&#39;</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">custom_constants</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Constants(vp_constants=None, vs_constants=VsConstants(v0=100, b=0.0010345, d0=1.4808, dp=-0.00029773, c=0.7374, k=20, m=-0.00023), material_constants=None)
+</pre></div></div>
+</div>
+<p>Let’s now attempt to run the <code class="docutils literal notranslate"><span class="pre">v_to_density_stephenson</span></code> method of the <code class="docutils literal notranslate"><span class="pre">Convert</span></code> class. To do this we will run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">profile.V_to_density_stephenson(vp_constants)</span></code>.</p>
+<p>This will generate a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, because the default setup of the function is to include temperature dependence, which requires more information to be provided. Since we have not provided the parameter file, attempting to run this function will throw an error. This error makes sure that we do not include temperature dependence by accident.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># calculate density profile -- note default is the temperature dependence is True!</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">V_to_density_stephenson</span><span class="p">(</span><span class="n">vp_constants</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[7], line 2</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span style="color: rgb(95,135,135)"># calculate density profile -- note default is the temperature dependence is True!</span>
+<span class="ansi-green-fg">----&gt; 2</span> <span class="ansi-yellow-bg">profile</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">V_to_density_stephenson</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">vp_constants</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/Work/SMV2rho/src/SMV2rho/density_functions.py:445</span>, in <span class="ansi-cyan-fg">Convert.V_to_density_stephenson</span><span class="ansi-blue-fg">(self, parameters, dz, constant_depth, constant_density, T_dependence, plot)</span>
+<span class="ansi-green-intense-fg ansi-bold">    410</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">V_to_density_stephenson</span>(<span style="color: rgb(0,135,0)">self</span>, parameters,
+<span class="ansi-green-intense-fg ansi-bold">    411</span>                             dz<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(98,98,98)">0.1</span>,
+<span class="ansi-green-intense-fg ansi-bold">    412</span>                             constant_depth <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>,
+<span class="ansi-green-intense-fg ansi-bold">    413</span>                             constant_density <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>,
+<span class="ansi-green-intense-fg ansi-bold">    414</span>                             T_dependence <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>,
+<span class="ansi-green-intense-fg ansi-bold">    415</span>                             plot <span style="color: rgb(98,98,98)">=</span> <span class="ansi-bold" style="color: rgb(0,135,0)">False</span>):
+<span class="ansi-green-intense-fg ansi-bold">    416</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    417</span> <span style="color: rgb(175,0,0)">    Convert seismic velocity profiles to density using the Stephenson </span>
+<span class="ansi-green-intense-fg ansi-bold">    418</span> <span style="color: rgb(175,0,0)">    method.</span>
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    442</span> <span style="color: rgb(175,0,0)">        None</span>
+<span class="ansi-green-intense-fg ansi-bold">    443</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; 445</span>     <span class="ansi-yellow-bg">check_arguments</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">T_dependence</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">constant_depth</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">constant_density</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    446</span> <span class="ansi-yellow-bg">                        </span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">stephenson</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">parameters</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    448</span>     <span style="color: rgb(95,135,135)"># instantiate convert profile calss</span>
+<span class="ansi-green-intense-fg ansi-bold">    449</span>     ProfileConvert <span style="color: rgb(98,98,98)">=</span> V2RhoStephenson(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data,
+<span class="ansi-green-intense-fg ansi-bold">    450</span>                                      parameters,
+<span class="ansi-green-intense-fg ansi-bold">    451</span>                                      <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>profile_type,
+<span class="ansi-green-intense-fg ansi-bold">    452</span>                                      constant_depth,
+<span class="ansi-green-intense-fg ansi-bold">    453</span>                                      constant_density,
+<span class="ansi-green-intense-fg ansi-bold">    454</span>                                      T_dependence)
+
+File <span class="ansi-green-fg">~/Work/SMV2rho/src/SMV2rho/density_functions.py:1277</span>, in <span class="ansi-cyan-fg">check_arguments</span><span class="ansi-blue-fg">(T_dependence, constant_depth, constant_density, approach, parameters)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1275</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> T_dependence <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-intense-fg ansi-bold">   1276</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">isinstance</span>(parameters, c<span style="color: rgb(98,98,98)">.</span>Constants) <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-fg">-&gt; 1277</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">T_dependence is set to True. </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1278</span>                      <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">Please use the Constants class and not the </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1279</span>                      <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">VpConstants or VsConstants classes to store </span><span style="color: rgb(175,0,0)">&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">   1280</span>                      <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">the constants.</span><span style="color: rgb(175,0,0)">&#34;</span>)
+<span class="ansi-green-intense-fg ansi-bold">   1281</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span style="color: rgb(0,135,0)">isinstance</span>(parameters, c<span style="color: rgb(98,98,98)">.</span>Constants) <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">True</span>:
+<span class="ansi-green-intense-fg ansi-bold">   1282</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> parameters<span style="color: rgb(98,98,98)">.</span>material_constants <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+
+<span class="ansi-red-fg">ValueError</span>: T_dependence is set to True. Please use the Constants class and not the VpConstants or VsConstants classes to store the constants.
+</pre></div></div>
+</div>
+<p>This error is thrown because by default, the programme expects that we want to include temperature dependence within the density conversion. For now we will not incloude temperature dependence. We will now provide the information that <code class="docutils literal notranslate"><span class="pre">T_dependence</span> <span class="pre">=</span> <span class="pre">False</span></code>. This added optional argument will suppress the above error and allow the program to run. Note that in doing this we are assuming that <span class="math notranslate nohighlight">\(V\)</span> and <span class="math notranslate nohighlight">\(\rho\)</span> are both unaffected by temperature, <span class="math notranslate nohighlight">\(T\)</span>, and that we don’t need to
+account for compressibility.</p>
+<p><em>Note running this function may result in an integration warning. This warning can be safely ignored and is generated because the velocity and density profile functions :math:`V_P(z)` and :math:`rho (z)` contain discontinuities.</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># calculate density profile -- note default is the temperature dependence is True!</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">V_to_density_stephenson</span><span class="p">(</span><span class="n">vp_constants</span><span class="p">,</span> <span class="n">T_dependence</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># check the keys in the profile.data object</span>
+<span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/eart0518/Work/SMV2rho/src/SMV2rho/density_functions.py:1598: IntegrationWarning: The maximum number of subdivisions (50) has been achieved.
+  If increasing the limit yields no improvement it is advised to analyze
+  the integrand in order to determine the difficulties.  If the position of a
+  local difficulty can be determined (singularity, discontinuity) one will
+  probably gain from splitting up the interval and calling the integrator
+  on the subranges.  Perhaps a special-purpose integrator should be used.
+  int_val = integrate.quad(interp_profile, bins_low_res[e],
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;station&#39;, &#39;Vp_file&#39;, &#39;region&#39;, &#39;moho&#39;, &#39;location&#39;, &#39;av_Vp&#39;, &#39;Vp&#39;, &#39;type&#39;, &#39;method&#39;, &#39;rho&#39;, &#39;av_rho&#39;, &#39;rho_hi_res&#39;, &#39;Vp_hi_res&#39;, &#39;p&#39;])
+</pre></div></div>
+</div>
+</section>
+<section id="Outputs-and-plotting">
+<h3>Outputs and plotting<a class="headerlink" href="#Outputs-and-plotting" title="Link to this heading">¶</a></h3>
+<p>We now have a number of new fields that have appeared in our <code class="docutils literal notranslate"><span class="pre">profile.data</span></code> dictionary. We have, as before, <code class="docutils literal notranslate"><span class="pre">'rho'</span></code> and <code class="docutils literal notranslate"><span class="pre">'av_rho'</span></code> fields, but now we also have <code class="docutils literal notranslate"><span class="pre">'rho_hi_res'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Vp_hi_res'</span></code> and <code class="docutils literal notranslate"><span class="pre">'p'</span></code> fields. These fields are generated because the velocity profile must be discretized in order to calculate pressure, <span class="math notranslate nohighlight">\(p\)</span> as a function of depth, which is in turn needed for the density conversion. Let’s have a look at them.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define plot settings</span>
+<span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;line&#39;</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Observed $</span><span class="si">{V_p}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Calculated $\rho$&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">,</span> <span class="s1">&#39;P (MPa)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">([</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+            <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span> <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+            <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_4_16_0.png" src="../_images/TUTORIALS_tutorial_4_16_0.png" />
+</div>
+</div>
+<p>We see that <span class="math notranslate nohighlight">\(\rho(z)\)</span> is now varing within layers. this behaviour arises because the <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code> density conversion scheme is pressure-dependent. Density is binned into the same depth intervals as the velocity profile during the conversion process adn we can take a look at that below with the <code class="docutils literal notranslate"><span class="pre">'rho'</span></code> key…</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define plot settings</span>
+<span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;line&#39;</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Observed $</span><span class="si">{V_p}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Calculated $\rho$&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">]</span>
+<span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$</span><span class="si">{V_P}</span><span class="s1">$ (km/s)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\rho$ (Mg/m${^3}$)&#39;</span><span class="p">,</span> <span class="s1">&#39;P (MPa)&#39;</span><span class="p">]</span>
+<span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth (km)&#39;</span><span class="p">]</span>
+
+<span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">([</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+            <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span> <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+            <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_4_18_0.png" src="../_images/TUTORIALS_tutorial_4_18_0.png" />
+</div>
+</div>
+<p>Notice the resolution of the density profile is now the same as the velocity profile. This functionality only works well if the velocity profile does not have vertical gradients within layers.</p>
+</section>
+</section>
+<section id="Function-approach">
+<h2>Function approach<a class="headerlink" href="#Function-approach" title="Link to this heading">¶</a></h2>
+<p>Again, we can achieve the same outcome by running a wrapper function if users find this approach easier. Again, we lose some granularity in accessing the class outputs but it may be more straightforward to follow.</p>
+<p>We will set <code class="docutils literal notranslate"><span class="pre">approach</span> <span class="pre">=</span> <span class="pre">'stephenson'</span></code> and give the programme the parameter file.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># call density conversion function</span>
+<span class="c1"># note that using profile_type=&quot;Vs&quot; first calls a function to convert to Vp</span>
+<span class="c1"># as is required by Brocher&#39;s (2005) approach.</span>
+<span class="n">profile_stephenson</span> <span class="o">=</span> <span class="n">smd</span><span class="o">.</span><span class="n">convert_V_profile</span><span class="p">(</span><span class="n">vp_file</span><span class="p">,</span>
+                            <span class="n">profile_type</span><span class="o">=</span><span class="s2">&quot;Vp&quot;</span><span class="p">,</span>
+                            <span class="n">approach</span><span class="o">=</span><span class="s2">&quot;stephenson&quot;</span><span class="p">,</span>
+                            <span class="n">working_file</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                            <span class="n">parameters</span> <span class="o">=</span> <span class="n">vp_constants</span><span class="p">)</span>
+
+<span class="c1"># print the keys to check that the outputs are identical to the class method</span>
+<span class="n">profile_stephenson</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+working on ../TEST_DATA/EUROPE/Vp/RECEIVER_FUNCTION/DATA/M19_AQU_Vp.dat
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;station&#39;, &#39;Vp_file&#39;, &#39;region&#39;, &#39;moho&#39;, &#39;location&#39;, &#39;av_Vp&#39;, &#39;Vp&#39;, &#39;type&#39;, &#39;method&#39;, &#39;rho&#39;, &#39;av_rho&#39;, &#39;rho_hi_res&#39;, &#39;Vp_hi_res&#39;, &#39;p&#39;])
+</pre></div></div>
+</div>
+<p>We can now check the output again by plotting…</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># data1, data2 and data3 -- list of dictionaries for each panel for each data series.</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;Vp_hi_res&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">profile_stephenson</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]}]</span>
+
+<span class="c1"># Call the plot_panels function</span>
+<span class="n">smplt</span><span class="o">.</span><span class="n">plot_panels</span><span class="p">([</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">],</span> <span class="n">plot_type</span><span class="o">=</span><span class="n">plot_type</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+            <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span> <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span>
+            <span class="n">z_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure_scale</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/TUTORIALS_tutorial_4_23_0.png" src="../_images/TUTORIALS_tutorial_4_23_0.png" />
+</div>
+</div>
+</section>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Link to this heading">¶</a></h2>
+<p>We have converted a Vp file to density using the <code class="docutils literal notranslate"><span class="pre">SMV2rho</span></code>, or <code class="docutils literal notranslate"><span class="pre">stephenson</span></code> approach without including any temperature dependence. We have explored approaches to carrying out this conversion using both a class- and method-based approach. We have checked that the outputs from these two approaches in the same by plotting.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SMV2rho</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_1.html">SMV2rho: Tutorial 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_2.html">SMV2rho: Tutorial 2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_3.html">SMV2rho: Tutorial 3</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SMV2rho: Tutorial 4</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Class-approach">Class approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Function-approach">Function approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_5.html">SMV2rho: Tutorial 5</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_6.html">SMV2rho: Tutorial 6</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_7.html">SMV2rho: Tutorial 7</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorial_3.html" title="previous chapter">SMV2rho: Tutorial 3</a></li>
+      <li>Next: <a href="tutorial_5.html" title="next chapter">SMV2rho: Tutorial 5</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Simon Stephenson, Mark Hoggard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/TUTORIALS/tutorial_4.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
