@@ -11,16 +11,27 @@ from SMV2rho.spatial_functions import *
 # locate coincident profiles
 def get_coincident_profiles(profiles1, profiles2, buff):
     """
-    Find all surveys that are in the same place
-    Arguments: -- vp_profiles: list of vp profiles
-               -- vs profiles: list of vs profiles
-               -- buff: buffer distance in km (i.e. search distance between
-                        different profiles to look for coincident profiles).
-    Returns:   -- coincident_profiles_all: list of profiles where Vp and
-                        Vs are coincident.  If no coincident profiles are
-                        available then None is written as the list entry.
-               -- vp_profiles: list of vp profiles
-               -- vs profiles: list of vs profiles
+    Find all surveys that are in the same place.
+
+    Parameters
+    ----------
+    profiles1 : list
+        List of vp profiles.
+    profiles2 : list
+        List of vs profiles.
+    buff : float
+        Buffer distance in km (i.e. search distance between different profiles 
+        to look for coincident profiles).
+
+    Returns
+    -------
+    coincident_profiles_all : list
+        List of profiles where Vp and Vs are coincident. If no coincident 
+        profiles are available then None is written as the list entry.
+    profiles1 : list
+        List of vp profiles.
+    profiles2 : list
+        List of vs profiles.
     """
     
     print("Finding stations with coincident Vp and Vs surveys...")
@@ -49,37 +60,44 @@ def get_coincident_profiles(profiles1, profiles2, buff):
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def compare_adjacent_profiles(profiles, coincident_profiles, approach):
+def compare_adjacent_profiles(
+        profiles, 
+        coincident_profiles, 
+        approach
+        ):
     """
-    Calculate and compare bulk properties of overlapping/coincident velocity profiles.
+    Calculate and compare bulk properties of overlapping/coincident velocity 
+    profiles.
 
-    This function takes velocity profiles and coincident profiles, and calculates and compares
-    various properties between them.
+    This function takes velocity profiles and coincident profiles, and 
+    calculates and compares various properties between them.
 
-    Arguments:
-        profiles (list of dictionaries): 
-            Velocity profiles containing location, velocity, density, etc.
-            Output from run_convert_velocities.
-        coincident_profiles (list of lists): 
-            Output from get_coincident_profiles. It's a list in the same
-            format as v_profiles with empty entries where no coincident
-            profile exists and an entry where there is a profile that
-            coincides with a v_profile with a corresponding index.
-        approach (str): 
-            Method used to calculate velocities. Required since there 
-            may not be a calculated vp profile. It can be 'brocher' or 
-            'stephenson'.
+    Parameters
+    ----------
+    profiles : list of dictionaries
+        Velocity profiles containing location, velocity, density, etc.
+        Output from run_convert_velocities.
+    coincident_profiles : list of lists
+        Output from get_coincident_profiles. It's a list in the same
+        format as v_profiles with empty entries where no coincident
+        profile exists and an entry where there is a profile that
+        coincides with a v_profile with a corresponding index.
+    approach : str
+        Method used to calculate velocities. Required since there 
+        may not be a calculated vp profile. It can be 'brocher' or 
+        'stephenson'.
 
-    Returns:
-        vp_vs_vpcalc (numpy.ndarray): 
-            Comparison between vp, vs, and calculated vp. If calculated 
-            vp is not available, it writes np.nan.
-        rho_rho (numpy.ndarray): 
-            Comparison of density estimates between vp and vs profiles.
-        moho_moho (numpy.ndarray): 
-            Comparison of moho depth estimates between vp and vs profiles.
-        lon_lat (numpy.ndarray): 
-            Locations of coincident profiles.
+    Returns
+    -------
+    vp_vs_vpcalc : numpy.ndarray
+        Comparison between vp, vs, and calculated vp. If calculated 
+        vp is not available, it writes np.nan.
+    rho_rho : numpy.ndarray
+        Comparison of density estimates between vp and vs profiles.
+    moho_moho : numpy.ndarray
+        Comparison of moho depth estimates between vp and vs profiles.
+    lon_lat : numpy.ndarray
+        Locations of coincident profiles.
     """
     # Initialize empty lists to store results
     vp_vs_vpcalc = []

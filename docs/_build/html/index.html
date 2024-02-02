@@ -658,20 +658,26 @@ contain at least two columns: depth and property.</p>
 </dl>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>This function interpolates the input profiles and calculates the </dt><dd><p>average profile at each depth.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>It also computes the bulk property profile as a function of base </dt><dd><p>depth.  (e.g. bulk crustal velocity as a function of crustal 
-thickness)</p>
-</dd>
-</dl>
-</li>
-</ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">profiles</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> 
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> 
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="p">]),</span>
+<span class="gp">... </span>    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">],</span> 
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">],</span> 
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">2.6</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="p">])</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">av_z_f</span><span class="p">,</span> <span class="n">bulk_base_depth_f</span> <span class="o">=</span> <span class="n">av_profile</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">profiles</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">base_depth</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">average_type</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -754,6 +760,23 @@ Must be provided if T_dependence is set to True.  Default is None.</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convert_V_profile</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">&#39;velocity_profile.dat&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="s1">&#39;Vp&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">write_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">path</span><span class="o">=</span><span class="s1">&#39;output/&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">approach</span><span class="o">=</span><span class="s1">&#39;stephenson&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">location</span><span class="o">=</span><span class="s1">&#39;Region1&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">parameters</span><span class="o">=</span><span class="n">constants_object</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">constant_depth</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">constant_density</span><span class="o">=</span><span class="mf">2.7</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">T_dependence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">geotherm</span><span class="o">=</span><span class="n">geotherm_object</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">print_working_file</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -802,6 +825,15 @@ in both cases.</p>
 </dl>
 </li>
 </ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binned_profile</span> <span class="o">=</span> <span class="n">convert_to_same_depth_intervals</span><span class="p">(</span><span class="n">profile1</span><span class="p">,</span> <span class="n">profile2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">binned_profile</span><span class="p">)</span>
+<span class="go">array([[ 0. , 1600. ],</span>
+<span class="go">       [ 2.5, 1600. ],</span>
+<span class="go">       [ 2.5 , 2050. ],</span>
+<span class="go">       [10. , 2050. ]])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -872,6 +904,14 @@ P = rho * g * h * 1e6</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)):</span>
+<span class="gp">... </span>    <span class="c1"># Simulate some processing</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">[=====================&gt;                   ] 50%</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -929,6 +969,19 @@ vp/vs ratios.</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">read_no_profile_data</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;crustal_data.csv&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>        <span class="n">region_name</span><span class="o">=</span><span class="s1">&#39;Example_Region&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="go">    region     lon     lat   moho   vp_vs</span>
+<span class="go">0  Example Region  -75.56   40.21  36.58  1.73</span>
+<span class="go">1  Example Region  -72.89   42.17  38.12  1.68</span>
+<span class="go">2  Example Region  -80.12   35.69  33.45  1.80</span>
+<span class="go">3  Example Region  -76.55   39.29  40.27  1.64</span>
+<span class="go">4  Example Region  -74.21   41.54  35.78  1.75</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -946,7 +999,7 @@ the data to a file in the specified outpath.</p>
 </dd>
 <dt><strong>filename</strong><span class="classifier">str</span></dt><dd><p>The name of the output data file.</p>
 </dd>
-<dt><strong>data_function</strong><span class="classifier">function</span></dt><dd><p>A function that computes the data values based on x-values.</p>
+<dt><strong>data_function</strong><span class="classifier">function</span></dt><dd><p>A function that computes the average property at depth z.</p>
 </dd>
 <dt><strong>start</strong><span class="classifier">float</span></dt><dd><p>The start value for the x-values.</p>
 </dd>
@@ -962,6 +1015,17 @@ the data to a file in the specified outpath.</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">save_bulk_profiles</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">&#39;/output/directory/&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="s1">&#39;bulk_data.txt&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="n">function</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="mi">0</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="mf">50.5</span><span class="p">,</span> 
+<span class="gp">... </span>    <span class="mf">0.5</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1011,24 +1075,29 @@ instance of GeothermConstantUncertainties with default values.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p># Example 1: Using a linear geothermal model to evaluate temperature at 
-#   10 km depth.
-&gt;&gt;&gt; geotherm = Geotherm(geotherm_type=”linear”)
-&gt;&gt;&gt; temperature = geotherm(10000)
-&gt;&gt;&gt; print(temperature)</p>
-<p># Example 2: Using a single-layer internal heat geotherm model to generate
-#   a geotherm with 150 depth slices.
-&gt;&gt;&gt; geotherm = Geotherm(geotherm_type=”single_layer_internal_heat”)
-&gt;&gt;&gt; temperatures = geotherm.generate_geotherm(z_slices = 150)
-&gt;&gt;&gt; print(temperatures)</p>
-<p># Example 3: Using a single-layer temperature difference geotherm model to
-#   generate a family of geotherms with 200 depth slices each.
-&gt;&gt;&gt; geotherm = Geotherm(
-…     geotherm_type=”single_layer_temperature_difference”,
-…     uncertainty_constants=GeothermConstantUncertainties(),
-…     tc=30000)
-&gt;&gt;&gt; geotherm.generate_geotherm_distribution(n_geotherms=100, z_slices=200)
-&gt;&gt;&gt; print(geotherm.T_family)</p>
+<p>Using a linear geothermal model to evaluate temperature at 10 km depth.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">geotherm</span> <span class="o">=</span> <span class="n">Geotherm</span><span class="p">(</span><span class="n">geotherm_type</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">temperature</span> <span class="o">=</span> <span class="n">geotherm</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using a single-layer internal heat geotherm model to generate a geotherm 
+with 150 depth slices.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">geotherm</span> <span class="o">=</span> <span class="n">Geotherm</span><span class="p">(</span><span class="n">geotherm_type</span><span class="o">=</span><span class="s2">&quot;single_layer_internal_heat&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">temperatures</span> <span class="o">=</span> <span class="n">geotherm</span><span class="o">.</span><span class="n">generate_geotherm</span><span class="p">(</span><span class="n">z_slices</span> <span class="o">=</span> <span class="mi">150</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">temperatures</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using a single-layer temperature difference geotherm model to generate a 
+family of geotherms with 200 depth slices each.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">geotherm</span> <span class="o">=</span> <span class="n">Geotherm</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">geotherm_type</span><span class="o">=</span><span class="s2">&quot;single_layer_temperature_difference&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">uncertainty_constants</span><span class="o">=</span><span class="n">GeothermConstantUncertainties</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">tc</span><span class="o">=</span><span class="mi">30000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">geotherm</span><span class="o">.</span><span class="n">generate_geotherm_distribution</span><span class="p">(</span><span class="n">n_geotherms</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">z_slices</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">geotherm</span><span class="o">.</span><span class="n">T_family</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1070,9 +1139,20 @@ uncertainties related to each geothermal property.</p>
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.generate_geotherm">
 <span class="sig-name descname"><span class="pre">generate_geotherm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.generate_geotherm" title="Link to this definition">¶</a></dt>
 <dd><p>Generate a geothermal model based on the constants provided.</p>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>np.ndarray: Array of depths at which to evaluate the model.
-np.ndarray: Array of temperatures at the given depths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z_slices</strong><span class="classifier">int, optional</span></dt><dd><p>Number of depth slices at which to evaluate the model. Default is 100.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>Array of depths at which to evaluate the model.</p>
+</dd>
+<dt>np.ndarray</dt><dd><p>Array of temperatures at the given depths.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1082,13 +1162,22 @@ np.ndarray: Array of temperatures at the given depths.</p>
 <span class="sig-name descname"><span class="pre">generate_geotherm_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_geotherms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.generate_geotherm_distribution" title="Link to this definition">¶</a></dt>
 <dd><p>Generate a family of geothermal models based on the mean and 
 uncertainty values of the constants.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>n_geotherms (int): Number of geotherms to generate.
-z_slices (int): Number of slices to divide the depth into.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_geotherms</strong><span class="classifier">int, optional</span></dt><dd><p>Number of geotherms to generate. Default is 100.</p>
 </dd>
-<dt>Returns:</dt><dd><p>np.ndarray: Array of depths at which to evaluate the models.
-np.ndarray: Array of temperatures at the given depths for each 
-model.</p>
+<dt><strong>z_slices</strong><span class="classifier">int, optional</span></dt><dd><p>Number of slices to divide the depth into. Default is 100.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>Array of depths at which to evaluate the models.</p>
+</dd>
+<dt>np.ndarray</dt><dd><p>Array of temperatures at the given depths for each model.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1097,12 +1186,19 @@ model.</p>
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.linear">
 <span class="sig-name descname"><span class="pre">linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.linear" title="Link to this definition">¶</a></dt>
 <dd><p>Linear geothermal model.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
-evaluate the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">Union[float, np.ndarray]</span></dt><dd><p>Depth or depths at which to evaluate the model.</p>
 </dd>
-<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the linear geothermal 
-model at the given depth or depths.</p>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Union[float, np.ndarray]</dt><dd><p>Result of the linear geothermal model at the given depth or 
+depths.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1111,14 +1207,21 @@ model at the given depth or depths.</p>
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.Geotherm.single_layer_flux_difference">
 <span class="sig-name descname"><span class="pre">single_layer_flux_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.single_layer_flux_difference" title="Link to this definition">¶</a></dt>
 <dd><p>Single-layer model with internal heat generation based on heat 
-flux at the surface and at the moho.  Does not require internal heat
+flux at the surface and at the moho. Does not require internal heat
 production or crustal thickness as arguments.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
-evaluate the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">Union[float, np.ndarray]</span></dt><dd><p>Depth or depths at which to evaluate the model.</p>
 </dd>
-<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the single-layer flux 
-difference geothermal model at the given depth or depths.</p>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Union[float, np.ndarray]</dt><dd><p>Result of the single-layer flux difference geothermal model at 
+the given depth or depths.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1128,12 +1231,19 @@ difference geothermal model at the given depth or depths.</p>
 <span class="sig-name descname"><span class="pre">single_layer_internal_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.single_layer_internal_heat" title="Link to this definition">¶</a></dt>
 <dd><p>Single-layer model with internal heat generation and heat flux 
 at the moho.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
-evaluate the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">Union[float, np.ndarray]</span></dt><dd><p>Depth or depths at which to evaluate the model.</p>
 </dd>
-<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the single-layer internal 
-heat geothermal model at the given depth or depths.</p>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Union[float, np.ndarray]</dt><dd><p>Result of the single-layer internal heat geothermal model at 
+the given depth or depths.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1143,12 +1253,19 @@ heat geothermal model at the given depth or depths.</p>
 <span class="sig-name descname"><span class="pre">single_layer_temperature_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.Geotherm.single_layer_temperature_difference" title="Link to this definition">¶</a></dt>
 <dd><p>Single-layer model including internal heat generation based on the 
 temperature at the surface and at the moho.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>z (Union[float, np.ndarray]): Depth or depths at which to 
-evaluate the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">Union[float, np.ndarray]</span></dt><dd><p>Depth or depths at which to evaluate the model.</p>
 </dd>
-<dt>Returns:</dt><dd><p>Union[float, np.ndarray]: Result of the single-layer temperature 
-difference geothermal model at the given depth or depths.</p>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Union[float, np.ndarray]</dt><dd><p>Result of the single-layer temperature difference geothermal model 
+at the given depth or depths.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1161,19 +1278,30 @@ difference geothermal model at the given depth or depths.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This data class stores uncertainties related to geothermal properties.
 Each property is represented as a float value.</p>
-<section id="parameters">
-<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
-<blockquote>
-<div><p>tc_unc (float): Crustal thickness, km
-T0_unc (float): Temperature at the surface, C
-T1_unc (float): Temperature at the base of the crust, C
-q0_unc (float): Heat flux at the surface, W/m2
-qm_unc (float): Heat flux at the base, W/m2
-k_unc (float): Thermal conductivity, W/(m K)
-H0_unc (float): Internal heat production at the surface W/(kg m3)
-hr_unc (float): Decay lengthscale of heat production, km
-rho_unc (float): Density, g/cm3</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tc_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in crustal thickness, km</p>
+</dd>
+<dt><strong>T0_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in temperature at the surface, C</p>
+</dd>
+<dt><strong>T1_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in temperature at the base of the crust, C</p>
+</dd>
+<dt><strong>q0_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in heat flux at the surface, W/m2</p>
+</dd>
+<dt><strong>qm_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in heat flux at the base, W/m2</p>
+</dd>
+<dt><strong>k_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in thermal conductivity, W/(m K)</p>
+</dd>
+<dt><strong>H0_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in internal heat production at the surface W/(kg m3)</p>
+</dd>
+<dt><strong>hr_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in decay lengthscale of heat production, km</p>
+</dd>
+<dt><strong>rho_unc</strong><span class="classifier">float</span></dt><dd><p>Uncertainty in density, g/cm3</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.GeothermConstantUncertainties.H0_unc">
 <span class="sig-name descname"><span class="pre">H0_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2e-10</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.H0_unc" title="Link to this definition">¶</a></dt>
@@ -1219,7 +1347,6 @@ rho_unc (float): Density, g/cm3</p>
 <span class="sig-name descname"><span class="pre">tc_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstantUncertainties.tc_unc" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 <dl class="py class">
@@ -1227,22 +1354,31 @@ rho_unc (float): Density, g/cm3</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">GeothermConstants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">600.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.059</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7e-10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Data class to store constants related to geothermal properties.</p>
-<section id="id1">
-<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<blockquote>
-<div><p>tc (float): Crustal thickness, km
-T0 (float): Temperature at the surface, C
-T1 (float): Temperature at the base of the crust, C
-q0 (float): Heat flux at the surface, W/m2
-qm (float): Heat flux at the base, W/m2
-k (float): Thermal conductivity, W/(m K)
-H0 (float): Internal heat production at the surface W/(kg m3)
-hr (float): Decay lengthscale of heat production, km
-rho (float): Density, g/mc3</p>
-</div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>tc</strong><span class="classifier">float</span></dt><dd><p>Crustal thickness, km</p>
+</dd>
+<dt><strong>T0</strong><span class="classifier">float</span></dt><dd><p>Temperature at the surface, C</p>
+</dd>
+<dt><strong>T1</strong><span class="classifier">float</span></dt><dd><p>Temperature at the base of the crust, C</p>
+</dd>
+<dt><strong>q0</strong><span class="classifier">float</span></dt><dd><p>Heat flux at the surface, W/m2</p>
+</dd>
+<dt><strong>qm</strong><span class="classifier">float</span></dt><dd><p>Heat flux at the base, W/m2</p>
+</dd>
+<dt><strong>k</strong><span class="classifier">float</span></dt><dd><p>Thermal conductivity, W/(m K)</p>
+</dd>
+<dt><strong>H0</strong><span class="classifier">float</span></dt><dd><p>Internal heat production at the surface W/(kg m3)</p>
+</dd>
+<dt><strong>hr</strong><span class="classifier">float</span></dt><dd><p>Decay lengthscale of heat production, km</p>
+</dd>
+<dt><strong>rho</strong><span class="classifier">float</span></dt><dd><p>Density, g/mc3</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>tc</strong></dt><dd></dd>
 </dl>
 </dd>
@@ -1292,38 +1428,56 @@ rho (float): Density, g/mc3</p>
 <span class="sig-name descname"><span class="pre">tc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#SMV2rho.temperature_dependence.GeothermConstants.tc" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.V_T_correction">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">V_T_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dvdT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.0004</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.V_T_correction" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate the velocity correction based on the temperature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>T</strong><span class="classifier">float</span></dt><dd><p>Temperature at which to calculate the velocity correction.</p>
+</dd>
+<dt><strong>dvdT</strong><span class="classifier">float, optional</span></dt><dd><p>Rate of change of velocity with temperature. Default is -4e-4.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>The velocity correction at the given temperature.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.compressibility">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">compressibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho_o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.compressibility" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate effect of confining pressure on density
-Arguments: - rho_o - surface (reference) density</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>P - pressure (in MPa)</p></li>
-<li><p>K - Bulk modulus (in Pa)</p></li>
-</ul>
-</div></blockquote>
-<dl class="simple">
-<dt>Returns:   - abs_rho - density at pressure, P</dt><dd><ul class="simple">
-<li><dl class="simple">
-<dt>frac_change - fractional change in density </dt><dd><p>(i.e 1.1 = 10% velocity increase)</p>
+<dd><p>Calculate the effect of confining pressure on density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>rho_o</strong><span class="classifier">float</span></dt><dd><p>Surface (reference) density.</p>
+</dd>
+<dt><strong>P</strong><span class="classifier">float</span></dt><dd><p>Pressure in MPa.</p>
+</dd>
+<dt><strong>K</strong><span class="classifier">float, optional</span></dt><dd><p>Bulk modulus in Pa. Default is 90e9.</p>
 </dd>
 </dl>
-</li>
-<li><dl class="simple">
-<dt>rel_rho - relative density change (e.t. 0.1 = 10 Mg/m3 </dt><dd><p>density increase)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>abs_rho</strong><span class="classifier">float</span></dt><dd><p>Density at pressure, P.</p>
+</dd>
+<dt><strong>frac_change</strong><span class="classifier">float</span></dt><dd><p>Fractional change in density (e.g., 1.1 indicates a 10% velocity 
+increase).</p>
+</dd>
+<dt><strong>rel_rho</strong><span class="classifier">float</span></dt><dd><p>Relative density change (e.g., 0.1 indicates a 10 Mg/m3 density 
+increase).</p>
 </dd>
 </dl>
-</li>
-</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1331,20 +1485,29 @@ Arguments: - rho_o - surface (reference) density</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.rho_thermal">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">rho_thermal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho_o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.rho_thermal" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate simple thermal expansion
-Arguments: - rho_o - surface (reference) density</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>T - temperature (in deg C)</p></li>
-<li><p>T0 - surface temperature (in same units as T)</p></li>
-<li><p>alpha0 - thermal expansion coefficient</p></li>
-</ul>
-</div></blockquote>
-<dl class="simple">
-<dt>Returns:   - abs_rho - density at temperature, T</dt><dd><ul class="simple">
-<li><p>frac_change - fractional change in density (i.e 1.1 = 10% velocity increase)</p></li>
-<li><p>rel_rho - relative density change (e.g. 0.1 = 10 kg/m3 density increase)</p></li>
-</ul>
+<dd><p>Calculate simple thermal expansion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>rho_o</strong><span class="classifier">float</span></dt><dd><p>Surface (reference) density.</p>
+</dd>
+<dt><strong>T</strong><span class="classifier">float</span></dt><dd><p>Temperature in degrees Celsius.</p>
+</dd>
+<dt><strong>alpha</strong><span class="classifier">float, optional</span></dt><dd><p>Thermal expansion coefficient. Default is 3e-5.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>abs_rho</strong><span class="classifier">float</span></dt><dd><p>Density at temperature, T.</p>
+</dd>
+<dt><strong>frac_change</strong><span class="classifier">float</span></dt><dd><p>Fractional change in density (e.g., 1.1 indicates a 10% velocity 
+increase).</p>
+</dd>
+<dt><strong>rel_rho</strong><span class="classifier">float</span></dt><dd><p>Relative density change (e.g., 0.1 indicates a 10 kg/m3 density 
+increase).</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1352,21 +1515,33 @@ Arguments: - rho_o - surface (reference) density</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.temperature_dependence.rho_thermal2">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.temperature_dependence.</span></span><span class="sig-name descname"><span class="pre">rho_thermal2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho_o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.9e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.temperature_dependence.rho_thermal2" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate effect of temperature on density
-Arguments: - rho_o - surface (reference) density</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>T - temperature (in deg C)</p></li>
-<li><p>alpha0 - thermal expansion at 0K (K^{-1})</p></li>
-<li><p>alpha1 - thermal expansion temperature derivative (K^{-2})</p></li>
-<li><p>T0 - surface temperature (in same units as T)</p></li>
-</ul>
-</div></blockquote>
-<dl class="simple">
-<dt>Returns:   - abs_rho - density at temperature, T</dt><dd><ul class="simple">
-<li><p>frac_change - fractional change in density (i.e 1.1 = 10% velocity increase)</p></li>
-<li><p>rel_rho - relative density change (e.g. 0.1 = 10 kg/m3 density increase)</p></li>
-</ul>
+<dd><p>Calculate the effect of temperature on density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>rho_o</strong><span class="classifier">float</span></dt><dd><p>Surface (reference) density.</p>
+</dd>
+<dt><strong>T</strong><span class="classifier">float</span></dt><dd><p>Temperature in degrees Celsius.</p>
+</dd>
+<dt><strong>alpha0</strong><span class="classifier">float, optional</span></dt><dd><p>Thermal expansion at 0K (K^{-1}). Default is 1.0e-5.</p>
+</dd>
+<dt><strong>alpha1</strong><span class="classifier">float, optional</span></dt><dd><p>Thermal expansion temperature derivative (K^{-2}). Default is 2.9e-8.</p>
+</dd>
+<dt><strong>T0</strong><span class="classifier">int, optional</span></dt><dd><p>Surface temperature in the same units as T. Default is 10.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>abs_rho</strong><span class="classifier">float</span></dt><dd><p>Density at temperature, T.</p>
+</dd>
+<dt><strong>frac_change</strong><span class="classifier">float</span></dt><dd><p>Fractional change in density (e.g., 1.1 indicates a 10% velocity 
+increase).</p>
+</dd>
+<dt><strong>rel_rho</strong><span class="classifier">float</span></dt><dd><p>Relative density change (e.g., 0.1 indicates a 10 kg/m3 density 
+increase).</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1380,15 +1555,24 @@ Arguments: - rho_o - surface (reference) density</p>
 <dt class="sig sig-object py" id="SMV2rho.uncertainties.generate_gauss">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.uncertainties.</span></span><span class="sig-name descname"><span class="pre">generate_gauss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abs_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_unc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.uncertainties.generate_gauss" title="Link to this definition">¶</a></dt>
 <dd><p>Generate an array of absolute Gaussian random numbers.</p>
-<p>Parameters:
-abs_mean (float): The absolute mean of the Gaussian distribution.
-mean_unc (float): The standard deviation (uncertainty) of the</p>
-<blockquote>
-<div><p>Gaussian distribution.</p>
-</div></blockquote>
-<p>N (int): The number of random numbers to generate.</p>
-<p>Returns:
-numpy.ndarray: An array of absolute Gaussian random numbers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>abs_mean</strong><span class="classifier">float</span></dt><dd><p>The absolute mean of the Gaussian distribution.</p>
+</dd>
+<dt><strong>mean_unc</strong><span class="classifier">float</span></dt><dd><p>The standard deviation (uncertainty) of the Gaussian distribution.</p>
+</dd>
+<dt><strong>N</strong><span class="classifier">int</span></dt><dd><p>The number of random numbers to generate.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray</dt><dd><p>An array of absolute Gaussian random numbers.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1400,34 +1584,40 @@ correction, and standard deviation.</p>
 <p>Note that this does not include the uncertainty associated with the 
 velocity-pressure calibration, which should be combined separately if 
 necessary. This function can only handle a single profile at a time.  
-Note that the Geotherm class must be initialised with the correct 
+Note that the Geotherm class must be initialised with the desired 
 parameters including the geotherm parameters (including tc) and 
 uncertainties.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>constants (object): Instance of the Constants class containing the </dt><dd><p>constants for the calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>constants</strong><span class="classifier">object</span></dt><dd><p>Instance of the Constants class containing the constants for the 
+calculation.</p>
 </dd>
-<dt>geotherm (object): Geotherm object for temperature dependence.  The</dt><dd><p>rho attribute of the geotherm object will be used to set the bulk
-density for the density error propagation.</p>
+<dt><strong>geotherm</strong><span class="classifier">object</span></dt><dd><p>Geotherm object for temperature dependence. The rho attribute of 
+the geotherm object will be used to set the bulk density for the 
+density error propagation.</p>
 </dd>
-<dt>profile_type (str, optional): Type of velocity profile, ‘Vp’ or ‘Vs’. </dt><dd><p>Default is ‘Vp’.</p>
+<dt><strong>profile_type</strong><span class="classifier">str, optional</span></dt><dd><p>Type of velocity profile, ‘Vp’ or ‘Vs’. Default is ‘Vp’.</p>
 </dd>
-<dt>N (int, optional): Number of samples for the Monte Carlo simulation. </dt><dd><p>Default is 1000.</p>
+<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>Number of samples for the Monte Carlo simulation. Default is 1000.</p>
 </dd>
-<dt>z_slices (int, optional): Number of depth slices for the calculation. </dt><dd><p>Default is 100.</p>
+<dt><strong>z_slices</strong><span class="classifier">int, optional</span></dt><dd><p>Number of depth slices for the calculation. Default is 100.</p>
 </dd>
-<dt>make_plots (bool, optional): If True, generates plots of the results. </dt><dd><p>Default is False.</p>
+<dt><strong>make_plots</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, generates plots of the results. Default is False.</p>
 </dd>
-<dt>save_plots (bool, optional): If True, saves the generated plots. </dt><dd><p>Default is False.</p>
+<dt><strong>save_plots</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, saves the generated plots. Default is False.</p>
 </dd>
-<dt>outpath (str, optional): Path to save the plots. Default is </dt><dd><p>“../UNCERTAINTY_PLOTS”.</p>
+<dt><strong>outpath</strong><span class="classifier">str, optional</span></dt><dd><p>Path to save the plots. Default is “../UNCERTAINTY_PLOTS”.</p>
 </dd>
 </dl>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>error_average_frac (float): The average fractional error calculated </dt><dd><p>from the Monte Carlo simulation.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>error_average_frac</strong><span class="classifier">float</span></dt><dd><p>The average fractional error calculated from the Monte Carlo 
+simulation.</p>
 </dd>
-<dt>error_average_add (float): The average additive error calculated </dt><dd><p>from the Monte Carlo simulation.</p>
+<dt><strong>error_average_add</strong><span class="classifier">float</span></dt><dd><p>The average additive error calculated from the Monte Carlo 
+simulation.</p>
 </dd>
 </dl>
 </dd>
@@ -1438,46 +1628,61 @@ density for the density error propagation.</p>
 <dt class="sig sig-object py" id="SMV2rho.spatial_functions.haversine">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.spatial_functions.</span></span><span class="sig-name descname"><span class="pre">haversine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6371</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.spatial_functions.haversine" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the great circle distance between two points 
-on the earth (specified in decimal degrees)
-arguments:</p>
-<blockquote>
-<div><p>loc1 (float): array of coordinates of first point
-loc2 (float): array of coordinates of second point
-r (float, optional): Radius of earth in kilometers.</p>
-</div></blockquote>
+on the earth (specified in decimal degrees).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>loc1</strong><span class="classifier">array_like</span></dt><dd><p>Array of coordinates of first point.</p>
+</dd>
+<dt><strong>loc2</strong><span class="classifier">array_like</span></dt><dd><p>Array of coordinates of second point.</p>
+</dd>
+<dt><strong>r</strong><span class="classifier">float, optional</span></dt><dd><p>Radius of earth in kilometers. Default is 6371.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>The great circle distance between loc1 and loc2.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <span class="target" id="module-SMV2rho.coincident_profile_functions"></span><dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.coincident_profile_functions.compare_adjacent_profiles">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.coincident_profile_functions.</span></span><span class="sig-name descname"><span class="pre">compare_adjacent_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coincident_profiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.coincident_profile_functions.compare_adjacent_profiles" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate and compare bulk properties of overlapping/coincident velocity profiles.</p>
-<p>This function takes velocity profiles and coincident profiles, and calculates and compares
-various properties between them.</p>
-<dl class="simple">
-<dt>Arguments:</dt><dd><dl class="simple">
-<dt>profiles (list of dictionaries): </dt><dd><p>Velocity profiles containing location, velocity, density, etc.
+<dd><p>Calculate and compare bulk properties of overlapping/coincident velocity 
+profiles.</p>
+<p>This function takes velocity profiles and coincident profiles, and 
+calculates and compares various properties between them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>profiles</strong><span class="classifier">list of dictionaries</span></dt><dd><p>Velocity profiles containing location, velocity, density, etc.
 Output from run_convert_velocities.</p>
 </dd>
-<dt>coincident_profiles (list of lists): </dt><dd><p>Output from get_coincident_profiles. It’s a list in the same
+<dt><strong>coincident_profiles</strong><span class="classifier">list of lists</span></dt><dd><p>Output from get_coincident_profiles. It’s a list in the same
 format as v_profiles with empty entries where no coincident
 profile exists and an entry where there is a profile that
 coincides with a v_profile with a corresponding index.</p>
 </dd>
-<dt>approach (str): </dt><dd><p>Method used to calculate velocities. Required since there 
+<dt><strong>approach</strong><span class="classifier">str</span></dt><dd><p>Method used to calculate velocities. Required since there 
 may not be a calculated vp profile. It can be ‘brocher’ or 
 ‘stephenson’.</p>
 </dd>
 </dl>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>vp_vs_vpcalc (numpy.ndarray): </dt><dd><p>Comparison between vp, vs, and calculated vp. If calculated 
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp_vs_vpcalc</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Comparison between vp, vs, and calculated vp. If calculated 
 vp is not available, it writes np.nan.</p>
 </dd>
-<dt>rho_rho (numpy.ndarray): </dt><dd><p>Comparison of density estimates between vp and vs profiles.</p>
+<dt><strong>rho_rho</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Comparison of density estimates between vp and vs profiles.</p>
 </dd>
-<dt>moho_moho (numpy.ndarray): </dt><dd><p>Comparison of moho depth estimates between vp and vs profiles.</p>
+<dt><strong>moho_moho</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Comparison of moho depth estimates between vp and vs profiles.</p>
 </dd>
-<dt>lon_lat (numpy.ndarray): </dt><dd><p>Locations of coincident profiles.</p>
+<dt><strong>lon_lat</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Locations of coincident profiles.</p>
 </dd>
 </dl>
 </dd>
@@ -1487,22 +1692,29 @@ vp is not available, it writes np.nan.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.coincident_profile_functions.get_coincident_profiles">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.coincident_profile_functions.</span></span><span class="sig-name descname"><span class="pre">get_coincident_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profiles1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profiles2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.coincident_profile_functions.get_coincident_profiles" title="Link to this definition">¶</a></dt>
-<dd><p>Find all surveys that are in the same place
-Arguments: – vp_profiles: list of vp profiles</p>
-<blockquote>
-<div><p>– vs profiles: list of vs profiles
-– buff: buffer distance in km (i.e. search distance between</p>
-<blockquote>
-<div><p>different profiles to look for coincident profiles).</p>
-</div></blockquote>
-</div></blockquote>
-<dl>
-<dt>Returns:   – coincident_profiles_all: list of profiles where Vp and</dt><dd><blockquote>
-<div><p>Vs are coincident.  If no coincident profiles are
-available then None is written as the list entry.</p>
-</div></blockquote>
-<p>– vp_profiles: list of vp profiles
-– vs profiles: list of vs profiles</p>
+<dd><p>Find all surveys that are in the same place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>profiles1</strong><span class="classifier">list</span></dt><dd><p>List of vp profiles.</p>
+</dd>
+<dt><strong>profiles2</strong><span class="classifier">list</span></dt><dd><p>List of vs profiles.</p>
+</dd>
+<dt><strong>buff</strong><span class="classifier">float</span></dt><dd><p>Buffer distance in km (i.e. search distance between different profiles 
+to look for coincident profiles).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coincident_profiles_all</strong><span class="classifier">list</span></dt><dd><p>List of profiles where Vp and Vs are coincident. If no coincident 
+profiles are available then None is written as the list entry.</p>
+</dd>
+<dt><strong>profiles1</strong><span class="classifier">list</span></dt><dd><p>List of vp profiles.</p>
+</dd>
+<dt><strong>profiles2</strong><span class="classifier">list</span></dt><dd><p>List of vs profiles.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>
@@ -1515,41 +1727,48 @@ and plot it.</p>
 <p>This function performs an ODR regression on the given data and plots the
 resulting regression line on the specified axis. It also writes the 
 equation of the regression line in the top left corner of the plot.</p>
-<dl>
-<dt>Parameters:</dt><dd><p>x (numpy.ndarray): Array of x-values.
-y (numpy.ndarray): Array of y-values.
-ax (matplotlib.axes.Axes): The axis on which to plot the</p>
-<blockquote>
-<div><p>regression line.</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Array of x-values.</p>
 </dd>
-<dt>Example:</dt><dd><p>x = np.random.rand(20)
-y = 2 * x + np.random.rand(20)
-fig, ax = plt.subplots()
-ax.scatter(x, y, label=’Data’)
-calculate_odr_line_equation2(x, y, ax)
-ax.legend()
-plt.show()</p>
+<dt><strong>y</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Array of y-values.</p>
 </dd>
-<dt>Note:</dt><dd><p>This function filters out data points where x &lt; 1.5 before performing
-the ODR regression.</p>
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes</span></dt><dd><p>The axis on which to plot the regression line.</p>
 </dd>
 </dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function filters out data points where x &lt; 1.5 before performing
+the ODR regression.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calculate_odr_line_equation2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.plotting.draw_file_tree">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_file_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_pycache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.draw_file_tree" title="Link to this definition">¶</a></dt>
 <dd><p>Draw a file tree diagram for the specified master directory.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>master_path (str): The path to the master directory.</dt><dd><p>include_files (bool, optional): Include files in the 
-file tree if True,
-otherwise only include directories. Defaults to False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>master_path</strong><span class="classifier">str</span></dt><dd><p>The path to the master directory.</p>
 </dd>
-<dt>suppress_pycache (bool, optional): </dt><dd><p>Suppress the ‘__pycache__’ directory if True. Defaults to False.</p>
+<dt><strong>include_files</strong><span class="classifier">bool, optional</span></dt><dd><p>Include files in the file tree if True, otherwise only include 
+directories. Defaults to False.</p>
 </dd>
-<dt>suppress_hidden (bool, optional): </dt><dd><p>Suppress hidden files and directories if True. Defaults to False.</p>
+<dt><strong>suppress_pycache</strong><span class="classifier">bool, optional</span></dt><dd><p>Suppress the ‘__pycache__’ directory if True. Defaults to False.</p>
+</dd>
+<dt><strong>suppress_hidden</strong><span class="classifier">bool, optional</span></dt><dd><p>Suppress hidden files and directories if True. Defaults to False.</p>
 </dd>
 </dl>
 </dd>
@@ -1566,38 +1785,40 @@ longitude (‘lon’) and latitude (‘lat’). The color of the points is
 determined by the ‘color’ parameter, and an optional third field
 can be labeled on the colorbar. You can customize the color range 
 using ‘colorbar_range’.</p>
-<dl>
-<dt>Parameters:</dt><dd><p>lon (array-like): Array of longitudes for the locations.
-lat (array-like): Array of latitudes for the locations.
-color (array-like): Array of values determining the color of each</p>
-<blockquote>
-<div><p>point.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>projection (str, optional): Map projection type. Default is </dt><dd><p>‘Mollweide’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lon</strong><span class="classifier">array-like</span></dt><dd><p>Array of longitudes for the locations.</p>
 </dd>
-<dt>title (str, optional): Title for the plot. Default is </dt><dd><p>‘Geographic Locations’.</p>
+<dt><strong>lat</strong><span class="classifier">array-like</span></dt><dd><p>Array of latitudes for the locations.</p>
 </dd>
-<dt>third_field_label (str, optional): Label for the third field </dt><dd><p>on the colorbar.</p>
+<dt><strong>color</strong><span class="classifier">array-like</span></dt><dd><p>Array of values determining the color of each point.</p>
 </dd>
-<dt>colorbar_range (list, optional): Custom color range for the colorbar. </dt><dd><p>Default is determined by the data.</p>
+<dt><strong>projection</strong><span class="classifier">str, optional</span></dt><dd><p>Map projection type. Default is ‘Mollweide’.</p>
 </dd>
-</dl>
-<p><a href="#id2"><span class="problematic" id="id3">**</span></a>kwargs: Additional keyword arguments to pass to the scatter plot.</p>
+<dt><strong>title</strong><span class="classifier">str, optional</span></dt><dd><p>Title for the plot. Default is ‘Geographic Locations’.</p>
 </dd>
-<dt>Example:</dt><dd><p>lon = [0, 90, 180, -90]
-lat = [0, 30, 60, -30]
-color = [10, 20, 30, 40]
-plot_geographic_locations(lon, lat, color,</p>
-<blockquote>
-<div><p>projection=’PlateCarree’,
-title=’Sample Locations’, 
-third_field_label=’Value’,
-colorbar_range=[0, 50], s=100, 
-cmap=’coolwarm’)</p>
-</div></blockquote>
+<dt><strong>third_field_label</strong><span class="classifier">str, optional</span></dt><dd><p>Label for the third field on the colorbar.</p>
+</dd>
+<dt><strong>colorbar_range</strong><span class="classifier">list, optional</span></dt><dd><p>Custom color range for the colorbar. Default is determined by the data.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Additional keyword arguments to pass to the scatter plot.</p>
 </dd>
 </dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lon</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_geographic_locations</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> 
+<span class="gp">... </span>                          <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;PlateCarree&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Sample Locations&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>                          <span class="n">third_field_label</span><span class="o">=</span><span class="s1">&#39;Value&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">colorbar_range</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+<span class="gp">... </span>                          <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1605,107 +1826,123 @@ cmap=’coolwarm’)</p>
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_panels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'YlGnBu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.plot_panels" title="Link to this definition">¶</a></dt>
 <dd><p>Plot multiple panels with customizable settings, each with data series in
 different colors and a legend.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>data (list of lists): A list where each element represents a separate </dt><dd><p>plot. Each element is a list of dictionaries, where each 
-dictionary represents a data series and contains ‘x’, ‘y’, and 
-‘label’ values. Multiple data series for a plot should be passed 
-as separate dictionaries within the nested list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">list of lists</span></dt><dd><p>A list where each element represents a separate plot. Each element 
+is a list of dictionaries, where each dictionary represents a data 
+series and contains ‘x’, ‘y’, and ‘label’ values. Multiple data 
+series for a plot should be passed as separate dictionaries within 
+the nested list.</p>
 </dd>
-<dt>plot_type (str): Type of plot to create (‘scatter’ or ‘line’). Default</dt><dd><p>is ‘scatter’.</p>
+<dt><strong>plot_type</strong><span class="classifier">str, optional</span></dt><dd><p>Type of plot to create (‘scatter’ or ‘line’). Default is ‘scatter’.</p>
 </dd>
-</dl>
-<p>cmap (str): Color map for scatter plot. Default is ‘YlGnBu’.
-titles (list or None): Titles for each panel. Can be a list of strings</p>
-<blockquote>
-<div><p>or None to omit titles.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>xlabels (list or None): X-axis labels for each panel. Can be a list of</dt><dd><p>strings or None to omit x-axis labels.</p>
+<dt><strong>cmap</strong><span class="classifier">str, optional</span></dt><dd><p>Color map for scatter plot. Default is ‘YlGnBu’.</p>
 </dd>
-<dt>ylabels (list or None): Y-axis labels for each panel. Can be a list of</dt><dd><p>strings or None to omit y-axis labels.</p>
+<dt><strong>titles</strong><span class="classifier">list or None, optional</span></dt><dd><p>Titles for each panel. Can be a list of strings or None to omit 
+titles.</p>
 </dd>
-<dt>z_values (None or list): Z-values for color mapping in scatter plot.</dt><dd><p>Can be None or a list of values.</p>
+<dt><strong>xlabels</strong><span class="classifier">list or None, optional</span></dt><dd><p>X-axis labels for each panel. Can be a list of strings or None to 
+omit x-axis labels.</p>
 </dd>
-<dt>figure_scale (float): Scale factor for the figure size. Default </dt><dd><p>is 1.0.</p>
+<dt><strong>ylabels</strong><span class="classifier">list or None, optional</span></dt><dd><p>Y-axis labels for each panel. Can be a list of strings or None to 
+omit y-axis labels.</p>
 </dd>
-<dt>save_path (str or None): File path to save the plot as an image. </dt><dd><p>None to display the plot without saving.</p>
+<dt><strong>z_values</strong><span class="classifier">None or list, optional</span></dt><dd><p>Z-values for color mapping in scatter plot. Can be None or a list 
+of values.</p>
 </dd>
-</dl>
+<dt><strong>figure_scale</strong><span class="classifier">float, optional</span></dt><dd><p>Scale factor for the figure size. Default is 1.0.</p>
 </dd>
-<dt>Returns:</dt><dd><p>None</p>
-</dd>
-<dt>Example:</dt><dd><dl>
-<dt>data = [</dt><dd><dl class="simple">
-<dt>[</dt><dd><p>{‘x’: [1, 2, 3], ‘y’: [2, 3, 1], ‘label’: ‘Dataset 1’},
-{‘x’: [1, 2, 3], ‘y’: [1, 1, 2], ‘label’: ‘Dataset 2’}</p>
+<dt><strong>save_path</strong><span class="classifier">str or None, optional</span></dt><dd><p>File path to save the plot as an image. None to display the plot 
+without saving.</p>
 </dd>
 </dl>
-<p>],
-[</p>
-<blockquote>
-<div><p>{‘x’: [4, 5, 6], ‘y’: [3, 4, 4], ‘label’: ‘Dataset 3’}</p>
-</div></blockquote>
-<p>]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
 </dd>
 </dl>
-<p>]
-titles = [‘Panel 1’, ‘Panel 2’]
-xlabels = [‘X Label 1’, ‘X Label 2’]
-ylabels = [‘Y Label 1’, ‘Y Label 2’]
-z_values = [1, 2]  # For color mapping in scatter plot
-plot_panels(data, plot_type=’scatter’, cmap=’viridis’, titles=titles,</p>
-<blockquote>
-<div><p>xlabels=xlabels, ylabels=ylabels, z_values=z_values,
-figure_scale=1.2, save_path=’plot.png’)</p>
-</div></blockquote>
-</dd>
-</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Dataset 1&#39;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Dataset 2&#39;</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Dataset 3&#39;</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="p">]</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Panel 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Panel 2&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xlabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X Label 1&#39;</span><span class="p">,</span> <span class="s1">&#39;X Label 2&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ylabels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y Label 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y Label 2&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1"># For color mapping in scatter plot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_panels</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">titles</span><span class="o">=</span><span class="n">titles</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">xlabels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">,</span> <span class="n">ylabels</span><span class="o">=</span><span class="n">ylabels</span><span class="p">,</span> <span class="n">z_values</span><span class="o">=</span><span class="n">z_values</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">figure_scale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s1">&#39;plot.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.plotting.plot_three_scatter">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_three_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.plot_three_scatter" title="Link to this definition">¶</a></dt>
 <dd><p>Plot three scatter plots with regression lines and custom labels.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>data1 (numpy.ndarray): Data for the first scatter plot as a </dt><dd><p>2D array (x, y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data1</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Data for the first scatter plot as a 2D array (x, y).</p>
 </dd>
-<dt>data2 (numpy.ndarray): Data for the second scatter plot as a </dt><dd><p>2D array (x, y).</p>
+<dt><strong>data2</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Data for the second scatter plot as a 2D array (x, y).</p>
 </dd>
-<dt>data3 (numpy.ndarray): Data for the third scatter plot as a </dt><dd><p>2D array (x, y).</p>
+<dt><strong>data3</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Data for the third scatter plot as a 2D array (x, y).</p>
 </dd>
-<dt>labels (list, optional): List of labels for each plot. </dt><dd><p>Default is [None, None, None].</p>
+<dt><strong>labels</strong><span class="classifier">list, optional</span></dt><dd><p>List of labels for each plot. Default is [None, None, None].</p>
 </dd>
-<dt>x_labels (list, optional): List of x-axis labels for each plot. </dt><dd><p>Default is [None, None, None].</p>
+<dt><strong>x_labels</strong><span class="classifier">list, optional</span></dt><dd><p>List of x-axis labels for each plot. Default is [None, None, None].</p>
 </dd>
-<dt>y_labels (list, optional): List of y-axis labels for each plot. </dt><dd><p>Default is [None, None, None].</p>
-</dd>
-</dl>
-</dd>
-<dt>Example:</dt><dd><p>x1 = np.random.rand(20)
-y1 = 2 * x1 + np.random.rand(20)
-data1 = np.column_stack((x1, y1))</p>
-<p>x2 = np.random.rand(20)
-y2 = 3 * x2 + np.random.rand(20)
-data2 = np.column_stack((x2, y2))</p>
-<p>x3 = np.random.rand(20)
-y3 = 4 * x3 + np.random.rand(20)
-data3 = np.column_stack((x3, y3))</p>
-<p>labels = [‘Plot 1’, ‘Plot 2’, ‘Plot 3’]
-x_labels = [‘X Label 1’, ‘X Label 2’, ‘X Label 3’]
-y_labels = [‘Y Label 1’, ‘Y Label 2’, ‘Y Label 3’]</p>
-<p>plot_three_scatter(data1, data2, data3, labels, x_labels, y_labels)</p>
+<dt><strong>y_labels</strong><span class="classifier">list, optional</span></dt><dd><p>List of y-axis labels for each plot. Default is [None, None, None].</p>
 </dd>
 </dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y1</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y2</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y3</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">x3</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x3</span><span class="p">,</span> <span class="n">y3</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Plot 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Plot 2&#39;</span><span class="p">,</span> <span class="s1">&#39;Plot 3&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X Label 1&#39;</span><span class="p">,</span> <span class="s1">&#39;X Label 2&#39;</span><span class="p">,</span> <span class="s1">&#39;X Label 3&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y Label 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y Label 2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y Label 3&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_three_scatter</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">data3</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">x_labels</span><span class="p">,</span> <span class="n">y_labels</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="SMV2rho.plotting.print_text_file">
 <span class="sig-prename descclassname"><span class="pre">SMV2rho.plotting.</span></span><span class="sig-name descname"><span class="pre">print_text_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.plotting.print_text_file" title="Link to this definition">¶</a></dt>
 <dd><p>Print the contents of a text file exactly as it is saved.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>file_path (str): The path to the text file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>file_path</strong><span class="classifier">str</span></dt><dd><p>The path to the text file.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </dd></dl>

@@ -7,11 +7,21 @@ import numpy as np
 def haversine(loc1, loc2, r = 6371):
     """
     Calculate the great circle distance between two points 
-    on the earth (specified in decimal degrees)
-    arguments: 
-        loc1 (float): array of coordinates of first point
-        loc2 (float): array of coordinates of second point
-        r (float, optional): Radius of earth in kilometers.
+    on the earth (specified in decimal degrees).
+
+    Parameters
+    ----------
+    loc1 : array_like
+        Array of coordinates of first point.
+    loc2 : array_like
+        Array of coordinates of second point.
+    r : float, optional
+        Radius of earth in kilometers. Default is 6371.
+
+    Returns
+    -------
+    float
+        The great circle distance between loc1 and loc2.
     """
     
     # convert decimal degrees to radians 

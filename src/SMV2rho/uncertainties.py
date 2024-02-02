@@ -35,34 +35,40 @@ def rho_err(
     Note that this does not include the uncertainty associated with the 
     velocity-pressure calibration, which should be combined separately if 
     necessary. This function can only handle a single profile at a time.  
-    Note that the Geotherm class must be initialised with the correct 
+    Note that the Geotherm class must be initialised with the desired 
     parameters including the geotherm parameters (including tc) and 
     uncertainties.
 
-    Args:
-        constants (object): Instance of the Constants class containing the 
-            constants for the calculation.
-        geotherm (object): Geotherm object for temperature dependence.  The
-            rho attribute of the geotherm object will be used to set the bulk
-            density for the density error propagation.
-        profile_type (str, optional): Type of velocity profile, 'Vp' or 'Vs'. 
-            Default is 'Vp'.
-        N (int, optional): Number of samples for the Monte Carlo simulation. 
-            Default is 1000.
-        z_slices (int, optional): Number of depth slices for the calculation. 
-            Default is 100.
-        make_plots (bool, optional): If True, generates plots of the results. 
-            Default is False.
-        save_plots (bool, optional): If True, saves the generated plots. 
-            Default is False.
-        outpath (str, optional): Path to save the plots. Default is 
-            "../UNCERTAINTY_PLOTS".
+    Parameters
+    ----------
+    constants : object
+        Instance of the Constants class containing the constants for the 
+        calculation.
+    geotherm : object
+        Geotherm object for temperature dependence. The rho attribute of 
+        the geotherm object will be used to set the bulk density for the 
+        density error propagation.
+    profile_type : str, optional
+        Type of velocity profile, 'Vp' or 'Vs'. Default is 'Vp'.
+    N : int, optional
+        Number of samples for the Monte Carlo simulation. Default is 1000.
+    z_slices : int, optional
+        Number of depth slices for the calculation. Default is 100.
+    make_plots : bool, optional
+        If True, generates plots of the results. Default is False.
+    save_plots : bool, optional
+        If True, saves the generated plots. Default is False.
+    outpath : str, optional
+        Path to save the plots. Default is "../UNCERTAINTY_PLOTS".
 
-    Returns:
-        error_average_frac (float): The average fractional error calculated 
-            from the Monte Carlo simulation.
-        error_average_add (float): The average additive error calculated 
-            from the Monte Carlo simulation.
+    Returns
+    -------
+    error_average_frac : float
+        The average fractional error calculated from the Monte Carlo 
+        simulation.
+    error_average_add : float
+        The average additive error calculated from the Monte Carlo 
+        simulation.
     """
 
     # unpack error parameters
@@ -341,21 +347,25 @@ def rho_err(
     return error_average_frac, error_average_add
 
 
-
-
+############################################
 
 def generate_gauss(abs_mean, mean_unc, N):
     """
     Generate an array of absolute Gaussian random numbers.
 
-    Parameters:
-    abs_mean (float): The absolute mean of the Gaussian distribution.
-    mean_unc (float): The standard deviation (uncertainty) of the 
-                      Gaussian distribution.
-    N (int): The number of random numbers to generate.
+    Parameters
+    ----------
+    abs_mean : float
+        The absolute mean of the Gaussian distribution.
+    mean_unc : float
+        The standard deviation (uncertainty) of the Gaussian distribution.
+    N : int
+        The number of random numbers to generate.
 
-    Returns:
-    numpy.ndarray: An array of absolute Gaussian random numbers.
+    Returns
+    -------
+    numpy.ndarray
+        An array of absolute Gaussian random numbers.
     """
     # Generate N random numbers from a Gaussian distribution with mean 
     # abs_mean and standard deviation mean_unc

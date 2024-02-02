@@ -470,13 +470,15 @@ class Convert:
         # add new values to data dictionary
         self.data.update(rho = rho, av_rho = av_rho)
 
-    def V_to_density_stephenson(self, 
-                                parameters, 
-                                dz=0.1,
-                                constant_depth = None,
-                                constant_density = None,
-                                T_dependence = True,
-                                plot = False):
+    def V_to_density_stephenson(
+            self, 
+            parameters, 
+            dz=0.1,
+            constant_depth = None,
+            constant_density = None,
+            T_dependence = True,
+            plot = False
+            ):
         """
         Convert seismic velocity profiles to density using the Stephenson 
         method.
@@ -558,11 +560,16 @@ class Convert:
     
         # plot profiles?
         if plot == True:
-            plt.plot(Z_arr, p_arr)
+            plt.plot(data_converted['p'][:, 1], 
+                     data_converted['p'][:, 0])
             plt.show()
                 
-            plt.plot(rho[:,1], rho[:,0], color='blue')
-            plt.plot(rho_arr, -Z_arr, color='orange')
+            plt.plot(data_converted['rho'][:, 1], 
+                     data_converted['rho'][:, 0], 
+                     color='blue')
+            plt.plot(data_converted['rho_hi_res'][:, 1], 
+                     data_converted['rho_hi_res'][:, 0], 
+                     color='orange')
             plt.show()
 
     # write out data
@@ -1601,19 +1608,19 @@ def check_arguments(T_dependence,
 ###################################################################
 
 def convert_V_profile(
-        file, 
-        profile_type, 
-        write_data = False, 
-        path = None,
-        approach = "stephenson",
-        location = None,
-        parameters = None,
-        constant_depth = None,
-        constant_density = None,
-        T_dependence = False,
-        geotherm = None,
-        print_working_file = False
-        ):
+    file, 
+    profile_type, 
+    write_data = False, 
+    path = None,
+    approach = "stephenson",
+    location = None,
+    parameters = None,
+    constant_depth = None,
+    constant_density = None,
+    T_dependence = False,
+    geotherm = None,
+    print_working_file = False
+    ):
     """
     Convert a single Vp or Vs velocity profile to a density profile.
 
@@ -1654,16 +1661,23 @@ def convert_V_profile(
     pd.DataFrame
         DataFrame containing the converted velocity and density data.
 
-    Example
-    -------
-    >>> convert_V_profile('velocity_profile.dat', 'Vp', write_data=True,
-    ...                   path='output/', approach='stephenson',
-    ...                   location='Region1', parameters=constants_object,
-    ...                   constant_depth=10.0, constant_density=2.7,
-    ...                   T_dependence=True, geotherm=geotherm_object,
-    ...                   print_working_file=True)
+    Examples
+    --------
+    >>> convert_V_profile(
+    ...     'velocity_profile.dat', 
+    ...     'Vp', 
+    ...     write_data=True, 
+    ...     path='output/', 
+    ...     approach='stephenson', 
+    ...     location='Region1', 
+    ...     parameters=constants_object, 
+    ...     constant_depth=10.0, 
+    ...     constant_density=2.7, 
+    ...     T_dependence=True, 
+    ...     geotherm=geotherm_object, 
+    ...     print_working_file=True
+    ... )
     """
-
     # check that the program will run -- are all options provided?
     check_arguments(T_dependence, constant_depth, constant_density,
                     approach, parameters, geotherm)
@@ -1744,24 +1758,25 @@ def av_profile(profiles,
     bulk_base_depth_f : scipy.interpolate.CubicSpline
         Bulk property profile as a function of base depth.
 
-    Example
-    -------
-    >>> profiles = [np.array([[0.0, 1.5], 
-    ...                       [5.0, 2.0], 
-    ...                       [10.0, 2.5]]),
-    ...               np.array([[0.0, 1.6], 
-    ...                       [5.0, 2.1], 
-    ...                       [10.0, 2.6]])]
-    >>> av_z_f, bulk_base_depth_f = av_profile(profiles, base_depth=15.0, 
-                                        average_type='mean')
-
-    Notes
-    -----
-    - This function interpolates the input profiles and calculates the 
-        average profile at each depth.
-    - It also computes the bulk property profile as a function of base 
-        depth.  (e.g. bulk crustal velocity as a function of crustal 
-        thickness)
+    Examples
+    --------
+    >>> profiles = [
+    ...     np.array([
+    ...         [0.0, 1.5], 
+    ...         [5.0, 2.0], 
+    ...         [10.0, 2.5]
+    ...     ]),
+    ...     np.array([
+    ...         [0.0, 1.6], 
+    ...         [5.0, 2.1], 
+    ...         [10.0, 2.6]
+    ...     ])
+    ... ]
+    >>> av_z_f, bulk_base_depth_f = av_profile(
+    ...     profiles, 
+    ...     base_depth=15.0, 
+    ...     average_type='mean'
+    ... )
     """
     
     # interpolate profiles and make list of functions
@@ -1840,7 +1855,7 @@ def save_bulk_profiles(
     filename : str
         The name of the output data file.
     data_function : function
-        A function that computes the data values based on x-values.
+        A function that computes the average property at depth z.
     start : float
         The start value for the x-values.
     stop : float
@@ -1852,11 +1867,16 @@ def save_bulk_profiles(
     -------
     None
 
-    Example
-    -------
-    >>> save_bulk_profiles("/output/directory/", 
-    ...                       "bulk_data.txt", 
-    ...                       bulk_function, 0, 50.5, 0.5)
+    Examples
+    --------    
+    >>> save_bulk_profiles(
+    ...     '/output/directory/', 
+    ...     'bulk_data.txt', 
+    ...     function, 
+    ...     0, 
+    ...     50.5, 
+    ...     0.5
+    ... )
     """
     x = np.arange(start, stop, step)
     data = np.column_stack((x, data_function(x)))
@@ -1889,8 +1909,8 @@ def convert_to_same_depth_intervals(profile1, profile2):
         A binned velocity profile aligned with the depth intervals of the 
         lowest-resolution profile.
 
-    Example
-    -------
+    Examples
+    --------
     >>> binned_profile = convert_to_same_depth_intervals(profile1, profile2)
     >>> print(binned_profile)
     array([[ 0. , 1600. ],
@@ -1971,10 +1991,11 @@ def read_no_profile_data(data_file, region_name = None):
         - 'moho' (float): Crustal thickness estimate.
         - 'vp_vs' (float): Ratio of seismic velocities (vp/vs).
 
-    Example
-    -------
-    >>> df = read_no_profile_data('crustal_data.csv', 
-                                  region_name='Example_Region')
+    Examples
+    --------
+    >>> df = read_no_profile_data(
+    ...         'crustal_data.csv', 
+    ...         region_name='Example_Region')
     >>> print(df.head())
         region     lon     lat   moho   vp_vs
     0  Example Region  -75.56   40.21  36.58  1.73
@@ -2045,8 +2066,8 @@ def progress_bar(iterable, length=50):
     item
         The current item from the iterable.
 
-    Example
-    -------
+    Examples
+    --------
     >>> for item in progress_bar(range(100)):
     ...     # Simulate some processing
     ...     time.sleep(0.1)
