@@ -200,9 +200,10 @@ user to run <cite>read_data</cite> first to create the data dictionary.</p>
 <dt class="sig sig-object py" id="SMV2rho.density_functions.Convert.read_data">
 <span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SMV2rho.density_functions.Convert.read_data" title="Link to this definition">¶</a></dt>
 <dd><p>Read in data file and parse it into a data dictionary.</p>
-<p>Reads the seismic profile data file specified by <cite>self.profile</cite>, 
+<p>This method reads the seismic profile data file specified by <cite>self.profile</cite>, 
 extracts relevant information, and organizes it into a dictionary 
-stored in <cite>self.data</cite>. This method handles the following tasks:</p>
+stored in <cite>self.data</cite>.</p>
+<p>The method handles the following tasks:</p>
 <ol class="arabic simple">
 <li><dl class="simple">
 <dt>Extracts method type from the file path (e.g., refraction, </dt><dd><p>reflection, RF).</p>
@@ -241,6 +242,9 @@ stored in <cite>self.data</cite>. This method handles the following tasks:</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>This method assumes that <cite>self.profile_type</cite> has been set to 
+“Vs” or “Vp” to indicate the type of seismic profile being read.</p>
 </dd></dl>
 
 <dl class="py method">

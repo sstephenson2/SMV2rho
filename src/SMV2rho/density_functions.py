@@ -280,9 +280,11 @@ class Convert:
         """
         Read in data file and parse it into a data dictionary.
 
-        Reads the seismic profile data file specified by `self.profile`, 
+        This method reads the seismic profile data file specified by `self.profile`, 
         extracts relevant information, and organizes it into a dictionary 
-        stored in `self.data`. This method handles the following tasks:
+        stored in `self.data`. 
+
+        The method handles the following tasks:
         
         1. Extracts method type from the file path (e.g., refraction, 
             reflection, RF).
@@ -303,8 +305,8 @@ class Convert:
         None
             The parsed data is stored in `self.data` for further use.
 
-        Note
-        ----
+        Notes
+        -----
         This method assumes that `self.profile_type` has been set to 
         "Vs" or "Vp" to indicate the type of seismic profile being read.
         """
