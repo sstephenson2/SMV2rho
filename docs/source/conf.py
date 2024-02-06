@@ -9,7 +9,7 @@
 project = 'SMV2rho'
 copyright = '2024, Simon Stephenson, Mark Hoggard'
 author = 'Simon Stephenson, Mark Hoggard'
-release = 'v1.0.0'
+release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -17,17 +17,12 @@ release = 'v1.0.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'nbsphinx',
-    'numpydoc'
+    'sphinx.ext.napoleon'
 ]
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = []
 
-autosummary_generate = [
-    'SMV2rho.density_functions.Convert',
-    'SMV2rho.density_functions.MultiConversion',
-    'SMV2rho.density_functions.V2RhoStephenson']
 autosummary_generate = True
 
 # -- Options for HTML output -------------------------------------------------
@@ -36,7 +31,6 @@ autosummary_generate = True
 html_theme = 'alabaster'
 html_static_path = ['_static']
 
-# Add src directory to Python path
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src/SMV2rho/'))
+sys.path.insert(0, os.path.abspath('../../src/SMV2rho/'))
