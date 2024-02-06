@@ -37,4 +37,5 @@ html_static_path = ['_static']
 import os
 import shutil
 import sys
-sys.path.insert(0, os.path.abspath('../../src/SMV2rho/'))
+conf_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(conf_dir, '../../src/SMV2rho/'))
