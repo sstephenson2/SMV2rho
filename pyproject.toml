@@ -17,10 +17,10 @@ classifiers = [
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-  'numpy',
-  'matplotlib',
-  'pandas',
-  'scipy',
-  'cartopy'
-  'seaborn'
+  'numpy>=1.26.0',
+  'matplotlib>=3.8.0',
+  'pandas>=2.1.1',
+  'scipy>=1.11.3',
+  'cartopy>=0.21.1',
+  'seaborn>=0.12.2'
 ]
