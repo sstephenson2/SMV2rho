@@ -6,44 +6,20 @@
 Welcome to SMV2rho's documentation!
 ===================================
 
-Installation
-------------
+Contents
+--------
 
 .. toctree::
    :maxdepth: 1
 
    installation
 
-Modules
--------
+   modules
 
-.. toctree::
-   :maxdepth: 1
-
-   coincident_profile_functions
-   density_functions
-   spatial_functions
-   uncertainties
-   constants
-   plotting
-   temperature_dependence
-
-Tutorials
----------
-
-.. toctree::
-   :maxdepth: 1
-
-   TUTORIALS/tutorial_1.ipynb
-   TUTORIALS/tutorial_2.ipynb
-   TUTORIALS/tutorial_3.ipynb
-   TUTORIALS/tutorial_4.ipynb
-   TUTORIALS/tutorial_5.ipynb
-   TUTORIALS/tutorial_6.ipynb
-   TUTORIALS/tutorial_7.ipynb
+   tutorials
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
