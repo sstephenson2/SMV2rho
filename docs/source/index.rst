@@ -23,11 +23,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. automodule:: SMV2rho.density_functions
-.. automodule:: SMV2rho.coincident_profile_functions
-.. automodule:: SMV2rho.spatial_functions
-.. automodule:: SMV2rho.uncertainties
-.. automodule:: SMV2rho.constants
-.. automodule:: SMV2rho.plotting
-.. automodule:: SMV2rho.temperature_dependence
