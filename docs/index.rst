@@ -10,35 +10,12 @@ Welcome to SMV2rho's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: SMV2rho.density_functions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: SMV2rho.temperature_dependence
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: SMV2rho.uncertainties
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: SMV2rho.spatial_functions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: SMV2rho.coincident_profile_functions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: SMV2rho.plotting
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   SMV2rho.density_functions
+   SMV2rho.temperature_dependence
+   SMV2rho.uncertainties
+   SMV2rho.spatial_functions
+   SMV2rho.coincident_profile_functions
+   SMV2rho.plotting
 
 .. toctree::
    :maxdepth: 2

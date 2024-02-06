@@ -24,6 +24,10 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+autosummary_generate = [
+    'SMV2rho.density_functions.Convert',
+    'SMV2rho.density_functions.MultiConversion',
+    'SMV2rho.density_functions.V2RhoStephenson']
 autosummary_generate = True
 
 # -- Options for HTML output -------------------------------------------------
