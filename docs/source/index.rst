@@ -16,6 +16,8 @@ Contents
    usage
    modules
    tutorials
+   contributing
+   license
 
 Indices and tables
 ------------------
