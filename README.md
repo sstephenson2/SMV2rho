@@ -11,6 +11,11 @@
  * [`plotting`](src/SMV2rho/plotting.py): for plotting velocity and density profiles, scatter plots to compare profiles, maps to view bullk properties and other useful plotting routines.
 
 
+## Documentation
+
+ Please access the documentation for this software here: [Documentation](https://smv2rho.readthedocs.io/en/latest/).
+
+
 ## Installation
 
 First download the repository and save it on your machine.  The easiest way to do this is by opening a terminal and typing:
