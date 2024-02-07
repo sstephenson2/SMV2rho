@@ -1,11 +1,20 @@
-cff-version: 0.1.0
-message: If you use this database, please cite it as below.
+cff-version: 1.2.0
+message: If you use this software, please cite it following the information given.
 authors:
   - family-names: Stephenson
     given-names: Simon
   - family-names: Hoggard
     given-names: Mark
 title: SMV2rho
-version: v0.1.0-alpha
+version: v1.0.0
 doi: https://doi.org/10.5281/zenodo.10017541
-date-released: 2023-10-18
+date-released: 2024-02-07
+abstract: Convert crustal seismic velocities into density using a calibrated
+  empirical scheme and other previously described approaches.
+keywords:
+  - Seismic velocity
+  - Continental crust
+  - Density
+license: MIT
+repository-code: https://github.com/sstephenson2/SMV2rho
+url: https://smv2rho.readthedocs.io/en/latest/
