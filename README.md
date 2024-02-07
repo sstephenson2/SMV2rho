@@ -5,7 +5,8 @@
 # SMV2rho
 
  `SMV2rho` is a Python package for converting continental crustal seismic velocities into density.
- It contains modules for doing the following:
+
+ `SMV2rho` contains modules for doing the following:
 
  * [`density_functions`](src/SMV2rho/density_functions.py): for calculating density of continental crustal rocks given P- and S-wave velocity profiles using either Brocher's (2005) parametrisation, or a new scheme developed by Stephenson et al (_in review_; i.e. `SMV2rho`),
  * [`temperaure_dependence`](src/SMV2rho/temperature_dependence.py): for calculating the effects of temperature dependence on seismic velocity and density,

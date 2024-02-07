@@ -18,6 +18,7 @@ Contents
    license
    modules
    tutorials
+   model_calibration
 
 Indices and tables
 ------------------
