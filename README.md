@@ -94,6 +94,10 @@ This command installs the package in editable mode, which means you can modify t
 
 ## Usage
 
+If using this software please cite it in this way:
+
+Stephenson, S. N., & Hoggard, M. J. (2024). SMV2rho (Version v1.0.0) [Computer software]. [DOI:10.5281/zenodo.10017541](https://doi.org/10.5281/zenodo.10017541)
+
 `SMV2rho` is intended to be used for converting 1D velocity profiles into density.  We recommend
 initially using it with [`SeisCruST`](https://github.com/sstephenson2/SeisCRUST), a global database of seismic continental crustal structure.  [`SeisCruST`](https://github.com/sstephenson2/SeisCRUST) can be accessed here https://github.com/sstephenson2/SeisCRUST.  Velocity profiles in `SeisCruST` are distributed in the correct format for use directly in `SMV2rho`.
 
