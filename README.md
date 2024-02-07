@@ -1,3 +1,7 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10017540.svg)](https://doi.org/10.5281/zenodo.10017540)
+[![Documentation Status](https://readthedocs.org/projects/smv2rho/badge/?version=latest)](https://smv2rho.readthedocs.io/en/latest/?badge=latest)
+
+
 # SMV2rho
 
  `SMV2rho` is a Python package for converting continental crustal seismic velocities into density.
