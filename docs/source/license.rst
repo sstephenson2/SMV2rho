@@ -1,4 +1,4 @@
-LICENSE
+License
 =======
 
 Copyright 2024 Simon Stephenson

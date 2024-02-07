@@ -14,10 +14,10 @@ Contents
 
    installation
    usage
-   modules
-   tutorials
    contributing
    license
+   modules
+   tutorials
 
 Indices and tables
 ------------------
