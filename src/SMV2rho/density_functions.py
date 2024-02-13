@@ -1212,7 +1212,8 @@ class MultiConversion:
         #    attribute outide of the class instance if the master attribute is
         #    not already set to True since class attributes are mutable 
         #    objects.  This behaviour is intended.
-        master_geotherm.master = True
+        if isinstance(master_geotherm, td.Geotherm):
+            master_geotherm.master = True
 
         # check that all the necessary information has been provided
         check_arguments(T_dependence, constant_depth, constant_density,
@@ -1273,9 +1274,7 @@ class MultiConversion:
         # are None by default, but we can override them internally here
         # if they are set by accident since we do not require them.
         else:
-            parameters.vp_constants = None
-            parameters.vs_constants = None
-            parameters.material_constants = None
+            parameters = None
 
         # loop through Vs profiles and convert to Vp and then to density
         print(f"Reading in data and converting to density "
