@@ -2,9 +2,9 @@ cff-version: 1.2.0
 message: If you use this software, please cite it following the information given.
 authors:
   - family-names: Stephenson
-    given-names: Simon
+    given-names: Simon N.
   - family-names: Hoggard
-    given-names: Mark
+    given-names: Mark J.
 title: SMV2rho
 version: v1.0.0
 doi: https://doi.org/10.5281/zenodo.10017541
