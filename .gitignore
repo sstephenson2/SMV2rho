@@ -1,0 +1,6 @@
+build
+.ipynb_checkpoints
+src/SMV2rho.egg-info/SOURCES.txt
+CALIBRATION_DATA/convert_bib_to_markdown.py
+src/SMV2rho.egg-info/
+src/SMV2rho/__pycache__/
