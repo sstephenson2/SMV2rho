@@ -175,4 +175,4 @@ We will take a look at your pull request as soon as we can!
 
 ## License
 
-This software is distributed under an MIT license.  Please read the [`LICENSE`](LICENSE) file for more information.  We just ask that this software package is cited in any work that uses `SMV2rho` and that the primary study for the relevant apprach is also cited.  For `SMV2rho` that is Steophenson _et al._ (2024).
+This software is distributed under an MIT license.  Please read the [`LICENSE`](LICENSE) file for more information.  We just ask that this software package is cited in any work that uses `SMV2rho` and that the primary study for the relevant apprach is also cited.  For `SMV2rho` that is Stephenson _et al._ (2024).
