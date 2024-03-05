@@ -7,7 +7,7 @@ authors:
     given-names: Mark J.
 title: SMV2rho
 version: v1.0.0
-doi: https://doi.org/10.5281/zenodo.10017541
+doi: https://doi.org/10.5281/zenodo.10783224
 date-released: 2024-02-07
 abstract: Convert crustal seismic velocities into density using a calibrated
   empirical scheme and other previously described approaches.
